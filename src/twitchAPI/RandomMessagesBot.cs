@@ -57,17 +57,19 @@ public class RandomMessagesBot : Bot {
     private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
         _logs!.Add(e.ChatMessage.Message);
-        _counter++;
         var randomValue = Random.Shared.Next(0, _logs.Count);
-        var randomness = _counterValueToGenerate-Random.Shared.Next(0, (int)(_counterValueToGenerate*0.5));
+        var randomness = _counterValueToGenerate-Random.Shared.Next(0, (int)(_counterValueToGenerate));
+        if (_counter < randomness) {
+            _counter++;
+        }
         if (_counter%randomness == 0) {
             _counter = 0;
-            _client!.SendMessage(e.ChatMessage.Channel, _logs[randomValue]);
+            var message = _logs[randomValue];
+            _client!.SendMessage(e.ChatMessage.Channel, message);
             JsonUtils.WriteSafe(_logsPath, Shared.saveDirectory, _logs);
-            Console.WriteLine($"Randomness: {randomness}");
+            Console.WriteLine($"Generated Message: {message}");
         }
         Console.WriteLine($"Message received: {e.ChatMessage.Message}");
-        Console.WriteLine($"Counter Updated: {_counter}");
     }
     
     private void Client_OnLog(object? sender, OnLogArgs e)
@@ -101,29 +103,6 @@ public class RandomMessagesBot : Bot {
         Console.Clear();
         Console.Write("Channel: ");
         channel = Console.ReadLine();
-        
-        Console.Clear();
-        Console.WriteLine("Should I Use a Reward for Game Requests?(y/N)");
-        key = Console.ReadKey();
-        Console.Clear();
-        if (key.Key == ConsoleKey.Y) {
-            Console.Write("Then There Are a Few More Options...");
-            Console.ReadKey();
-            
-            Console.Clear();
-            Console.Write("ClientId: ");
-            clientId = Console.ReadLine();
-            
-            Console.Clear();
-            Console.Write("BroadcasterId: ");
-            broadcasterId = Console.ReadLine();
-            
-            Console.Clear();
-            Console.Write("Secret: ");
-            secret = Console.ReadLine();
-            
-            shouldCreateReward = true;
-        }
         
         Console.Clear();
         Console.WriteLine("Should I Save This Data?(Y/n)");
