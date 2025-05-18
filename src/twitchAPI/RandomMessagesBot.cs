@@ -13,13 +13,13 @@ namespace ChatBot.twitchAPI;
 
 public class RandomMessagesBot : Bot {
     private readonly string _savePath = Path.Combine(Shared.saveDirectory, "random_bot_options.json");
-    private readonly string _logsSavePath = Path.Combine(Shared.saveDirectory, "logs.json");
+    private readonly string _logsPath = Path.Combine(Shared.saveDirectory, "logs.json");
     
     private ITwitchClient? _client;
     private Options _options = null!;
     private List<string>? _logs = new();
     private int _counter ;
-    private readonly int _counterValueToGenerate = 25;
+    private readonly int _counterValueToGenerate = 15;
     private readonly ILogger<TwitchClient> _logger = null!;
 
     public override void Start() 
@@ -45,7 +45,7 @@ public class RandomMessagesBot : Bot {
         _client = new TwitchClient(customClient, logger: _logger);
         _client.Initialize(credentials, _options.Channel);
 
-        JsonUtils.TryRead(_logsSavePath, out _logs);
+        JsonUtils.TryRead(_logsPath, out _logs);
         _logs ??= [];
     }
     
@@ -58,10 +58,12 @@ public class RandomMessagesBot : Bot {
     {
         _logs!.Add(e.ChatMessage.Message);
         _counter++;
-        if ((_counter%=_counterValueToGenerate) == 0) {
-            var randomValue = Random.Shared.Next(0, _logs.Count);
+        var randomValue = Random.Shared.Next(0, _logs.Count);
+        var randomness = (int)(_counterValueToGenerate-randomValue*0.5);
+        if ((_counter%=randomness) == 0) {
             _client!.SendMessage(e.ChatMessage.Channel, _logs[randomValue]);
-            JsonUtils.WriteSafe(_logsSavePath, Shared.saveDirectory, _logs);
+            JsonUtils.WriteSafe(_logsPath, Shared.saveDirectory, _logs);
+            Console.WriteLine($"Randomness: {randomness}");
         }
         Console.WriteLine($"Message received: {e.ChatMessage.Message}");
         Console.WriteLine($"Counter Updated: {_counter}");
