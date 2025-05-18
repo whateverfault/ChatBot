@@ -7,10 +7,10 @@ internal static class Program {
     private static void Main() {
         ServiceManager.InitServices();
         
-        var bot = new Bot();
+        //var bot = new TwitchChatBot();
+        var bot = new RandomMessagesBot();
         bot.Start();
-        Console.ReadLine();
-        bot.Stop();
+        Console.ReadLine(); 
         
         ServiceManager.KillServices();
     }

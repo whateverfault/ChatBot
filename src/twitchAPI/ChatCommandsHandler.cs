@@ -52,10 +52,11 @@ public class ChatCommandsHandler : CommandsHandler {
                 var gameRequest = new GameRequest(args.Command.ChatMessage.Username, commandArgs[0]!);
                 err = _gameRequestsService.AppendRequest(gameRequest, args.Command.ChatMessage);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Такой заказ уже есть.");
-                    Console.WriteLine($"_gameRequestsService.AppendRequest returned an error: {err}");
+                    Console.WriteLine($"'AppendRequest' returned an error: {err}");
                     return;
                 }
+                
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра добалвена в очередь.");
                 Console.WriteLine("Game requests has been appended");
                 break;
             }
@@ -73,10 +74,11 @@ public class ChatCommandsHandler : CommandsHandler {
                 }
                 err = _gameRequestsService.RemoveRequestAt(index-1, args.Command.ChatMessage);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Console.WriteLine($"_gameRequestsService.RemoveRequestAt returned an error: {err}");
+                    Console.WriteLine($"'RemoveRequestAt' returned an error: {err}");
                     return;
                 }
                 
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра удалена из очереди.");
                 Console.WriteLine("Game requests has been removed");
                 break;
             }
@@ -86,7 +88,11 @@ public class ChatCommandsHandler : CommandsHandler {
                     int.TryParse(commandArgs[0], out page);
                 }
                 
-                var gameReqs = _gameRequestsService.GetGameRequests();
+                err = _gameRequestsService.ListGameRequests(out var gameReqs);
+                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
+                    Console.WriteLine($"'GetGameRequests' returned an error: {err}");
+                    return;
+                }
                 if (gameReqs.Length == 0) {
                     _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Пусто.");
                     break;
@@ -114,6 +120,62 @@ public class ChatCommandsHandler : CommandsHandler {
                 
                 message.Append($"|Page {page} of {pages[^1]}| ");
                 _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message.ToString());
+                break;
+            }
+            case "gr-give-point": {
+                if (commandArgs.Length < 1) {
+                    err = ErrorCode.TooFewArgs;
+                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
+                    return;
+                }
+                
+                err = _gameRequestsService.GivePoint(args.Command.ChatMessage, commandArgs[0]);
+                
+                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
+                    Console.WriteLine($"'GetGameRequests' returned an error: {err}");
+                    return;
+                }
+                
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Очко выдано пользователю '{commandArgs[0]}'.");
+                
+                break;
+            }
+            case "gr-take-point": {
+                if (commandArgs.Length < 1) {
+                    err = ErrorCode.TooFewArgs;
+                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
+                    return;
+                }
+                
+                err = _gameRequestsService.TakePoint(args.Command.ChatMessage, commandArgs[0]);
+                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
+                    Console.WriteLine($"'GetGameRequests' returned an error: {err}");
+                    return;
+                }
+                
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Очко забрано у пользователя '{commandArgs[0]}'.");
+                break;
+            }
+            case "gr-disable": {
+                err = _gameRequestsService.Disable(args.Command.ChatMessage);
+                
+                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
+                    Console.WriteLine($"'Disable' returned an error: {err}");
+                    return;
+                }
+                
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы отключены.");
+                break;
+            }
+            case "gr-enable": {
+                err = _gameRequestsService.Enable(args.Command.ChatMessage);
+                
+                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
+                    Console.WriteLine($"'Enable' returned an error: {err}");
+                    return;
+                }
+                
+                _client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы включены.");
                 break;
             }
             #endregion

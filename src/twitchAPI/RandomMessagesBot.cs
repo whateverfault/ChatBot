@@ -2,8 +2,6 @@
 using ChatBot.twitchAPI.interfaces;
 using ChatBot.utils;
 using Microsoft.Extensions.Logging;
-using TwitchLib.Api.Core;
-using TwitchLib.Api.Core.Interfaces;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
@@ -13,36 +11,26 @@ using TwitchLib.Communication.Models;
 
 namespace ChatBot.twitchAPI;
 
-public class Bot {
-    private readonly string _savePath = Path.Combine(Shared.saveDirectory, "options.json");
+public class RandomMessagesBot : Bot {
+    private readonly string _savePath = Path.Combine(Shared.saveDirectory, "random_bot_options.json");
+    private readonly string _logsSavePath = Path.Combine(Shared.saveDirectory, "logs.json");
     
     private ITwitchClient? _client;
     private Options _options = null!;
-    private CommandsHandler? _cmdsHandler;
+    private List<string>? _logs = new();
+    private int _counter ;
+    private readonly int _counterValueToGenerate = 25;
     private readonly ILogger<TwitchClient> _logger = null!;
-    
 
-    public void Start() 
+    public override void Start() 
     {
         if (_client == null) Init();
-
-        IApiSettings apiSettings = new ApiSettings();
-        apiSettings.AccessToken = _options.OAuth;
-        apiSettings.ClientId = _options.ClientId;
-        apiSettings.Secret = _options.Secret;
         
-        _client!.OnChatCommandReceived += _cmdsHandler!.Handle;
-        _client.OnMessageReceived += Client_OnMessageReceived;
+        _client!.OnMessageReceived += Client_OnMessageReceived;
         _client.OnJoinedChannel += Client_OnJoinedChannel;
-        _client.OnConnected += Client_OnConnected;
         _client.OnLog += Client_OnLog;
 
         _client.Connect();
-    }
-
-    public void Stop()
-    {
-        _client?.Disconnect();
     }
     
     private void Init() {
@@ -53,15 +41,12 @@ public class Bot {
                                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
                             };
         var customClient = new WebSocketClient(clientOptions);
-
+        
         _client = new TwitchClient(customClient, logger: _logger);
         _client.Initialize(credentials, _options.Channel);
 
-        _cmdsHandler = new ChatCommandsHandler(_client);
-    }
-    
-    private void Client_OnConnected(object? sender, OnConnectedArgs e) {
-        Console.WriteLine($"Connected to {e.AutoJoinChannel}");
+        JsonUtils.TryRead(_logsSavePath, out _logs);
+        _logs ??= [];
     }
     
     private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
@@ -71,7 +56,15 @@ public class Bot {
     
     private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
+        _logs!.Add(e.ChatMessage.Message);
+        _counter++;
+        if ((_counter%=_counterValueToGenerate) == 0) {
+            var randomValue = Random.Shared.Next(0, _logs.Count);
+            _client!.SendMessage(e.ChatMessage.Channel, _logs[randomValue]);
+            JsonUtils.WriteSafe(_logsSavePath, Shared.saveDirectory, _logs);
+        }
         Console.WriteLine($"Message received: {e.ChatMessage.Message}");
+        Console.WriteLine($"Counter Updated: {_counter}");
     }
     
     private void Client_OnLog(object? sender, OnLogArgs e)
@@ -82,6 +75,7 @@ public class Bot {
     private ConnectionCredentials GetCredentials() {
         string? channel;
         var clientId = "";
+        var broadcasterId = "";
         var secret = "";
         var shouldCreateReward = false;
         ConsoleKeyInfo key;
@@ -106,7 +100,7 @@ public class Bot {
         channel = Console.ReadLine();
         
         Console.Clear();
-        Console.WriteLine("Should I Create a Reward for Game Requests?(y/N)");
+        Console.WriteLine("Should I Use a Reward for Game Requests?(y/N)");
         key = Console.ReadKey();
         Console.Clear();
         if (key.Key == ConsoleKey.Y) {
@@ -118,6 +112,10 @@ public class Bot {
             clientId = Console.ReadLine();
             
             Console.Clear();
+            Console.Write("BroadcasterId: ");
+            broadcasterId = Console.ReadLine();
+            
+            Console.Clear();
             Console.Write("Secret: ");
             secret = Console.ReadLine();
             
@@ -125,15 +123,16 @@ public class Bot {
         }
         
         Console.Clear();
-        Console.WriteLine("Should I Save This Data?(y/N)");
+        Console.WriteLine("Should I Save This Data?(Y/n)");
         key = Console.ReadKey();
         Console.Clear();
-        _options = new Options(userName, token, channel, shouldCreateReward, clientId, secret);
-        if (key.Key == ConsoleKey.Y) {
-            JsonUtils.WriteSafe(_savePath, Shared.saveDirectory, _options);
-            Console.WriteLine($"Data has been successfully saved to {_savePath}.");
+        _options = new Options(userName, token, channel, shouldCreateReward, clientId, broadcasterId, secret);
+        if (key.Key == ConsoleKey.N) {
+            return new ConnectionCredentials(userName, token);
         }
         
+        JsonUtils.WriteSafe(_savePath, Shared.saveDirectory, _options);
+        Console.WriteLine($"Data has been successfully saved to {_savePath}.");
         return new ConnectionCredentials(userName, token);
     }
 

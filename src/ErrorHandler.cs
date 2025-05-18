@@ -8,6 +8,8 @@ public enum ErrorCode {
     WrongInput,
     TooFewArgs,
     AlreadyContains,
+    TooFewPoints,
+    ServiceDisabled,
     None,
 }
 
@@ -16,7 +18,9 @@ public class ErrorHandler {
                                                           "Недостаточно прав.",
                                                           "Неправильный ввод.",
                                                           "Слишком мало аргументов.",
-                                                          "Такой эллемент уже существует."
+                                                          "Такой эллемент уже существует.",
+                                                          "У вас недостаточно очков.",
+                                                          "Стример отключил эту функцию.",
                                                       ];
 
 
@@ -29,6 +33,7 @@ public class ErrorHandler {
     
     public bool ReplyWithError(ErrorCode code, ChatMessage message) {
         if (code == ErrorCode.None) return false;
+        Console.WriteLine($"[ErrorHandler] Caught an error: {code}");
         _client.SendReply(message.Channel, message.Id, _errorMessages[(int)code]);
         return true;
     }
