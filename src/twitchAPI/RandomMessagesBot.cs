@@ -59,8 +59,9 @@ public class RandomMessagesBot : Bot {
         _logs!.Add(e.ChatMessage.Message);
         _counter++;
         var randomValue = Random.Shared.Next(0, _logs.Count);
-        var randomness = (int)(_counterValueToGenerate-randomValue*0.5);
-        if ((_counter%=randomness) == 0) {
+        var randomness = _counterValueToGenerate-Random.Shared.Next(0, (int)(_counterValueToGenerate*0.5));
+        if (_counter%randomness == 0) {
+            _counter = 0;
             _client!.SendMessage(e.ChatMessage.Channel, _logs[randomValue]);
             JsonUtils.WriteSafe(_logsPath, Shared.saveDirectory, _logs);
             Console.WriteLine($"Randomness: {randomness}");
