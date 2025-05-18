@@ -19,6 +19,7 @@ public class RandomMessagesBot : Bot {
     private Options _options = null!;
     private List<string>? _logs = new();
     private int _counter ;
+    private int _randomness;
     private readonly int _counterValueToGenerate = 15;
     private readonly ILogger<TwitchClient> _logger = null!;
 
@@ -57,14 +58,13 @@ public class RandomMessagesBot : Bot {
     private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
         _logs!.Add(e.ChatMessage.Message);
-        var randomValue = Random.Shared.Next(0, _logs.Count);
-        var randomness = _counterValueToGenerate-Random.Shared.Next(0, (int)(_counterValueToGenerate));
-        if (_counter < randomness) {
+        if (_counter < _randomness) {
             _counter++;
         }
-        if (_counter%randomness == 0) {
+        if (_counter%_randomness == 0) {
             _counter = 0;
-            var message = _logs[randomValue];
+            _randomness = _counterValueToGenerate-Random.Shared.Next(0, _counterValueToGenerate);
+            var message = _logs[Random.Shared.Next(0, _logs.Count)];
             _client!.SendMessage(e.ChatMessage.Channel, message);
             JsonUtils.WriteSafe(_logsPath, Shared.saveDirectory, _logs);
             Console.WriteLine($"Generated Message: {message}");
