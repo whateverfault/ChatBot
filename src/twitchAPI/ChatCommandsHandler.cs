@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using ChatBot.Services;
 using ChatBot.Services.game_requests;
+using ChatBot.Shared;
+using ChatBot.Shared.Handlers;
 using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;

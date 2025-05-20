@@ -1,12 +1,8 @@
 ﻿using System.Globalization;
+using ChatBot.Shared.Handlers;
+using ChatBot.Shared.interfaces;
 using ChatBot.twitchAPI.interfaces;
-using ChatBot.utils;
 using Microsoft.Extensions.Logging;
-using TwitchLib.Api.Core;
-using TwitchLib.Api.Core.HttpCallHandlers;
-using TwitchLib.Api.Core.Interfaces;
-using TwitchLib.Api.Core.RateLimiter;
-using TwitchLib.Api.Helix;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
@@ -17,14 +13,13 @@ using TwitchLib.Communication.Models;
 namespace ChatBot.twitchAPI;
 
 public class TwitchChatBot : Bot {
-    private readonly string _savePath = Path.Combine(Shared.saveDirectory, "options.json");
-    
+    public override Options Options => _options;
+
     private ITwitchClient? _client;
-    private Options _options = null!;
-    private ChannelPoints _channelPoints = null!;
+    private ChatBotOptions _options = null!;
     private CommandsHandler? _cmdsHandler;
     private readonly ILogger<TwitchClient> _logger = null!;
-    
+
 
     public override void Start() 
     {
@@ -38,8 +33,34 @@ public class TwitchChatBot : Bot {
 
         _client.Connect();
     }
-    
+
+    public override void Login() {
+        throw new NotImplementedException();
+    }
+
+    public override void Enable() {
+        throw new NotImplementedException();
+    }
+
+    public override void Disable() {
+        throw new NotImplementedException();
+    }
+
+    public override ErrorCode GetClient(out ITwitchClient client) {
+        throw new NotImplementedException();
+    }
+
+    public override State GetState() {
+        throw new NotImplementedException();
+    }
+
+    public override void Toggle() {
+        throw new NotImplementedException();
+    }
+
     private void Init() {
+        _options = new ChatBotOptions();
+        
         var credentials = GetCredentials();
         var clientOptions = new ClientOptions
                             {
@@ -47,16 +68,6 @@ public class TwitchChatBot : Bot {
                                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
                             };
         var customClient = new WebSocketClient(clientOptions);
-
-        IApiSettings apiSettings = new ApiSettings();
-        apiSettings.AccessToken = _options.OAuth;
-        apiSettings.ClientId = _options.ClientId;
-        apiSettings.Secret = _options.Secret;
-
-        IRateLimiter rateLimiter = new BypassLimiter();
-        IHttpCallHandler httpCallHandler = new TwitchHttpClient();
-            
-        _channelPoints = new ChannelPoints(apiSettings, rateLimiter, httpCallHandler);
         
         
         _client = new TwitchClient(customClient, logger: _logger);
@@ -81,80 +92,45 @@ public class TwitchChatBot : Bot {
     
     private void Client_OnLog(object? sender, OnLogArgs e)
     {
-        Console.WriteLine($"{e.DateTime.ToString(CultureInfo.InvariantCulture)}: {e.BotUsername} - {e.Data}");
+        if (_options.ShouldPrintTwitchLogs) {
+            Console.WriteLine($"{e.DateTime.ToString(CultureInfo.InvariantCulture)}: {e.BotUsername} - {e.Data}");
+        }
     }
     
     private ConnectionCredentials GetCredentials() {
-        string? channel;
-        var clientId = "";
-        var broadcasterId = "";
-        var secret = "";
-        var shouldCreateReward = false;
         ConsoleKeyInfo key;
-        if (JsonUtils.TryRead(_savePath, out _options!)) {
+        
+        if (_options.Load()) {
             Console.WriteLine("Restore Saved Data?(Y/n)");
             key = Console.ReadKey();
             Console.Clear();
             if (key.Key != ConsoleKey.N) {
-                return RestoreCredentials(out channel);
+                return new ConnectionCredentials(_options.Username, _options.OAuth);
             }
         }
-
+        
+        _options.ToDefaults();
         Console.Write("Twitch username: ");
-        var userName = Console.ReadLine();
+        _options.SetUsername(Console.ReadLine()!);
         
         Console.Clear();
         Console.Write("OAuth token(do not show anyone): ");
-        var token = Console.ReadLine();
+        _options.SetOAuth(Console.ReadLine()!);
         
         Console.Clear();
         Console.Write("Channel: ");
-        channel = Console.ReadLine();
-        
-        Console.Clear();
-        Console.WriteLine("Should I Use a Reward for Game Requests?(y/N)");
-        key = Console.ReadKey();
-        Console.Clear();
-        if (key.Key == ConsoleKey.Y) {
-            Console.Write("Then There Are a Few More Options...");
-            Console.ReadKey();
-            
-            Console.Clear();
-            Console.Write("ClientId: ");
-            clientId = Console.ReadLine();
-            
-            Console.Clear();
-            Console.Write("BroadcasterId: ");
-            broadcasterId = Console.ReadLine();
-            
-            Console.Clear();
-            Console.Write("Secret: ");
-            secret = Console.ReadLine();
-            
-            shouldCreateReward = true;
-        }
+        _options.SetChannel(Console.ReadLine()!);
         
         Console.Clear();
         Console.WriteLine("Should I Save This Data?(Y/n)");
         key = Console.ReadKey();
         Console.Clear();
-        _options = new Options(userName, token, channel, shouldCreateReward, clientId, broadcasterId, secret);
+        
         if (key.Key == ConsoleKey.N) {
-            return new ConnectionCredentials(userName, token);
+            return new ConnectionCredentials(_options.Username, _options.OAuth);
         }
         
-        JsonUtils.WriteSafe(_savePath, Shared.saveDirectory, _options);
-        Console.WriteLine($"Data has been successfully saved to {_savePath}.");
-        return new ConnectionCredentials(userName, token);
-    }
-
-    private ConnectionCredentials RestoreCredentials(out string? channel) {
-        channel = string.Empty;
-        if (string.IsNullOrEmpty(_options.Username) || string.IsNullOrEmpty(_options.OAuth)|| string.IsNullOrEmpty(_options.Channel)) {
-            Console.WriteLine($"Corrupted Save at {_savePath}\nTry to delete it or rename it.");
-            return new ConnectionCredentials("", "");
-        }
-        channel = _options.Channel;
+        _options.Save();
         return new ConnectionCredentials(_options.Username, _options.OAuth);
     }
 }
