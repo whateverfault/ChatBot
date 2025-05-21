@@ -1,4 +1,4 @@
-﻿using ChatBot.Shared.interfaces;
+﻿using ChatBot.shared.interfaces;
 
 namespace ChatBot.CLI.CliNodes;
 

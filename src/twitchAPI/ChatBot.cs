@@ -1,9 +1,11 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using ChatBot.Shared.Handlers;
-using ChatBot.Shared.interfaces;
+﻿using ChatBot.Services.chat_commands;
+using ChatBot.Services.Static;
+using ChatBot.shared.Handlers;
+using ChatBot.shared.interfaces;
 using ChatBot.twitchAPI.interfaces;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
+using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
@@ -12,15 +14,21 @@ using TwitchLib.Communication.Models;
 namespace ChatBot.twitchAPI;
 
 public class ChatBot : Bot {
-    private bool _loggedIn;
+    private ErrorCode LogInIssues => VerifySave();
     private bool _initialized;
     private readonly ILogger<TwitchClient> _logger;
     private readonly ChatBotOptions _options = new();
     private ITwitchClient _client;
     
 
-    public override Options Options => _options;
-
+    public override ChatBotOptions Options => _options;
+    public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
+    public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
+    public override event EventHandler<OnJoinedChannelArgs>? OnJoinedChannel;
+    public override event EventHandler<OnConnectedArgs>? OnConnected;
+    public override event EventHandler<OnLogArgs>? OnLog;
+    
+    
 
     private void Init() {
         try {
@@ -33,59 +41,27 @@ public class ChatBot : Bot {
 
             _client = new TwitchClient(customClient, logger: _logger);
             _client.Initialize(credentials, _options.Channel);
-            ErrorHandler.LogErrorAndWait(ErrorCode.None);
+            _client.RemoveChatCommandIdentifier('!');
+            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier);
             _initialized = true;
-        } catch (Exception _) {
-            ErrorHandler.LogErrorAndWait(ErrorCode.InvalidData);
+        } catch (Exception) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
         }
     }
     
     public override void Start() {
-        if (!_loggedIn) {
-            ErrorHandler.LogErrorAndWait(ErrorCode.NotLoggedIn);
+        if (ErrorHandler.LogErrorAndPrint(LogInIssues)) {
             return;
         } 
         Init();
-    }
-    
-    public override void Login() {
-        _loggedIn = true;
         
-        ConsoleKeyInfo key;
-        
-        if (_options.Load()) {
-            Console.WriteLine("Restore Saved Data?(Y/n)");
-            key = Console.ReadKey();
-            Console.Clear();
-            if (key.Key != ConsoleKey.N) {
-                ErrorHandler.LogErrorAndWait(VerifySave());
-                return;
-            }
-        }
-        
-        _options.ToDefaults();
-        Console.Write("Twitch username: ");
-        _options.SetUsername(Console.ReadLine() ?? "");
-        
-        Console.Clear();
-        Console.Write("OAuth token(do not show anyone): ");
-        _options.SetOAuth(Console.ReadLine() ?? "");
-        
-        Console.Clear();
-        Console.Write("Channel: ");
-        _options.SetChannel(Console.ReadLine() ?? "");
-        
-        Console.Clear();
-        Console.WriteLine("Should I Save This Data?(Y/n)");
-        key = Console.ReadKey();
-        Console.Clear();
-        
-        if (key.Key == ConsoleKey.N) {
-            return;
-        }
+        _client.OnChatCommandReceived += OnChatCommandReceived;
+        _client.OnMessageReceived += OnMessageReceived;
+        _client.OnJoinedChannel += OnJoinedChannel;
+        _client.OnConnected += OnConnected;
+        _client.OnLog += OnLog;
 
-        _options.Save();
-        ErrorHandler.LogErrorAndWait(VerifySave());
+        _client.Connect();
     }
 
     public override void Enable() {
@@ -96,17 +72,24 @@ public class ChatBot : Bot {
         _options.SetState(State.Disabled);
     }
 
-    public override ErrorCode GetClient(out ITwitchClient client) {
+    public override ErrorCode TryGetClient(out ITwitchClient client) {
         client = _client;
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
     }
 
+    public override ITwitchClient GetClient() {
+        return _client;
+    }
+
+    
     public override void Toggle() {
-       _options.SetState(Options.ServiceState == State.Enabled? State.Disabled : State.Enabled);
+       _options.SetState(Options.State == State.Enabled? State.Disabled : State.Enabled);
     }
     
     private ErrorCode VerifySave() {
-        if (_options.OAuth == null) return ErrorCode.LogInIssue;
+        if (string.IsNullOrEmpty(_options.Username)
+            || string.IsNullOrEmpty(_options.OAuth)
+            || string.IsNullOrEmpty(_options.Channel)) return ErrorCode.LogInIssue;
 
         return ErrorCode.None;
     }

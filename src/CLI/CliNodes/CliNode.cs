@@ -3,12 +3,19 @@
 public enum CliNodeType {
     Directory,
     Toggle,
-    IntValue,
-    StringValue,
+    Value,
     Action,
     ActionWithInt,
     Counter,
     State,
+    Client,
+}
+
+public enum Type {
+    String,
+    Range,
+    Int,
+    Char,
 }
 
 public delegate void ActionHandler();
@@ -16,4 +23,5 @@ public delegate void ActionHandler();
 public abstract class CliNode {
     public abstract string Text { get; }
     public abstract CliNodeType Type { get; }
+    public virtual Type ValueType { get; }
 }

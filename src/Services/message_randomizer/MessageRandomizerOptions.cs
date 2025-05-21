@@ -1,60 +1,147 @@
-﻿using ChatBot.Shared;
-using ChatBot.Shared.interfaces;
+﻿using ChatBot.shared;
+using ChatBot.shared.Handlers;
+using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
 namespace ChatBot.Services.message_randomizer;
 
+public enum MessageState {
+    NotGuessed,
+    Guessed,
+}
+
 public class MessageRandomizerOptions : Options {
-    private SaveData? _saveData = new();
-    private Range Spreading => _saveData!.spreading;
+    private SaveData? _saveData;
+    private int _counter;
+    private int _randomValue;
     
     protected override string Name => "message_randomizer";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
-    public override State ServiceState => _saveData!.state;
+    public override State State => _saveData!.serviceState;
+    public State LoggerState => _saveData!.loggerState;
     public int CounterMax => _saveData!.counterMax;
-    public int Counter => _saveData!.counter;
+    public int Counter => _counter;
     public State Randomness => _saveData!.randomness;
-    public int RandomValue => _saveData!.randomValue;
+    public int RandomValue => _randomValue;
+    public Range Spreading => new(_saveData!.spreadingFrom, _saveData!.spreadingTo);
+    public MessageState MessageState => _saveData!.messageState;
+    public Message LastGeneratedMessage => _saveData!.lastGeneratedMessage;
     public List<Message> Logs => _saveData!.logs;
     
 
-    public override bool Load() {
-        if (!Path.Exists(OptionsPath)) return false;
-        JsonUtils.TryRead(OptionsPath, out _saveData);
-        return true;
+    public override bool TryLoad() {
+        return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
 
+    public override void Load() {
+        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
+            SetDefaults();
+        }
+    }
+    
     public override void Save() {
         JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
     }
     
-    public void SetDefaults() {
+    public override void SetDefaults() {
         const int counterMax = 20;
-        _saveData = new SaveData(counterMax, State.Enabled,1..counterMax);
+        _saveData = new SaveData(
+                                 counterMax,
+                                 State.Disabled,
+                                 State.Disabled,
+                                 State.Disabled,
+                                 1,
+                                 counterMax,
+                                 MessageState.NotGuessed,
+                                 new Message(string.Empty, string.Empty),
+                                 []
+                                 );
+        Save();
     }
     
+
     public void IncreaseCounter() {
-        _saveData!.counter++;
+        _counter++;
     }
 
     public void ZeroCounter() {
-        _saveData!.counter = 0;
+        _counter = 0;
     }
 
-    public void SetServiceState(State state) {
-        _saveData!.state = state;
+    public override void SetState(State state) {
+        _saveData!.serviceState = state;
+        Save();
     }
 
+    public override State GetState() {
+        return State;
+    }
+    
     public void SetRandomnessState(State state) {
         _saveData!.randomness = state;
+        Save();
+    }
+
+    public void SetLoggerState(State state) {
+        _saveData!.loggerState = state;
+        Save();
+    }
+
+    public void SetCounterMax(int value) {
+        _saveData!.counterMax = value;
+        Save();
+    }
+
+    public int GetCounterMax() {
+        return CounterMax;
+    }
+
+    public void SetMessageState(MessageState state) {
+        _saveData!.messageState = state;
+        Save();
+    }
+
+    public MessageState GetMessageState() {
+        return _saveData!.messageState;
+    }
+
+    public void SetLastGeneratedMessage(Message message) {
+        _saveData!.lastGeneratedMessage = message;
+        Save();
     }
     
     public void SetSpreading(Range range) {
-        _saveData!.spreading = range;
+        var minRangeStart = 1;
+        var maxRangeEnd = CounterMax;
+        
+        var start = range.Start.Value;
+        var end = range.End.Value;
+        
+        if (start < minRangeStart) {
+            start = minRangeStart;
+        } if (end > maxRangeEnd) {
+            end = maxRangeEnd;
+        } if (start > end) {
+            (start, end) = (end, start);
+        }
+
+        _saveData!.spreadingFrom = start;
+        _saveData!.spreadingTo = end;
+        Save();
     }
 
+    public Range GetSpreading() {
+        return Spreading;
+    }
+    
     public void SetRandomValue() {
-        _saveData!.randomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
+        _randomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
+        Save();
+    }
+
+    public int GetRandomValue() {
+        return RandomValue;
     }
 }

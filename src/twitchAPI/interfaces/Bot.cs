@@ -1,25 +1,31 @@
-﻿using ChatBot.Shared.Handlers;
-using ChatBot.Shared.interfaces;
+﻿using ChatBot.shared.Handlers;
+using ChatBot.shared.interfaces;
+using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
 namespace ChatBot.twitchAPI.interfaces;
 
 public abstract class Bot {
     public abstract Options? Options { get; }
+    public abstract event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
+    public abstract event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
+    public abstract event EventHandler<OnJoinedChannelArgs>? OnJoinedChannel;
+    public abstract event EventHandler<OnConnectedArgs>? OnConnected;
+    public abstract event EventHandler<OnLogArgs>? OnLog;
 
 
     public abstract void Start();
-
-    public abstract void Login();
-
+    
     public abstract void Enable();
 
     public abstract void Disable();
 
-    public abstract ErrorCode GetClient(out ITwitchClient client);
+    public abstract ErrorCode TryGetClient(out ITwitchClient client);
+
+    public abstract ITwitchClient GetClient();
     
     public virtual State GetState() {
-        return Options!.ServiceState;
+        return Options!.State;
     }
     
     public abstract void Toggle();

@@ -1,28 +1,42 @@
 ﻿using ChatBot.CLI;
-using ChatBot.Services;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.message_randomizer;
+using ChatBot.Services.Static;
 
 namespace ChatBot;
 
 internal static class Program {
-    private static void Main() {
-        ServiceManager.InitServices();
-        
+    private static CliHandler _cliHandler = null!;
+    
+    
+    private static async Task Main() {
         var bot = new twitchAPI.ChatBot();
+        
+        ServiceManager.InitServices(bot);
         var cliData = new CliData(
                                   bot,
-                                  (GameRequestsService)ServiceManager.GetService("GameRequests"),
-                                  (MessageRandomizerService)ServiceManager.GetService("MessageRandomizer"));
-        var cliHandler = new CliHandler(cliData);
-        
+                                  (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests),
+                                  (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
+                                  (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)
+                                  );
+        _cliHandler = new CliHandler(cliData);
+        _cliHandler.RenderNodes();
+
+        var renderTask = Task.Run(Render);
+        await renderTask;
+
+        Console.ReadLine();
+    }
+
+    private static Task Render() {
         while (true) {
-            Console.Clear();
-            cliHandler.RenderNodes();
+            if (!Console.KeyAvailable) continue;
             
             int.TryParse(Console.ReadLine(), out var index);
-            cliHandler.ActivateNode(index-1);
+            _cliHandler.ActivateNode(index-1);
+            Console.Clear();
+            _cliHandler.RenderNodes();
         }
-
     }
 }

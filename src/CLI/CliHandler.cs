@@ -1,6 +1,6 @@
 ﻿using ChatBot.CLI.CliNodes;
-using ChatBot.Shared.Handlers;
-using ChatBot.twitchAPI;
+using ChatBot.shared.Handlers;
+using Type = ChatBot.CLI.CliNodes.Type;
 
 namespace ChatBot.CLI;
 
@@ -19,24 +19,46 @@ public class CliHandler {
         var currentNodes = _directories[_dirPointer].nodes;
         
         for (var i = 0; i < currentNodes.Length; i++) {
-            var currentNode = currentNodes[i];
+            var node = currentNodes[i];
             
-            Console.Write($"{i+1}. {currentNode.Text}");
-            switch (currentNode.Type) {
+            Console.Write($"{i+1}. {node.Text}");
+            switch (node.Type) {
                 case CliNodeType.Toggle: {
-                    Console.Write($" - {((CliNodeToggle)currentNode).Value}");
+                    Console.Write($" - {((CliNodeToggle)node).Value}");
                     break;
                 }
                 case CliNodeType.State: {
-                    Console.Write($" - {((CliNodeState)currentNode).Value.Invoke()}");
+                    Console.Write($" - {((CliNodeState)node).Value.Invoke()}");
                     break;
                 }
                 case CliNodeType.ActionWithInt: {
-                    Console.Write($" - {((CliNodeActionWithInt)currentNode).Value.Invoke()}");
+                    Console.Write($" - {((CliNodeActionWithInt)node).Value.Invoke()}");
                     break;
                 }
                 case CliNodeType.Counter: {
-                    Console.Write($" - {((CliNodeCounter)currentNode).Value.Invoke()}");
+                    Console.Write($" - {((CliNodeCounter)node).Value.Invoke()}");
+                    break;
+                }
+                case CliNodeType.Value: {
+                    var nodeValueType = node.ValueType;
+                    switch (nodeValueType) {
+                        case Type.String: {
+                            Console.Write($" - {((CliNodeValue<string>)node).ValueGetter.Invoke()}");
+                            break;
+                        }
+                        case Type.Range: {
+                            Console.Write($" - {((CliNodeValue<Range>)node).ValueGetter.Invoke().Start.Value}..{((CliNodeValue<Range>)node).ValueGetter.Invoke().End.Value}");
+                            break;
+                        }
+                        case Type.Int: {
+                            Console.Write($" - {((CliNodeValue<int>)node).ValueGetter.Invoke()}");
+                            break;
+                        }
+                        case Type.Char: {
+                            Console.Write($" - '{((CliNodeValue<char>)node).ValueGetter.Invoke()}'");
+                            break;
+                        }
+                    }
                     break;
                 }
             }
@@ -75,12 +97,72 @@ public class CliHandler {
                 break;
             }
             case CliNodeType.Counter: {
-                var err = _data.Bot.GetClient(out var client);
-                if (ErrorHandler.LogErrorAndWait(err)) {
+                var err = _data.Bot.TryGetClient(out var client);
+                if (ErrorHandler.LogErrorAndPrint(err)) {
                     break;
                 }
-                ((CliNodeCounter)node).Handle.Invoke(client, ((ChatBotOptions)_data.Bot.Options!).Channel!);
-                ((CliNodeCounter)node).Increase();
+                ((CliNodeCounter)node).Handle.Invoke(client, _data.Bot.Options.Channel!);
+                break;
+            }
+            case CliNodeType.Client: {
+                var err = _data.Bot.TryGetClient(out var client);
+                if (ErrorHandler.LogErrorAndPrint(err)) break;
+                
+                ((CliNodeClient)node).Action.Invoke(client, _data.Bot.Options.Channel!);
+                break;
+            }
+            case CliNodeType.Value: {
+                var nodeValueType = node.ValueType;
+                switch (nodeValueType) {
+                    case Type.String: {
+                        var nodeValue = (CliNodeValue<string>)node;
+                        if (nodeValue.IsReadOnly) break;
+                        
+                        Console.Write("Enter Value: ");
+                        nodeValue.ValueSetter(Console.ReadLine() ?? "");
+                        break;
+                    }
+                    case Type.Range: {
+                        var nodeValue = (CliNodeValue<Range>)node;
+                        if (nodeValue.IsReadOnly) break;
+                        
+                        Console.Write("From: ");
+                        var line = Console.ReadLine() ?? "0";
+                        var value = string.IsNullOrEmpty(line)? "0" : line;
+                        var start = int.Parse(value);
+                        
+                        Console.Write("To: ");
+                        line = Console.ReadLine() ?? "0";
+                        value = string.IsNullOrEmpty(line)? "0" : line;
+                        var end = int.Parse(value);
+
+                        nodeValue.ValueSetter(new Range(start, end));
+                        break;
+                    }
+                    case Type.Int: {
+                        var nodeValue = (CliNodeValue<int>)node;
+                        if (nodeValue.IsReadOnly) break;
+                    
+                        Console.Write("Enter Number: ");
+                        var line = Console.ReadLine() ?? "0";
+                        var value = string.IsNullOrEmpty(line)? "0" : line;
+                        nodeValue.ValueSetter.Invoke(int.Parse(value));
+                        break;
+                    }
+                    case Type.Char: {
+                        var nodeValue = (CliNodeValue<char>)node;
+                        if (nodeValue.IsReadOnly) break;
+                    
+                        Console.Write("Enter Character: ");
+                        var ch = (char)Console.Read();
+                        if (!char.IsSymbol(ch)) {
+                            ErrorHandler.LogError(ErrorCode.WrongInput);
+                            return;
+                        }
+                        nodeValue.ValueSetter(ch);
+                        break;
+                    }
+                }
                 break;
             }
         }
@@ -102,16 +184,43 @@ public class CliHandler {
         var randomMsgsDir = new CliNodeDirectory(
                                                "Random Messages",
                                                [
+                                                   new CliNodeValue<int>(
+                                                                      "Max Counter Value",
+                                                                      _data.MessageRandomizer.Options.GetCounterMax,
+                                                                      _data.MessageRandomizer.Options.SetCounterMax,
+                                                                      Type.Int
+                                                                     ),
+                                                   new CliNodeValue<int>(
+                                                                              "Random Value",
+                                                                              _data.MessageRandomizer.Options.GetRandomValue,
+                                                                              delegate{},
+                                                                              Type.Int,
+                                                                              true
+                                                                              ),
                                                    new CliNodeCounter(
                                                                       "Increase Counter",
                                                                       _data.MessageRandomizer.GetCounter,
-                                                                      _data.MessageRandomizer.HandleCounter,
-                                                                      _data.MessageRandomizer.Options.IncreaseCounter
+                                                                      _data.MessageRandomizer.HandleCounter
                                                                      ),
+                                                   new CliNodeClient(
+                                                                     "Generate Message",
+                                                                     _data.MessageRandomizer.GenerateAndSendRandomMessage
+                                                                    ),
                                                    new CliNodeState(
-                                                                    "Randomness", 
+                                                                    "Counter Randomness", 
                                                                     _data.MessageRandomizer.GetRandomness,
                                                                     _data.MessageRandomizer.ToggleRandomness
+                                                                   ),
+                                                   new CliNodeValue<Range>(
+                                                                      "Random Spreading", 
+                                                                      _data.MessageRandomizer.Options.GetSpreading,
+                                                                      _data.MessageRandomizer.Options.SetSpreading,
+                                                                      Type.Range
+                                                                     ),
+                                                   new CliNodeState(
+                                                                    "Collect Logs", 
+                                                                    _data.MessageRandomizer.GetLoggerState,
+                                                                    _data.MessageRandomizer.ToggleLoggerState
                                                                    ),
                                                    new CliNodeState(
                                                                     "State", 
@@ -121,24 +230,73 @@ public class CliHandler {
                                                ],
                                                DirectoryBack
                                                );
+
+        var chatCmdsDir = new CliNodeDirectory(
+                                               "Chat Commands", 
+                                               [
+                                                   new CliNodeValue<char>(
+                                                                          "Command Identifier",
+                                                                          _data.ChatCommands.Options.GetCommandIdentifier,
+                                                                          _data.ChatCommands.Options.SetCommandIdentifier,
+                                                                          Type.Char
+                                                                          ),
+                                                   new CliNodeState(
+                                                                    "Service State",
+                                                                    _data.ChatCommands.GetServiceState,
+                                                                    _data.ChatCommands.ToggleService
+                                                                ),
+                                                   ],
+                                               DirectoryBack
+                                               );
         
         var services = new CliNodeDirectory(
                                             "Services", 
                                             [
+                                                chatCmdsDir,
                                                 gameReqsDir,
                                                 randomMsgsDir,
                                             ],
                                             DirectoryBack
                                             );
-        
 
+
+        var loginDir = new CliNodeDirectory(
+                                            "Credentials",
+                                            [
+                                                new CliNodeAction(
+                                                                  "Load",
+                                                                  _data.Bot.Options.Load
+                                                                 ),
+                                                new CliNodeValue<string>(
+                                                                         "Bot Username",
+                                                                         _data.Bot.Options.GetUsername,
+                                                                         _data.Bot.Options.SetUsername,
+                                                                         Type.String
+                                                                         ),
+                                                new CliNodeValue<string>(
+                                                                         "Channel",
+                                                                         _data.Bot.Options.GetChannel,
+                                                                         _data.Bot.Options.SetChannel,
+                                                                         Type.String
+                                                                        ),
+                                                new CliNodeValue<string>(
+                                                                         "OAuth",
+                                                                         _data.Bot.Options.GetOAuth,
+                                                                         _data.Bot.Options.SetOAuth,
+                                                                         Type.String
+                                                                        ),
+                                                new CliNodeAction(
+                                                                  "Save",
+                                                                  _data.Bot.Options.Save
+                                                                  ),
+                                            ],
+                                            DirectoryBack
+                                           );
+        
         var rootDir = new CliNodeDirectory(
                                            "Root",
                                            [
-                                               new CliNodeAction(
-                                                                 "Login",
-                                                                 _data.Bot.Login
-                                                                ),
+                                               loginDir,
                                                new CliNodeAction(
                                                                  "Initialize",
                                                                  _data.Bot.Start

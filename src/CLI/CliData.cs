@@ -1,23 +1,25 @@
-﻿using ChatBot.Services.game_requests;
+﻿using ChatBot.Services.chat_commands;
+using ChatBot.Services.game_requests;
 using ChatBot.Services.message_randomizer;
-using ChatBot.twitchAPI;
-using ChatBot.twitchAPI.interfaces;
 
 namespace ChatBot.CLI;
 
 public class CliData {
-    public Bot Bot { get; }
+    public twitchAPI.ChatBot Bot { get; }
     public GameRequestsService GameRequests { get; }
     public MessageRandomizerService MessageRandomizer { get; }
+    public ChatCommandsService ChatCommands { get; }
     
 
     public CliData(
-        Bot bot,
+        twitchAPI.ChatBot bot,
         GameRequestsService gameRequests,
-        MessageRandomizerService messageRandomizer
+        MessageRandomizerService messageRandomizer,
+        ChatCommandsService chatCommands
         ) {
         Bot = bot;
         GameRequests = gameRequests;
         MessageRandomizer = messageRandomizer;
+        ChatCommands = chatCommands;
     }
 }

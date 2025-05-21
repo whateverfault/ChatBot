@@ -17,12 +17,11 @@ public class JsonUtils {
 
     public static bool TryRead<T>(string fileName, out T? obj) {
         obj = default;
-        if (File.Exists(fileName)) {
-            Read(fileName, out obj);
-            return true;
+        if (!File.Exists(fileName)) {
+            return false;
         }
-
-        return false;
+        Read(fileName, out obj);
+        return true;
     }
 
     public static void Write<T>(string fileName, T data) {

@@ -1,4 +1,4 @@
-﻿using ChatBot.Shared;
+﻿using ChatBot.shared;
 
 namespace ChatBot.twitchAPI.interfaces;
 
