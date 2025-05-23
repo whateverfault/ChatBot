@@ -2,20 +2,20 @@
 
 public enum State {
     Disabled,
-    Enabled,
+    Enabled
 }
 
 public abstract class Options {
     protected abstract string Name { get; }
     protected abstract string OptionsPath { get; }
-    
+
     public abstract State State { get; }
 
 
     public abstract void Save();
 
     public abstract bool TryLoad();
-    
+
     public abstract void Load();
 
     public abstract void SetDefaults();

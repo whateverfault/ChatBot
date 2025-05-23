@@ -1,20 +1,19 @@
-﻿using ChatBot.shared;
+﻿using System.Text.RegularExpressions;
+using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.Services.regex;
 
-public class GameRequestsOptions : Options {
+public class RegexOptions : Options {
     private SaveData? _saveData;
+    private List<Regex> Patterns => _saveData!.patterns;
 
-    protected override string Name => "game_requests";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string Name => "regex";
+    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+$"{Name}/", $"{Name}_opt.json");
 
     public override State State => _saveData!.state;
-    public List<GameRequest>? GameRequests => _saveData!.gameRequests;
-    public HashSet<int>? GameRequestsSet => _saveData!.gameRequestsSet;
-    public Dictionary<string, int>? GameRequestsPoint => _saveData!.gameRequestsPoints;
 
 
     public override bool TryLoad() {
@@ -33,7 +32,10 @@ public class GameRequestsOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(State.Disabled, [], [], []);
+        _saveData = new SaveData(
+                                 State.Disabled,
+                                 []
+                                );
         Save();
     }
 
@@ -44,5 +46,19 @@ public class GameRequestsOptions : Options {
 
     public override State GetState() {
         return State;
+    }
+    
+    public void AddPattern(Regex regex) {
+        Patterns.Add(regex);
+        Save();
+    }
+
+    public void RemovePattern(int index) {
+        Patterns.RemoveAt(index);
+        Save();
+    }
+
+    public List<Regex> GetPatterns() {
+        return Patterns;
     }
 }

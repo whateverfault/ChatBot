@@ -7,28 +7,28 @@ namespace ChatBot.Services.message_randomizer;
 
 public enum MessageState {
     NotGuessed,
-    Guessed,
+    Guessed
 }
 
 public class MessageRandomizerOptions : Options {
     private SaveData? _saveData;
-    private int _counter;
-    private int _randomValue;
-    
+
     protected override string Name => "message_randomizer";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
     public override State State => _saveData!.serviceState;
     public State LoggerState => _saveData!.loggerState;
     public int CounterMax => _saveData!.counterMax;
-    public int Counter => _counter;
+    public int Counter { get; private set; }
+
     public State Randomness => _saveData!.randomness;
-    public int RandomValue => _randomValue;
+    public int RandomValue { get; private set; }
+
     public Range Spreading => new(_saveData!.spreadingFrom, _saveData!.spreadingTo);
     public MessageState MessageState => _saveData!.messageState;
     public Message LastGeneratedMessage => _saveData!.lastGeneratedMessage;
     public List<Message> Logs => _saveData!.logs;
-    
+
 
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
@@ -40,11 +40,11 @@ public class MessageRandomizerOptions : Options {
             SetDefaults();
         }
     }
-    
+
     public override void Save() {
         JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
     }
-    
+
     public override void SetDefaults() {
         const int counterMax = 20;
         _saveData = new SaveData(
@@ -57,17 +57,17 @@ public class MessageRandomizerOptions : Options {
                                  MessageState.NotGuessed,
                                  new Message(string.Empty, string.Empty),
                                  []
-                                 );
+                                );
         Save();
     }
-    
+
 
     public void IncreaseCounter() {
-        _counter++;
+        Counter++;
     }
 
     public void ZeroCounter() {
-        _counter = 0;
+        Counter = 0;
     }
 
     public override void SetState(State state) {
@@ -78,7 +78,7 @@ public class MessageRandomizerOptions : Options {
     public override State GetState() {
         return State;
     }
-    
+
     public void SetRandomnessState(State state) {
         _saveData!.randomness = state;
         Save();
@@ -111,19 +111,21 @@ public class MessageRandomizerOptions : Options {
         _saveData!.lastGeneratedMessage = message;
         Save();
     }
-    
+
     public void SetSpreading(Range range) {
         var minRangeStart = 1;
         var maxRangeEnd = CounterMax;
-        
+
         var start = range.Start.Value;
         var end = range.End.Value;
-        
+
         if (start < minRangeStart) {
             start = minRangeStart;
-        } if (end > maxRangeEnd) {
+        }
+        if (end > maxRangeEnd) {
             end = maxRangeEnd;
-        } if (start > end) {
+        }
+        if (start > end) {
             (start, end) = (end, start);
         }
 
@@ -135,9 +137,9 @@ public class MessageRandomizerOptions : Options {
     public Range GetSpreading() {
         return Spreading;
     }
-    
+
     public void SetRandomValue() {
-        _randomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
+        RandomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
         Save();
     }
 

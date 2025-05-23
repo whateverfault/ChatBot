@@ -8,20 +8,20 @@ using ChatBot.utils;
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsOptions : Options {
-    private GameRequestsService _gameRequestsService;
-    private MessageRandomizerService _messageRandomizerService;
+
+    public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
     private SaveData? _saveData;
 
     protected override string Name => "chat_commands";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
-
-    public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
-    public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
     public override State State => _saveData!.serviceState;
     public char CommandIdentifier => _saveData!.commandIdentifier;
-    public GameRequestsService GameRequestsService => _gameRequestsService;
-    public MessageRandomizerService MessageRandomizerService => _messageRandomizerService;
-    
+    public GameRequestsService GameRequestsService { get; private set; }
+
+    public MessageRandomizerService MessageRandomizerService { get; private set; }
+
+    public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
+
 
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
@@ -33,7 +33,7 @@ public class ChatCommandsOptions : Options {
             SetDefaults();
         }
     }
-    
+
     public override void Save() {
         JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
     }
@@ -42,14 +42,14 @@ public class ChatCommandsOptions : Options {
         _saveData = new SaveData(
                                  State.Disabled,
                                  '~'
-                                 );
+                                );
         Save();
     }
-    
+
     public override State GetState() {
         return State;
     }
-    
+
     public override void SetState(State state) {
         _saveData!.serviceState = state;
         Save();
@@ -63,9 +63,9 @@ public class ChatCommandsOptions : Options {
         OnCommandIdentifierChanged?.Invoke(identifier, CommandIdentifier);
         _saveData!.commandIdentifier = identifier;
     }
-    
+
     public void SetServices(GameRequestsService gr, MessageRandomizerService mr) {
-        _gameRequestsService = gr;
-        _messageRandomizerService = mr;
+        GameRequestsService = gr;
+        MessageRandomizerService = mr;
     }
 }

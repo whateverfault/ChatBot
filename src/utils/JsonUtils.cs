@@ -32,7 +32,7 @@ public class JsonUtils {
     public static void Clear(string fileName, string directory) {
         if (!Directory.Exists(directory)) {
             Directory.CreateDirectory(directory);
-        } 
+        }
         if (File.Exists(fileName)) {
             File.Delete(fileName);
         }

@@ -14,13 +14,14 @@ using TwitchLib.Communication.Models;
 namespace ChatBot.twitchAPI;
 
 public class ChatBot : Bot {
-    private ErrorCode LogInIssues => VerifySave();
-    private bool _initialized;
     private readonly ILogger<TwitchClient> _logger;
     private readonly ChatBotOptions _options = new();
     private ITwitchClient _client;
-    
+    private bool _initialized;
+    private ErrorCode LogInIssues => IsValidSave();
 
+
+    public override string Name { get; }
     public override ChatBotOptions Options => _options;
     public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
@@ -29,7 +30,6 @@ public class ChatBot : Bot {
     public override event EventHandler<OnLogArgs>? OnLog;
     
     
-
     private void Init() {
         try {
             var credentials = new ConnectionCredentials(_options.Username, _options.OAuth);
@@ -42,19 +42,22 @@ public class ChatBot : Bot {
             _client = new TwitchClient(customClient, logger: _logger);
             _client.Initialize(credentials, _options.Channel);
             _client.RemoveChatCommandIdentifier('!');
-            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier);
+            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.
+                                             CommandIdentifier);
             _initialized = true;
         } catch (Exception) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
         }
     }
+
+    public override void Init(Bot bot){}
     
     public override void Start() {
         if (ErrorHandler.LogErrorAndPrint(LogInIssues)) {
             return;
-        } 
+        }
         Init();
-        
+
         _client.OnChatCommandReceived += OnChatCommandReceived;
         _client.OnMessageReceived += OnMessageReceived;
         _client.OnJoinedChannel += OnJoinedChannel;
@@ -81,15 +84,17 @@ public class ChatBot : Bot {
         return _client;
     }
 
-    
-    public override void Toggle() {
-       _options.SetState(Options.State == State.Enabled? State.Disabled : State.Enabled);
+
+    public override void ToggleService() {
+        _options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
     }
     
-    private ErrorCode VerifySave() {
+    private ErrorCode IsValidSave() {
         if (string.IsNullOrEmpty(_options.Username)
             || string.IsNullOrEmpty(_options.OAuth)
-            || string.IsNullOrEmpty(_options.Channel)) return ErrorCode.LogInIssue;
+            || string.IsNullOrEmpty(_options.Channel)) {
+            return ErrorCode.LogInIssue;
+        }
 
         return ErrorCode.None;
     }

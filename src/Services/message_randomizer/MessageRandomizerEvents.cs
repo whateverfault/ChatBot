@@ -4,9 +4,9 @@ using ChatBot.twitchAPI.interfaces;
 namespace ChatBot.Services.message_randomizer;
 
 public class MessageRandomizerEvents : ServiceEvents {
-    private MessageRandomizerService _service;
     private Bot _bot;
-    
+    private MessageRandomizerService _service;
+
 
     public override void Init(Service service, Bot bot) {
         _service = (MessageRandomizerService)service;

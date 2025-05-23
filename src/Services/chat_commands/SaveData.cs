@@ -3,8 +3,8 @@
 namespace ChatBot.Services.chat_commands;
 
 public class SaveData {
-    public State serviceState;
     public char commandIdentifier;
+    public State serviceState;
 
 
     public SaveData(State serviceState, char commandIdentifier) {

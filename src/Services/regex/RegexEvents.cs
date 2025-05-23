@@ -1,15 +1,14 @@
 ﻿using ChatBot.Services.interfaces;
 using ChatBot.twitchAPI.interfaces;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.Services.regex;
 
-public class GameRequestsEvents : ServiceEvents {
-
+public class RegexEvents : ServiceEvents {
     public override void Init(Service service, Bot bot) {
-
+        
     }
 
     public override void Subscribe() {
-
+        
     }
 }

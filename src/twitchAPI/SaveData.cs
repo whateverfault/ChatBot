@@ -3,15 +3,15 @@
 namespace ChatBot.twitchAPI;
 
 public class SaveData {
-    public State state; 
+    public State state;
     public string? username;
-    public string? oAuth;
     public string? channel;
+    public string? oAuth;
     public bool shouldPrintTwitchLogs;
 
 
-    public SaveData(){}
-    
+    public SaveData() {}
+
     public SaveData(State state, string username, string oAuth, string channel, bool shouldPrintTwitchLogs) {
         this.state = state;
         this.username = username;

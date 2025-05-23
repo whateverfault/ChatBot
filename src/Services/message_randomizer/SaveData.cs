@@ -3,18 +3,19 @@
 namespace ChatBot.Services.message_randomizer;
 
 public class SaveData {
+    public readonly List<Message> logs;
     public int counterMax;
-    public State serviceState;
+    public Message lastGeneratedMessage;
     public State loggerState;
+    public MessageState messageState;
     public State randomness;
+    public State serviceState;
     public int spreadingFrom;
     public int spreadingTo;
-    public MessageState messageState;
-    public Message lastGeneratedMessage;
-    public readonly List<Message> logs;
-    
-    
-    public SaveData(int counterMax, State serviceState, State loggerState, State randomness, int spreadingFrom, int spreadingTo, MessageState messageState, Message lastGeneratedMessage, List<Message> logs) {
+
+
+    public SaveData(int counterMax, State serviceState, State loggerState, State randomness, int spreadingFrom, int spreadingTo,
+                    MessageState messageState, Message lastGeneratedMessage, List<Message> logs) {
         this.counterMax = counterMax;
         this.serviceState = serviceState;
         this.loggerState = loggerState;

@@ -4,10 +4,10 @@ using ChatBot.twitchAPI.interfaces;
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsEvents : ServiceEvents {
-    private ChatCommandsService _service;
     private Bot _bot;
-    
-    
+    private ChatCommandsService _service;
+
+
     public override void Init(Service service, Bot bot) {
         _service = (ChatCommandsService)service;
         _bot = bot;

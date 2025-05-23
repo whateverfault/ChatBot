@@ -1,12 +1,13 @@
-﻿using ChatBot.shared.Handlers;
+﻿using ChatBot.Services.interfaces;
+using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
 namespace ChatBot.twitchAPI.interfaces;
 
-public abstract class Bot {
-    public abstract Options? Options { get; }
+public abstract class Bot : Service {
+    public override abstract Options Options { get; }
     public abstract event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public abstract event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
     public abstract event EventHandler<OnJoinedChannelArgs>? OnJoinedChannel;
@@ -15,7 +16,7 @@ public abstract class Bot {
 
 
     public abstract void Start();
-    
+
     public abstract void Enable();
 
     public abstract void Disable();
@@ -23,10 +24,8 @@ public abstract class Bot {
     public abstract ErrorCode TryGetClient(out ITwitchClient client);
 
     public abstract ITwitchClient GetClient();
-    
-    public virtual State GetState() {
+
+    public override State GetServiceState() {
         return Options!.State;
     }
-    
-    public abstract void Toggle();
 }
