@@ -11,7 +11,7 @@ public class RegexOptions : Options {
     private List<Regex> Patterns => _saveData!.patterns;
 
     protected override string Name => "regex";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+$"{Name}/", $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
     public override State State => _saveData!.state;
 

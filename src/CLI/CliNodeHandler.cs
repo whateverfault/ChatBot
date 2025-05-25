@@ -1,6 +1,5 @@
 ﻿using ChatBot.CLI.CliNodes;
 using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
 
 namespace ChatBot.CLI;
 
@@ -24,9 +23,11 @@ public class CliNodeHandler {
         Console.Clear();
 
         var node = currentNodes[index];
+        TrySetValue(node, out var val);
+        
         switch (node.Type) {
             case CliNodeType.Bool: {
-                ((CliNodeGeneric<bool>)node).ValueSetter.Invoke(!((CliNodeGeneric<bool>)node).ValueGetter.Invoke());
+                node.ValueSetter.Invoke(!node.ValueGetter.Invoke());
                 break;
             }
             case CliNodeType.ActionWithGetter:
@@ -34,6 +35,7 @@ public class CliNodeHandler {
                 node.Action.Invoke();
                 break;
             }
+            case CliNodeType.DynamicDirectory:
             case CliNodeType.Directory: {
                 _nodeSystem.DirectoryEnter(node);
                 break;
@@ -43,59 +45,26 @@ public class CliNodeHandler {
                 if (ErrorHandler.LogErrorAndPrint(err)) {
                     break;
                 }
-                ((CliNodeGeneric<int>)node).ClientAction.Invoke(client, _data.Bot.Options.Channel!);
+                node.ClientAction.Invoke(client, _data.Bot.Options.Channel!);
                 break;
             }
             case CliNodeType.Value: {
-                var valueType = node.ValueType;
-                switch (valueType) {
-                    case CliNodeValueType.String: {
-                        var currentNode = (CliNodeGeneric<string>)node;
-                        if (!TrySetValue(currentNode, out var val)) {
-                            return;
-                        }
-                        currentNode.ValueSetter(val);
-                        break;
-                    }
-                    case CliNodeValueType.Range: {
-                        var currentNode = (CliNodeGeneric<Range>)node;
-                        if (!TrySetValue(currentNode, out var val)) {
-                            return;
-                        }
-                        currentNode.ValueSetter(val);
-                        break;
-                    }
-                    case CliNodeValueType.State: {
-                        var currentNode = (CliNodeGeneric<State>)node;
-                        if (!TrySetValue(currentNode, out var val)) {
-                            return;
-                        }
-                        currentNode.ValueSetter(val);
-                        break;
-                    }
-                    case CliNodeValueType.Int: {
-                        var currentNode = (CliNodeGeneric<int>)node;
-                        if (!TrySetValue(currentNode, out var val)) {
-                            return;
-                        }
-                        currentNode.ValueSetter(val);
-                        break;
-                    }
-                    case CliNodeValueType.Char: {
-                        var currentNode = (CliNodeGeneric<char>)node;
-                        if (!TrySetValue(currentNode, out var val)) {
-                            return;
-                        }
-                        currentNode.ValueSetter(val);
-                        break;
-                    }
-                }
+                node.ValueSetter(val);
+                break;
+            }
+            case CliNodeType.NodeRemover: {
+                var rem = int.Parse(string.IsNullOrEmpty(val) ? "1" : val);
+                node.NodeRemove(rem);
+                break;
+            }
+            case CliNodeType.NodeAdder: {
+                node.NodeAppend(new CliNode(val));
                 break;
             }
         }
-    }    
-
-     private bool TrySetValue<T>(CliNodeGeneric<T> nodeGeneric, out dynamic? val) {
+    }
+    
+     private bool TrySetValue(CliNode nodeGeneric, out dynamic? val) {
         val = null;
         if (nodeGeneric.Permission == CliNodePermission.ReadOnly) {
             return false;
@@ -139,6 +108,6 @@ public class CliNodeHandler {
                         break;
                     }
                 }
-                return true;
+         return true;
     }
 }

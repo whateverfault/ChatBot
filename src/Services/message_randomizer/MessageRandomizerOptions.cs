@@ -94,10 +94,19 @@ public class MessageRandomizerOptions : Options {
         Save();
     }
 
+    public void SetCounterMaxDynamic(dynamic value) {
+        SetCounterMax(value);
+    }
+
+    
     public int GetCounterMax() {
         return CounterMax;
     }
 
+    public dynamic GetCounterMaxDynamic() {
+        return CounterMax;
+    }
+    
     public void SetMessageState(MessageState state) {
         _saveData!.messageState = state;
         Save();
@@ -134,10 +143,18 @@ public class MessageRandomizerOptions : Options {
         Save();
     }
 
+    public void SetSpreadingDynamic(dynamic range) {
+        SetSpreading(range);
+    }
+    
     public Range GetSpreading() {
         return Spreading;
     }
 
+    public dynamic GetSpreadingDynamic() {
+        return Spreading;
+    }
+    
     public void SetRandomValue() {
         RandomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
         Save();
@@ -145,5 +162,9 @@ public class MessageRandomizerOptions : Options {
 
     public int GetRandomValue() {
         return RandomValue;
+    }
+    
+    public dynamic GetRandomValueDynamic() {
+        return GetRandomValue();
     }
 }

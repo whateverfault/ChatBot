@@ -106,8 +106,16 @@ public class MessageRandomizerService : Service {
         return Options.State;
     }
 
+    public override dynamic GetServiceStateDynamic() {
+        return GetServiceState();
+    }
+    
     public State GetLoggerState() {
         return Options.LoggerState;
+    }
+    
+    public dynamic GetLoggerStateDynamic() {
+        return GetLoggerState();
     }
 
     public void ToggleLoggerState() {
@@ -118,6 +126,11 @@ public class MessageRandomizerService : Service {
         return Options.Randomness;
     }
 
+    public dynamic GetRandomnessDynamic() {
+        return GetRandomness();
+    }
+
+    
     public void ToggleRandomness() {
         if (Options.State == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
@@ -128,6 +141,10 @@ public class MessageRandomizerService : Service {
 
     public int GetCounter() {
         return Options.Counter;
+    }
+    
+    public dynamic GetCounterDynamic() {
+        return GetCounter();
     }
 
     public override void Init(Bot bot) {

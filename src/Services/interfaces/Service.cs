@@ -38,6 +38,8 @@ public abstract class Service {
     public abstract void Init(Bot bot);
 
     public abstract State GetServiceState();
+    
+    public abstract dynamic GetServiceStateDynamic();
 
     public abstract void ToggleService();
 }

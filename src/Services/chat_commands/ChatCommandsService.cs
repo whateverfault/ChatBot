@@ -37,6 +37,10 @@ public class ChatCommandsService : Service {
         return Options.GetState();
     }
 
+    public override dynamic GetServiceStateDynamic() {
+        return Options.State;
+    }
+    
     public override void ToggleService() {
         Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
     }

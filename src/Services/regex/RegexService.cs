@@ -40,9 +40,8 @@ public class RegexService : Service {
         Options.AddPattern(new Regex(pattern));
     }
 
-    public List<string> GetPatterns() {
-        var patterns = Options.GetPatterns();
-        return patterns.Select(pattern => pattern.ToString()).ToList();
+    public string GetPattern(int index) {
+        return Options.GetPatterns()[index].ToString();
     }
 
     public void RemovePattern(int index) {
@@ -65,6 +64,10 @@ public class RegexService : Service {
         return Options.GetState();
     }
 
+    public override dynamic GetServiceStateDynamic() {
+        return Options.State;
+    }
+    
     public override void ToggleService() {
         Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
     }

@@ -76,7 +76,7 @@ public class ChatBot : Bot {
     }
 
     public override ErrorCode TryGetClient(out ITwitchClient client) {
-        client = _client;
+        client = GetClient();
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
     }
 
@@ -84,6 +84,9 @@ public class ChatBot : Bot {
         return _client;
     }
 
+    public override dynamic GetServiceStateDynamic() {
+        return GetServiceState();
+    }
 
     public override void ToggleService() {
         _options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);

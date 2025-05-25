@@ -57,7 +57,15 @@ public class ChatBotOptions : Options {
         _saveData!.username = username;
     }
 
+    public void SetUsernameDynamic(dynamic username) {
+        _saveData!.username = username;
+    }
+    
     public void SetChannel(string channel) {
+        _saveData!.channel = channel;
+    }
+    
+    public void SetChannelDynamic(dynamic channel) {
         _saveData!.channel = channel;
     }
 
@@ -65,19 +73,39 @@ public class ChatBotOptions : Options {
         _saveData!.oAuth = token;
     }
 
+    public void SetOAuthDynamic(dynamic token) {
+        _saveData!.oAuth = token;
+    }
+    
     public string GetUsername() {
         return Username ?? "Empty";
     }
 
+    public dynamic GetUsernameDynamic() {
+        return Username ?? "Empty";
+    }
+    
     public string GetChannel() {
         return Channel ?? "Empty";
     }
 
+    public dynamic GetChannelDynamic() {
+        return Channel ?? "Empty";
+    }
+    
     public string GetOAuth() {
         return OAuth ?? "Empty";
     }
 
+    public dynamic GetOAuthDynamic() {
+        return OAuth ?? "Empty";
+    }
+    
     public void SetLoggingStatus(bool status) {
+        _saveData!.shouldPrintTwitchLogs = status;
+    }
+    
+    public void SetLoggingStatusDynamic(dynamic status) {
         _saveData!.shouldPrintTwitchLogs = status;
     }
 }
