@@ -1,8 +1,8 @@
 ﻿using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
+using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
-using ChatBot.Services.regex;
 using ChatBot.Services.Static;
 
 namespace ChatBot;
@@ -20,7 +20,7 @@ internal static class Program {
                                   (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests),
                                   (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
                                   (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands),
-                                  (RegexService)ServiceManager.GetService(ServiceName.Regex)
+                                  (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter)
                                  );
         _cli = new Cli(cliData);
         _cli.RenderNodes();

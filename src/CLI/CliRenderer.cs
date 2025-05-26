@@ -3,55 +3,20 @@
 namespace ChatBot.CLI;
 
 public class CliRenderer {
-    private readonly CliNodeSystem _nodeSystem;
+    private readonly CliState _state;
 
 
-    public CliRenderer(CliNodeSystem nodeSystem) {
-        _nodeSystem = nodeSystem;
+    public CliRenderer(CliState state) {
+        _state = state;
     }
 
     public void RenderNodes() {
-        var currentNodes = _nodeSystem.Current.Nodes;
+        var currentNodes = _state.NodeSystem.Current.Nodes;
 
-        for (var i = 0; i < currentNodes.Count; i++) {
-            var node = currentNodes[i];
-            
-            RenderNode(node, i);
-        }
-    }
-    
-    private void RenderNode(CliNode node, int index) {
-        Console.Write($"{index+1}. {node.Text}");
-
-        if (node.Permission == CliNodePermission.WriteOnly) {
+        var index = 0;
+        for (var i = 0; i < currentNodes.Count; i++, index++) {
+            index -= currentNodes[i].PrintValue(index+1);
             Console.WriteLine();
-            return;
         }
-            
-        switch (node.Type) {
-            case CliNodeType.Client:
-            case CliNodeType.ActionWithGetter:
-            case CliNodeType.Value: {
-                var nodeValueType = node.ValueType;
-                switch (nodeValueType) {
-                    case CliNodeValueType.State:
-                    case CliNodeValueType.Char:
-                    case CliNodeValueType.Int:
-                    case CliNodeValueType.String: {
-                        Console.Write($" - {node.ValueGetter.Invoke()}");
-                        break;
-                    }
-                    case CliNodeValueType.Range: {
-                        Console.Write($" - {node.ValueGetter.Invoke().Start.Value}..{node.ValueGetter.Invoke().End.Value}");
-                        break;
-                    }
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                break;
-            }
-        }
-
-        Console.WriteLine();
     }
 }

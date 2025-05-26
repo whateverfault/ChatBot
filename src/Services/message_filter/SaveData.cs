@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.Services.regex;
+namespace ChatBot.Services.message_filter;
 
 public class SaveData {
     public List<Regex> patterns;

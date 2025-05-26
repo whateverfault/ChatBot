@@ -4,13 +4,13 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.regex;
+namespace ChatBot.Services.message_filter;
 
-public class RegexOptions : Options {
+public class MessageFilterOptions : Options {
     private SaveData? _saveData;
     private List<Regex> Patterns => _saveData!.patterns;
-
-    protected override string Name => "regex";
+    
+    protected override string Name => "messageFilter";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
     public override State State => _saveData!.state;
@@ -34,7 +34,9 @@ public class RegexOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
-                                 []
+                                 [
+                                     new Regex(@"(?<!\d)\d{8,11}(?!\d)"),
+                                 ]
                                 );
         Save();
     }

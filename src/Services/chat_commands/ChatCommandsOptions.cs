@@ -58,19 +58,11 @@ public class ChatCommandsOptions : Options {
     public char GetCommandIdentifier() {
         return CommandIdentifier;
     }
-
-    public dynamic GetCommandIdentifierDynamic() {
-        return GetCommandIdentifier();
-    }
     
     public void SetCommandIdentifier(char identifier) {
         OnCommandIdentifierChanged?.Invoke(identifier, CommandIdentifier);
         _saveData!.commandIdentifier = identifier;
         Save();
-    }
-
-    public void SetCommandIdentifierDynamic(dynamic identifier) {
-        SetCommandIdentifier(identifier);
     }
     
     public void SetServices(GameRequestsService gr, MessageRandomizerService mr) {

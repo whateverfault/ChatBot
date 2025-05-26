@@ -6,10 +6,13 @@ public class Cli {
 
 
     public Cli(CliData data) {
-        var nodeSystem = new CliNodeSystem(data);
+        var state = new CliState(data);
+        var nodeSystem = new CliNodeSystem(state);
         
-        _nodeHandler = new CliNodeHandler(nodeSystem, data);
-        _cliRenderer = new CliRenderer(nodeSystem);
+        state.Bind(nodeSystem);
+        
+        _nodeHandler = new CliNodeHandler(state);
+        _cliRenderer = new CliRenderer(state);
         
         nodeSystem.InitNodes();
     }

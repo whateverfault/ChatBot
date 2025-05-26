@@ -142,16 +142,8 @@ public class MessageRandomizerOptions : Options {
         _saveData!.spreadingTo = end;
         Save();
     }
-
-    public void SetSpreadingDynamic(dynamic range) {
-        SetSpreading(range);
-    }
     
     public Range GetSpreading() {
-        return Spreading;
-    }
-
-    public dynamic GetSpreadingDynamic() {
         return Spreading;
     }
     
@@ -162,9 +154,5 @@ public class MessageRandomizerOptions : Options {
 
     public int GetRandomValue() {
         return RandomValue;
-    }
-    
-    public dynamic GetRandomValueDynamic() {
-        return GetRandomValue();
     }
 }

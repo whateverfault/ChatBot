@@ -7,7 +7,7 @@ using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.regex;
+namespace ChatBot.Services.message_filter;
 
 public enum FilterStatus {
     Match,
@@ -16,10 +16,10 @@ public enum FilterStatus {
 
 public delegate void HandleMessage(ChatMessage message, FilterStatus status);
 
-public class RegexService : Service {
-    public override string Name => ServiceName.Regex;
-    public override RegexOptions Options { get; } = new();
-    public event HandleMessage OnMessageFiltered;
+public class MessageFilterService : Service {
+    public override string Name => ServiceName.MessageFilter;
+    public override MessageFilterOptions Options { get; } = new();
+    public event HandleMessage? OnMessageFiltered;
 
 
     public void HandleMessage(object? sender, OnMessageReceivedArgs args) {
@@ -32,14 +32,18 @@ public class RegexService : Service {
                 status = FilterStatus.Match;
             }
         }
-
-        OnMessageFiltered(args.ChatMessage, status);
+        
+        OnMessageFiltered?.Invoke(args.ChatMessage, status);
     }
 
     public void AddPattern(string pattern) {
         Options.AddPattern(new Regex(pattern));
     }
 
+    public List<string> GetPatterns() {
+        return Options.GetPatterns().Select(pattern => pattern.ToString()).ToList();
+    }
+    
     public string GetPattern(int index) {
         return Options.GetPatterns()[index].ToString();
     }
@@ -62,10 +66,6 @@ public class RegexService : Service {
 
     public override State GetServiceState() {
         return Options.GetState();
-    }
-
-    public override dynamic GetServiceStateDynamic() {
-        return Options.State;
     }
     
     public override void ToggleService() {

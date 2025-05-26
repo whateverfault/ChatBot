@@ -1,5 +1,6 @@
 ﻿using ChatBot.Services.chat_commands;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -7,6 +8,7 @@ using ChatBot.shared.Logging;
 using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
+using TwitchLib.Client.Models;
 
 namespace ChatBot.Services.message_randomizer;
 
@@ -18,19 +20,18 @@ public class MessageRandomizerService : Service {
     public override MessageRandomizerOptions Options { get; } = new();
 
 
-    public void HandleMessage(object? sender, OnMessageReceivedArgs args) {
-        if (Options.State == State.Disabled) {
-            ErrorHandler.LogError(ErrorCode.ServiceDisabled);
-            return;
-        }
-        if (args.ChatMessage.Message.Length > 0
-            && args.ChatMessage.Message[0]
+    public void HandleMessage(ChatMessage message, FilterStatus status) {
+        if (Options.State == State.Disabled) return;
+        if (status == FilterStatus.Match) return;
+        
+        if (message.Message.Length > 0
+            && message.Message[0]
             == ((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier) {
             Logger.Log(LogLevel.Info, "Message wasn't handled. Reason: Is Command");
             return;
         }
-        HandleCounter(Client, args.ChatMessage.Channel);
-        var msg = new Message(args.ChatMessage.Message, args.ChatMessage.Username);
+        HandleCounter(Client, message.Channel);
+        var msg = new Message(message.Message, message.Username);
         if (Options.LoggerState == State.Disabled) {
             return;
         }
@@ -105,17 +106,9 @@ public class MessageRandomizerService : Service {
     public override State GetServiceState() {
         return Options.State;
     }
-
-    public override dynamic GetServiceStateDynamic() {
-        return GetServiceState();
-    }
     
     public State GetLoggerState() {
         return Options.LoggerState;
-    }
-    
-    public dynamic GetLoggerStateDynamic() {
-        return GetLoggerState();
     }
 
     public void ToggleLoggerState() {
@@ -125,11 +118,6 @@ public class MessageRandomizerService : Service {
     public State GetRandomness() {
         return Options.Randomness;
     }
-
-    public dynamic GetRandomnessDynamic() {
-        return GetRandomness();
-    }
-
     
     public void ToggleRandomness() {
         if (Options.State == State.Disabled) {
@@ -141,10 +129,6 @@ public class MessageRandomizerService : Service {
 
     public int GetCounter() {
         return Options.Counter;
-    }
-    
-    public dynamic GetCounterDynamic() {
-        return GetCounter();
     }
 
     public override void Init(Bot bot) {

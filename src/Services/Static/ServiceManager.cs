@@ -1,8 +1,8 @@
 ﻿using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
-using ChatBot.Services.regex;
 using ChatBot.twitchAPI.interfaces;
 
 namespace ChatBot.Services.Static;
@@ -29,10 +29,10 @@ public static class ServiceManager {
                                                                                                        )
                                                                                                },
                                                                                                {
-                                                                                                   ServiceName.Regex,
+                                                                                                   ServiceName.MessageFilter,
                                                                                                    (
-                                                                                                       new RegexService(), 
-                                                                                                       new RegexEvents()
+                                                                                                       new MessageFilterService(), 
+                                                                                                       new MessageFilterEvents()
                                                                                                        )
                                                                                                },
                                                                                            };

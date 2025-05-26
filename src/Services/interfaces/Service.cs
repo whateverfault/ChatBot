@@ -39,7 +39,5 @@ public abstract class Service {
 
     public abstract State GetServiceState();
     
-    public abstract dynamic GetServiceStateDynamic();
-
     public abstract void ToggleService();
 }
