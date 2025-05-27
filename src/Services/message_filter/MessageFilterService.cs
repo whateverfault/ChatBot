@@ -1,9 +1,10 @@
 ﻿using System.Text.RegularExpressions;
+using ChatBot.bot.interfaces;
+using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.Static;
 using ChatBot.shared.interfaces;
 using ChatBot.shared.Logging;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
@@ -28,7 +29,7 @@ public class MessageFilterService : Service {
         var status = FilterStatus.NotMatch;
 
         foreach (var pattern in patterns) {
-            if (pattern.Match(message).Success) {
+            if (pattern.Regex.Match(message).Success) {
                 status = FilterStatus.Match;
             }
         }
@@ -37,15 +38,26 @@ public class MessageFilterService : Service {
     }
 
     public void AddPattern(string pattern) {
-        Options.AddPattern(new Regex(pattern));
+        Options.AddPattern(new CommentedRegex(new Regex(pattern), false, ""));
     }
 
+    public void AddPatternWithComment(string pattern, bool hasComment, string comment = "") {
+        Options.AddPattern(new CommentedRegex(new Regex(pattern), hasComment, comment));
+    }
+    
     public List<string> GetPatterns() {
-        return Options.GetPatterns().Select(pattern => pattern.ToString()).ToList();
+        return Options.GetPatterns().Select(pattern => pattern.ToString()).ToList()!;
+    }
+    
+    public List<Content> GetPatternWithComments() {
+        return Options
+           .GetPatterns()
+           .Select(pattern => new Content(pattern.Regex.ToString(), pattern.HasComment, pattern.Comment))
+           .ToList();
     }
     
     public string GetPattern(int index) {
-        return Options.GetPatterns()[index].ToString();
+        return Options.GetPatterns()[index].ToString() ?? string.Empty;
     }
 
     public void RemovePattern(int index) {

@@ -15,8 +15,11 @@ public class CliNodeRemove : CliNode {
     
     public override void Activate(CliState state) {
         Console.Write("Index: ");
-        var index = int.Parse(Console.ReadLine() ?? "0");
         
-        _remove.Invoke(index);
+        var line = Console.ReadLine();
+        var handled = string.IsNullOrEmpty(line)? "1" : line;
+        var index = int.Parse(handled);
+        if (index < 1) index = 1;
+        _remove.Invoke(index-1);
     }
 }

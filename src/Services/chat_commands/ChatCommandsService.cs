@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ChatBot.bot.interfaces;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.message_randomizer;
@@ -6,14 +7,13 @@ using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.shared.Logging;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsService : Service {
-    private Bot _bot;
+    private Bot _bot = null!;
     private ITwitchClient Client => _bot.GetClient();
 
     public override string Name => ServiceName.ChatCommands;
@@ -41,6 +41,15 @@ public class ChatCommandsService : Service {
         Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
     }
 
+    public void SetCommandIdentifier(char identifier) {
+        var err = _bot.TryGetClient(out _);
+        if (ErrorHandler.LogErrorAndPrint(err)) {
+            return;
+        }
+        
+        Options.SetCommandIdentifier(identifier);
+    }
+    
     public void ChangeCommandIdentifier(char newId, char oldId) {
         Client.RemoveChatCommandIdentifier(oldId);
         Client.AddChatCommandIdentifier(newId);

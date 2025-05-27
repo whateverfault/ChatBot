@@ -1,6 +1,4 @@
-﻿using ChatBot.CLI.CliNodes;
-
-namespace ChatBot.CLI;
+﻿namespace ChatBot.CLI;
 
 public class CliRenderer {
     private readonly CliState _state;
@@ -15,8 +13,8 @@ public class CliRenderer {
 
         var index = 0;
         for (var i = 0; i < currentNodes.Count; i++, index++) {
-            index -= currentNodes[i].PrintValue(index+1);
-            Console.WriteLine();
+            index -= currentNodes[i].PrintValue(index+1, out var end);
+            Console.Write(end);
         }
     }
 }

@@ -7,7 +7,7 @@ public delegate void StateSetter();
 
 public class CliNodeState : CliNode {
     private readonly StateGetter _getter;
-    private readonly StateSetter _setter;
+    private readonly StateSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
     protected override string Text { get; }
@@ -23,8 +23,8 @@ public class CliNodeState : CliNode {
         }
     }
 
-    public override int PrintValue(int index) {
-        base.PrintValue(index);
+    public override int PrintValue(int index, out string end) {
+        base.PrintValue(index, out end);
         Console.Write($" - {_getter.Invoke()}");
         return 0;
     }

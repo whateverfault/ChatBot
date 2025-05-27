@@ -12,7 +12,7 @@ internal static class Program {
 
 
     private static async Task Main() {
-        var bot = new twitchAPI.ChatBot();
+        var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot);
         var cliData = new CliData(
@@ -38,7 +38,7 @@ internal static class Program {
             }
 
             int.TryParse(Console.ReadLine(), out var index);
-            _cli.ActivateNode(index-1);
+            _cli.ActivateNode(index);
             Console.Clear();
             _cli.RenderNodes();
         }

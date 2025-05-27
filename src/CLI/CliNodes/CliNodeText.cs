@@ -5,14 +5,19 @@ public class CliNodeText : CliNode {
     private readonly int _decrease;
 
     protected override string Text { get; }
+    
+    public override bool ShouldSkip { get; }
+    
 
-    public CliNodeText(string text, bool hasIndex = true, int decrease = 0) {
-        _hasIndex = hasIndex;
-        _decrease = decrease;
+    public CliNodeText(string text, bool hasIndex = true, bool shouldSkip = true, int decrease = 0) {
         Text = text;
+        _hasIndex = hasIndex;
+        ShouldSkip = shouldSkip;
+        _decrease = decrease;
     }
 
-    public override int PrintValue(int index) {
+    public override int PrintValue(int index, out string end) {
+        end = "\n";
         Console.Write($"{(_hasIndex? $"{index}. " : "")}{Text}");
         return _decrease;
     }

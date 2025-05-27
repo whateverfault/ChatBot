@@ -1,5 +1,5 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.twitchAPI.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 
 namespace ChatBot.Services.game_requests;
 

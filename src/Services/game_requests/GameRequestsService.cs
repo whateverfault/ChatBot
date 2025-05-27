@@ -1,8 +1,8 @@
-﻿using ChatBot.Services.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Models;
 
 namespace ChatBot.Services.game_requests;

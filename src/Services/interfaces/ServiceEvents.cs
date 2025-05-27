@@ -1,4 +1,4 @@
-﻿using ChatBot.twitchAPI.interfaces;
+﻿using ChatBot.bot.interfaces;
 
 namespace ChatBot.Services.interfaces;
 

@@ -8,7 +8,7 @@ namespace ChatBot.Services.message_filter;
 
 public class MessageFilterOptions : Options {
     private SaveData? _saveData;
-    private List<Regex> Patterns => _saveData!.patterns;
+    private List<CommentedRegex> Patterns => _saveData!.patterns;
     
     protected override string Name => "messageFilter";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
@@ -35,7 +35,10 @@ public class MessageFilterOptions : Options {
         _saveData = new SaveData(
                                  State.Disabled,
                                  [
-                                     new Regex(@"(?<!\d)\d{8,11}(?!\d)"),
+                                     new CommentedRegex(
+                                                        new Regex(@"(?<!\d)\d{8,11}(?!\d)"), 
+                                                        true, 
+                                                        "Level Requests"),
                                  ]
                                 );
         Save();
@@ -50,7 +53,12 @@ public class MessageFilterOptions : Options {
         return State;
     }
     
-    public void AddPattern(Regex regex) {
+    public void AddPattern(CommentedRegex regex) {
+        Patterns.Add(regex);
+        Save();
+    }
+    
+    public void AddPatternWithComment(CommentedRegex regex) {
         Patterns.Add(regex);
         Save();
     }
@@ -60,7 +68,7 @@ public class MessageFilterOptions : Options {
         Save();
     }
 
-    public List<Regex> GetPatterns() {
+    public List<CommentedRegex> GetPatterns() {
         return Patterns;
     }
 }

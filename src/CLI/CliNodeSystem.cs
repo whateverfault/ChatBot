@@ -105,7 +105,7 @@ public class CliNodeSystem {
                                                                           "Command Identifier",
                                                                           _state.Data.ChatCommands.Options.GetCommandIdentifier,
                                                                           CliNodePermission.Default,
-                                                                          _state.Data.ChatCommands.Options.SetCommandIdentifier
+                                                                          _state.Data.ChatCommands.SetCommandIdentifier
                                                                           ), 
                                                           new CliNodeState(
                                                                          "Service State",
@@ -119,10 +119,11 @@ public class CliNodeSystem {
                                                    "Global Patterns",
                                                    "Add Pattern",
                                                    "Remove Pattern",
-                                                   _state.Data.MessageFilter.AddPattern,
+                                                   _state.Data.MessageFilter.AddPatternWithComment,
                                                    _state.Data.MessageFilter.RemovePattern,
-                                                   _state.Data.MessageFilter.GetPatterns(),
-                                                   _state
+                                                   _state.Data.MessageFilter.GetPatternWithComments(),
+                                                   _state,
+                                                   true
                                                    );
         
         var messageFilterDir = new CliNodeStaticDirectory(
@@ -155,10 +156,6 @@ public class CliNodeSystem {
                                                   _state,
                                                   true,
                                                   [
-                                                      new CliNodeAction(
-                                                                        "Load",
-                                                                        _state.Data.Bot.Options.Load
-                                                                       ),
                                                       new CliNodeString(
                                                                         "Bot Username",
                                                                         _state.Data.Bot.Options.GetUsername,
@@ -177,6 +174,10 @@ public class CliNodeSystem {
                                                                         CliNodePermission.Default,
                                                                         _state.Data.Bot.Options.SetOAuth
                                                                         ),
+                                                      new CliNodeAction(
+                                                                        "Load",
+                                                                        _state.Data.Bot.Options.Load
+                                                                       ),
                                                       new CliNodeAction(
                                                                         "Save",
                                                                         _state.Data.Bot.Options.Save

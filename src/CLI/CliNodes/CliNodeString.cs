@@ -4,9 +4,8 @@ public delegate string StringGetter();
 public delegate void StringSetter(string value);
 
 public class CliNodeString : CliNode {
-    private string _value;
-    private StringGetter _getter;
-    private StringSetter _setter;
+    private readonly StringGetter _getter;
+    private readonly StringSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
     protected override string Text { get; }
@@ -22,8 +21,8 @@ public class CliNodeString : CliNode {
         }
     }
 
-    public override int PrintValue(int index) {
-        base.PrintValue(index);
+    public override int PrintValue(int index, out string end) {
+        base.PrintValue(index, out end);
         Console.Write($" - {_getter.Invoke()}");
         return 0;
     }
@@ -31,6 +30,7 @@ public class CliNodeString : CliNode {
     public override void Activate(CliState state) {
         if (_permission == CliNodePermission.ReadOnly) return;
         
+        Console.WriteLine($"Value: {_getter.Invoke()}");
         Console.Write("New Value: ");
         _setter.Invoke(Console.ReadLine() ?? "");
     }

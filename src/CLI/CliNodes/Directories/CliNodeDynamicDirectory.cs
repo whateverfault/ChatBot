@@ -1,9 +1,11 @@
 ﻿namespace ChatBot.CLI.CliNodes.Directories;
 
 public class CliNodeDynamicDirectory : CliNodeDirectory {
-    private readonly AddHandler _addHandler;
+    private readonly bool _commented;
+    private readonly AddWithCommentHandler _addHandler;
     private readonly RemoveHandler _removeHandler;
     private readonly CliNodeStaticDirectory _dynamicDir;
+    private readonly CliState _state;
     
     protected override string Text { get; }
     
@@ -14,33 +16,51 @@ public class CliNodeDynamicDirectory : CliNodeDirectory {
         string text,
         string addText,
         string removeText,
-        AddHandler addHandler,
+        AddWithCommentHandler addHandler,
         RemoveHandler removeHandler,
-        List<string> nodesContent,
-        CliState state) {
+        List<Content> nodesContent,
+        CliState state,
+        bool commented) {
         Text = text;
         _addHandler = addHandler;
         _removeHandler = removeHandler;
+        _state = state;
+        _commented = commented;
 
         _dynamicDir = new CliNodeStaticDirectory(
-                                           "Content",
-                                           state,
-                                           true,
-                                           []
-                                           );
+                                                 "Content",
+                                                 state,
+                                                 true,
+                                                 []
+                                                );
 
         _dynamicDir.AddNode(
                             new CliNodeText(
                                             "-----------------------------------",
                                             false,
-                                            3
+                                            true,
+                                            1
                                             )
                             );
-        _dynamicDir.AddNodeRange(
-                                 nodesContent
-                                 .Select(content => new CliNodeText(content))
-                                 .ToArray<CliNode>()
-                                 );
+        foreach (var nodeContent in nodesContent) {
+            if (nodeContent.HasComment) {
+                _dynamicDir.AddNode(
+                                    new CliNodeStaticDirectory
+                                        (
+                                         nodeContent.Comment,
+                                         _state,
+                                         true,
+                                         [
+                                             new CliNodeText(nodeContent.ContentString),
+                                         ]
+                                         )
+                                    );
+            } else {
+                _dynamicDir.AddNode(
+                                    new CliNodeText(nodeContent.ContentString)
+                                    );
+            }
+        }
 
         Nodes = [
                     new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
@@ -55,8 +75,25 @@ public class CliNodeDynamicDirectory : CliNodeDirectory {
     }
 
     private void Add(string value) {
-        _dynamicDir.AddNode(new CliNodeText(value));
-        _addHandler.Invoke(value);
+        if (!_commented) {
+            _dynamicDir.AddNode(new CliNodeText(value));
+            _addHandler.Invoke(value, false);
+            return;
+        }
+        
+        Console.Write("Comment: ");
+        var comment = Console.ReadLine() ?? "";
+
+        var commentedNode = new CliNodeStaticDirectory(
+                                                       comment,
+                                                       _state,
+                                                       true,
+                                                       [
+                                                           new CliNodeText(value),
+                                                       ]
+                                                      );
+        _dynamicDir.AddNode(commentedNode);
+        _addHandler.Invoke(value, true, comment);
     }
     
     private void Remove(int index) {

@@ -1,8 +1,8 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.twitchAPI.interfaces;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -11,17 +11,17 @@ using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 
-namespace ChatBot.twitchAPI;
+namespace ChatBot.bot;
 
 public class ChatBot : Bot {
-    private readonly ILogger<TwitchClient> _logger;
+    private readonly ILogger<TwitchClient> _logger = null!;
     private readonly ChatBotOptions _options = new();
-    private ITwitchClient _client;
+    private ITwitchClient _client = null!;
     private bool _initialized;
     private ErrorCode LogInIssues => IsValidSave();
 
 
-    public override string Name { get; }
+    public override string Name { get; } = null!;
     public override ChatBotOptions Options => _options;
     public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;

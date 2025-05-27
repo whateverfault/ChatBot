@@ -2,7 +2,7 @@
 
 namespace ChatBot.utils;
 
-public class JsonUtils {
+public static class JsonUtils {
     private static readonly JsonSerializerSettings _options
         = new() {
                     NullValueHandling = NullValueHandling.Ignore,

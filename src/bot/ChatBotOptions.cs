@@ -3,13 +3,13 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.twitchAPI;
+namespace ChatBot.bot;
 
 public class ChatBotOptions : Options {
     private SaveData? _saveData = new();
 
     protected override string Name => "chat_bot";
-    protected override string OptionsPath => Path.Combine($"{Directories.dataDirectory}{Name}/", $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine($"{Directories.dataDirectory}{Name}", $"{Name}_opt.json");
 
     public override State State => _saveData!.state;
     public string? Username => _saveData!.username;

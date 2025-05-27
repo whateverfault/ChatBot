@@ -6,8 +6,8 @@ namespace ChatBot.CLI.CliNodes.Client;
 public class CliNodeClientWithInt : CliNode {
     private readonly ClientHandler _clientHandler;
     private readonly IntGetter _getter;
-    private ITwitchClient _client;
-    private string _channel;
+    private ITwitchClient _client = null!;
+    private string _channel = null!;
     
     protected override string Text { get; }
 
@@ -18,8 +18,8 @@ public class CliNodeClientWithInt : CliNode {
         _getter = getter;
     }
 
-    public override int PrintValue(int index) {
-        base.PrintValue(index);
+    public override int PrintValue(int index, out string end) {
+        base.PrintValue(index, out end);
         Console.Write($" - {_getter.Invoke()}");
         return 0;
     }

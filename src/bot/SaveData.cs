@@ -1,6 +1,6 @@
 ﻿using ChatBot.shared.interfaces;
 
-namespace ChatBot.twitchAPI;
+namespace ChatBot.bot;
 
 public class SaveData {
     public State state;

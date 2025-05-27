@@ -15,6 +15,8 @@ public class CliNodeStaticDirectory : CliNodeDirectory {
         
         if (hasBackOption) {
             Nodes.Add(new CliNodeAction("Back", state.NodeSystem.DirectoryBack));
+        } else {
+            Nodes.Add(new CliNodeInvisible());
         }
         if (nodes.Length <= 0) return;
         

@@ -1,11 +1,11 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.shared.Logging;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;

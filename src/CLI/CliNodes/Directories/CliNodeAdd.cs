@@ -1,6 +1,7 @@
 ﻿namespace ChatBot.CLI.CliNodes.Directories;
 
 public delegate void AddHandler(string value);
+public delegate void AddWithCommentHandler(string value, bool hasComment, string comment = "");
 
 public class CliNodeAdd : CliNode {
     private readonly AddHandler _add;
@@ -16,6 +17,7 @@ public class CliNodeAdd : CliNode {
     public override void Activate(CliState state) {
         Console.Write("Value: ");
         var value = Console.ReadLine() ?? "";
+        
         _add.Invoke(value);
     }
 }

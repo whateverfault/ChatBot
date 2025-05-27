@@ -1,7 +1,7 @@
 ﻿namespace ChatBot.CLI;
 
 public class CliState {
-    public CliNodeSystem NodeSystem { get; private set; }
+    public CliNodeSystem NodeSystem { get; private set; } = null!;
     public CliData Data { get; }
 
 

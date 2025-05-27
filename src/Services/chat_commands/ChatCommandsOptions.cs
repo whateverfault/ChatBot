@@ -16,9 +16,9 @@ public class ChatCommandsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
     public override State State => _saveData!.serviceState;
     public char CommandIdentifier => _saveData!.commandIdentifier;
-    public GameRequestsService GameRequestsService { get; private set; }
+    public GameRequestsService GameRequestsService { get; private set; } = null!;
 
-    public MessageRandomizerService MessageRandomizerService { get; private set; }
+    public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 

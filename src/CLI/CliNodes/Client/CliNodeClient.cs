@@ -7,8 +7,8 @@ public delegate void ClientHandler(ITwitchClient client, string channel);
 
 public class CliNodeClient : CliNode {
     private readonly ClientHandler _clientHandler;
-    private ITwitchClient _client;
-    private string _channel;
+    private ITwitchClient _client = null!;
+    private string _channel = null!;
     
     protected override string Text { get; }
 

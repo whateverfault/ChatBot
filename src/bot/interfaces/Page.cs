@@ -1,6 +1,6 @@
 ﻿using ChatBot.shared;
 
-namespace ChatBot.twitchAPI.interfaces;
+namespace ChatBot.bot.interfaces;
 
 public static class Page {
     public static int[] CalculatePages(string[] blocks) {

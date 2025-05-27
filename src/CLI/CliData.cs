@@ -7,7 +7,7 @@ using ChatBot.Services.message_randomizer;
 namespace ChatBot.CLI;
 
 public class CliData {
-    public twitchAPI.ChatBot Bot { get; }
+    public bot.ChatBot Bot { get; }
     public GameRequestsService GameRequests { get; }
     public MessageRandomizerService MessageRandomizer { get; }
     public ChatCommandsService ChatCommands { get; }
@@ -15,7 +15,7 @@ public class CliData {
     
 
     public CliData(
-        twitchAPI.ChatBot bot,
+        bot.ChatBot bot,
         GameRequestsService gameRequests,
         MessageRandomizerService messageRandomizer,
         ChatCommandsService chatCommands,

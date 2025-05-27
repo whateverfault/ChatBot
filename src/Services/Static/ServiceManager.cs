@@ -1,9 +1,9 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
-using ChatBot.twitchAPI.interfaces;
 
 namespace ChatBot.Services.Static;
 

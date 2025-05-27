@@ -1,11 +1,11 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.twitchAPI.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 
 namespace ChatBot.Services.message_filter;
 
 public class MessageFilterEvents : ServiceEvents {
-    private MessageFilterService _service;
-    private Bot _bot;
+    private MessageFilterService _service = null!;
+    private Bot _bot = null!;
     
     
     public override void Init(Service service, Bot bot) {

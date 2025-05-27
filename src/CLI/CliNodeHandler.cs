@@ -16,6 +16,10 @@ public class CliNodeHandler {
         }
 
         Console.Clear();
+        while (currentNodes[index].ShouldSkip) {
+            index++;
+            if (index >= currentNodes.Count) return;
+        }
         currentNodes[index].Activate(_state);
     }
 }

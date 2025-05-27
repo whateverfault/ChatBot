@@ -1,12 +1,12 @@
-﻿using ChatBot.Services.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
-using ChatBot.twitchAPI.interfaces;
 
 namespace ChatBot.Services.message_randomizer;
 
 public class MessageRandomizerEvents : ServiceEvents {
-    private MessageRandomizerService _service;
+    private MessageRandomizerService _service = null!;
 
 
     public override void Init(Service service, Bot bot) {
