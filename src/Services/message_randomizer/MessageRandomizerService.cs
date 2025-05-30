@@ -20,8 +20,8 @@ public class MessageRandomizerService : Service {
     public override MessageRandomizerOptions Options { get; } = new();
 
 
-    public void HandleMessage(ChatMessage message, FilterStatus status) {
-        if (Options.State == State.Disabled) return;
+    public void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
+        if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
         
         if (message.Message.Length > 0
@@ -40,7 +40,7 @@ public class MessageRandomizerService : Service {
     }
 
     public void HandleCounter(ITwitchClient client, string channel) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return;
         }
@@ -63,7 +63,7 @@ public class MessageRandomizerService : Service {
     }
 
     private Message? GenerateRandomMessage() {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return null;
         }
@@ -80,7 +80,7 @@ public class MessageRandomizerService : Service {
     }
 
     public void GenerateAndSendRandomMessage(ITwitchClient client, string channel) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return;
         }
@@ -93,18 +93,18 @@ public class MessageRandomizerService : Service {
 
     public ErrorCode GetLastGeneratedMessage(out Message? message) {
         message = Options.LastGeneratedMessage;
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
         return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg) ? ErrorCode.InvalidData : ErrorCode.None;
     }
 
     public override void ToggleService() {
-        Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 
     public override State GetServiceState() {
-        return Options.State;
+        return Options.ServiceState;
     }
     
     public State GetLoggerState() {
@@ -120,7 +120,7 @@ public class MessageRandomizerService : Service {
     }
     
     public void ToggleRandomness() {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return;
         }

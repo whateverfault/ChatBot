@@ -38,7 +38,7 @@ public class ChatCommandsService : Service {
     }
     
     public override void ToggleService() {
-        Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 
     public void SetCommandIdentifier(char identifier) {
@@ -104,7 +104,7 @@ public class ChatCommandsService : Service {
                 }
 
                 if (!int.TryParse(commandArgs[0], out var index)) {
-                    err = ErrorCode.WrongInput;
+                    err = ErrorCode.InvalidInput;
                     errorHandler.ReplyWithError(err, args.Command.ChatMessage);
                     return;
                 }

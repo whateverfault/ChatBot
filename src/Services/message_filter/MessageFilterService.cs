@@ -15,26 +15,28 @@ public enum FilterStatus {
     NotMatch
 }
 
-public delegate void HandleMessage(ChatMessage message, FilterStatus status);
+public delegate void MessageHandler(ChatMessage message, FilterStatus status, int patternIndex);
 
 public class MessageFilterService : Service {
     public override string Name => ServiceName.MessageFilter;
     public override MessageFilterOptions Options { get; } = new();
-    public event HandleMessage? OnMessageFiltered;
+    public event MessageHandler? OnMessageFiltered;
 
 
     public void HandleMessage(object? sender, OnMessageReceivedArgs args) {
         var patterns = Options.GetPatterns();
         var message = args.ChatMessage.Message;
         var status = FilterStatus.NotMatch;
+        var index = 0;
 
-        foreach (var pattern in patterns) {
-            if (pattern.Regex.Match(message).Success) {
-                status = FilterStatus.Match;
-            }
+        for (var i = 0; i < patterns.Count; i++) {
+            if (!patterns[i].Regex.Match(message).Success) continue;
+            status = FilterStatus.Match;
+            index = i;
+            break;
         }
-        
-        OnMessageFiltered?.Invoke(args.ChatMessage, status);
+
+        OnMessageFiltered?.Invoke(args.ChatMessage, status, index);
     }
 
     public void AddPattern(string pattern) {
@@ -49,11 +51,19 @@ public class MessageFilterService : Service {
         return Options.GetPatterns().Select(pattern => pattern.ToString()).ToList()!;
     }
     
-    public List<Content> GetPatternWithComments() {
+    public List<Content> GetPatternsWithComments() {
         return Options
            .GetPatterns()
            .Select(pattern => new Content(pattern.Regex.ToString(), pattern.HasComment, pattern.Comment))
            .ToList();
+    }
+    
+    public CommentedRegex GetPatternWithComment(int index) {
+        return Options.GetPatterns()[index];
+    }
+
+    public string GetComment(int index) {
+        return Options.GetPatterns()[index].Comment;
     }
     
     public string GetPattern(int index) {
@@ -81,6 +91,6 @@ public class MessageFilterService : Service {
     }
     
     public override void ToggleService() {
-        Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 }

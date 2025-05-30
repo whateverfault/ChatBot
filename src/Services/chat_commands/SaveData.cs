@@ -1,14 +1,17 @@
 ﻿using ChatBot.shared.interfaces;
+using Newtonsoft.Json;
 
 namespace ChatBot.Services.chat_commands;
 
 public class SaveData {
-    public char commandIdentifier;
-    public State serviceState;
+    [JsonProperty(PropertyName ="command_identifier")]
+    public char CommandIdentifier { get; set; }
+    [JsonProperty(PropertyName ="service_state")]
+    public State ServiceState{ get; set; }
 
 
     public SaveData(State serviceState, char commandIdentifier) {
-        this.serviceState = serviceState;
-        this.commandIdentifier = commandIdentifier;
+        ServiceState = serviceState;
+        CommandIdentifier = commandIdentifier;
     }
 }

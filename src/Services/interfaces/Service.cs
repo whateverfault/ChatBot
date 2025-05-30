@@ -9,12 +9,12 @@ public abstract class Service {
     public abstract string Name { get; }
     public abstract Options Options { get; }
 
-    
+
     public virtual ErrorCode Enable(ChatMessage message) {
         if (!PermissionHandler.Handle(Permission.Dev, message)) {
             return ErrorCode.PermDeny;
         }
-        if (Options.State == State.Enabled) {
+        if (Options.ServiceState == State.Enabled) {
             return ErrorCode.AlreadyInState;
         }
 
@@ -26,18 +26,25 @@ public abstract class Service {
         if (!PermissionHandler.Handle(Permission.Dev, message)) {
             return ErrorCode.PermDeny;
         }
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.AlreadyInState;
         }
 
         Options.SetState(State.Disabled);
         return ErrorCode.None;
     }
-
-
-    public abstract void Init(Bot bot);
-
-    public abstract State GetServiceState();
     
-    public abstract void ToggleService();
+    public virtual void Init(Bot bot) {
+        if (!Options.TryLoad()) {
+            Options.SetDefaults();
+        }
+    }
+
+    public virtual State GetServiceState() {
+        return Options.GetState();
+    }
+
+    public virtual void ToggleService() {
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
+    }
 }

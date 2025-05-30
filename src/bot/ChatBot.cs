@@ -74,7 +74,7 @@ public class ChatBot : Bot {
     public override void Disable() {
         _options.SetState(State.Disabled);
     }
-
+    
     public override ErrorCode TryGetClient(out ITwitchClient client) {
         client = GetClient();
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
@@ -85,7 +85,7 @@ public class ChatBot : Bot {
     }
 
     public override void ToggleService() {
-        _options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        _options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
     
     private ErrorCode IsValidSave() {

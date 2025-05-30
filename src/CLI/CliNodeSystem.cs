@@ -1,6 +1,7 @@
 ﻿using ChatBot.CLI.CliNodes;
 using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
+using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 
 namespace ChatBot.CLI;
@@ -115,13 +116,72 @@ public class CliNodeSystem {
                                                                          ),
                                                       ]);
 
-        var patterns = new CliNodeDynamicDirectory(
+        var timeoutDir = new CliNodeDynamicModerationDirectory(
+                                                               "Timeout Patterns",
+                                                               "Add Pattern",
+                                                               "Remove Pattern",
+                                                               ModerationActionType.Timeout,
+                                                               _state
+                                                              );
+        
+        var banDir = new CliNodeDynamicModerationDirectory(
+                                                               "Ban Patterns",
+                                                               "Add Pattern",
+                                                               "Remove Pattern",
+                                                               ModerationActionType.Ban,
+                                                               _state
+                                                              );
+        
+        var warnDir = new CliNodeDynamicModerationDirectory(
+                                                           "Warn Patterns",
+                                                           "Add Pattern",
+                                                           "Remove Pattern",
+                                                           ModerationActionType.Warn,
+                                                           _state
+                                                          );
+        
+        var warnWithTimeoutDir = new CliNodeDynamicModerationDirectory(
+                                                            "Warn With Timeout Patterns",
+                                                            "Add Pattern",
+                                                            "Remove Pattern",
+                                                            ModerationActionType.WarnWithTimeout,
+                                                            _state
+                                                           );
+        
+        var warnWithBanDir = new CliNodeDynamicModerationDirectory(
+                                                            "Warn With Ban Patterns",
+                                                            "Add Pattern",
+                                                            "Remove Pattern",
+                                                            ModerationActionType.WarnWithBan,
+                                                            _state
+                                                           );
+        
+        var moderationDir = new CliNodeStaticDirectory(
+                                                       ServiceName.Moderation,
+                                                       _state,
+                                                       true,
+                                                       [
+                                                           banDir,
+                                                           timeoutDir,
+                                                           warnWithBanDir,
+                                                           warnWithTimeoutDir,
+                                                           warnDir,
+                                                           new CliNodeState(
+                                                                            "Service State",
+                                                                            _state.Data.Moderation.GetServiceState,
+                                                                            CliNodePermission.Default,
+                                                                            _state.Data.Moderation.ToggleService
+                                                                           ),
+                                                       ]
+                                                      );
+        
+        var globalPatterns = new CliNodeDynamicDirectory(
                                                    "Global Patterns",
                                                    "Add Pattern",
                                                    "Remove Pattern",
                                                    _state.Data.MessageFilter.AddPatternWithComment,
                                                    _state.Data.MessageFilter.RemovePattern,
-                                                   _state.Data.MessageFilter.GetPatternWithComments(),
+                                                   _state.Data.MessageFilter.GetPatternsWithComments(),
                                                    _state,
                                                    true
                                                    );
@@ -131,7 +191,8 @@ public class CliNodeSystem {
                                                   _state,
                                                   true,
                                                   [
-                                                      patterns,
+                                                      globalPatterns,
+                                                      moderationDir,
                                                       new CliNodeState(
                                                                        "Service State",
                                                                        _state.Data.MessageFilter.GetServiceState,
@@ -194,12 +255,6 @@ public class CliNodeSystem {
                                                      new CliNodeAction(
                                                                        "Initialize",
                                                                        _state.Data.Bot.Start
-                                                                      ),
-                                                     new CliNodeState(
-                                                                      "Enabled",
-                                                                      _state.Data.Bot.GetServiceState,
-                                                                      CliNodePermission.Default,
-                                                                      _state.Data.Bot.ToggleService
                                                                       ),
                                                      services
                                                  ]);

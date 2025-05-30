@@ -7,6 +7,6 @@ public abstract class CliNodeDirectory : CliNode {
     
     
     public override void Activate(CliState state) {
-        throw new NotImplementedException();
+        state.NodeSystem.DirectoryEnter(this);
     }
 }

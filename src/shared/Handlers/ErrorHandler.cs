@@ -6,7 +6,7 @@ namespace ChatBot.shared.Handlers;
 
 public enum ErrorCode {
     PermDeny = 0,
-    WrongInput = 1,
+    InvalidInput = 1,
     TooFewArgs = 2,
     AlreadyContains = 3,
     TooFewPoints = 4,

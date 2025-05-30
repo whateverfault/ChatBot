@@ -14,8 +14,8 @@ public class ChatCommandsOptions : Options {
 
     protected override string Name => "chat_commands";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
-    public override State State => _saveData!.serviceState;
-    public char CommandIdentifier => _saveData!.commandIdentifier;
+    public override State ServiceState => _saveData!.ServiceState;
+    public char CommandIdentifier => _saveData!.CommandIdentifier;
     public GameRequestsService GameRequestsService { get; private set; } = null!;
 
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
@@ -47,11 +47,11 @@ public class ChatCommandsOptions : Options {
     }
 
     public override State GetState() {
-        return State;
+        return ServiceState;
     }
 
     public override void SetState(State state) {
-        _saveData!.serviceState = state;
+        _saveData!.ServiceState = state;
         Save();
     }
 
@@ -61,7 +61,7 @@ public class ChatCommandsOptions : Options {
     
     public void SetCommandIdentifier(char identifier) {
         OnCommandIdentifierChanged?.Invoke(identifier, CommandIdentifier);
-        _saveData!.commandIdentifier = identifier;
+        _saveData!.CommandIdentifier = identifier;
         Save();
     }
     

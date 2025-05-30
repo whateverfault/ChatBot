@@ -26,6 +26,6 @@ public abstract class Bot : Service {
     public abstract ITwitchClient GetClient();
 
     public override State GetServiceState() {
-        return Options!.State;
+        return Options!.ServiceState;
     }
 }

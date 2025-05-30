@@ -70,10 +70,6 @@ public class CliNodeDynamicDirectory : CliNodeDirectory {
                 ];
     }
     
-    public override void Activate(CliState state) {
-        state.NodeSystem.DirectoryEnter(this);
-    }
-
     private void Add(string value) {
         if (!_commented) {
             _dynamicDir.AddNode(new CliNodeText(value));

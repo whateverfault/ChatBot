@@ -1,18 +1,23 @@
 ﻿namespace ChatBot.CLI.CliNodes.Directories;
 
-public class CliNodeStaticDirectory : CliNodeDirectory {
-    private readonly bool _hasBackOption;
+public delegate string NameUpdateHandler(int index);
 
-    protected override string Text { get; }
+public sealed class CliNodeStaticDirectory : CliNodeDirectory {
+    private readonly NameUpdateHandler? _nameUpdater;
+    private readonly bool _hasBackOption;
+    private string _text;
+
+    protected override string Text => _text;
 
     public override List<CliNode> Nodes { get; }
 
-    
-    public CliNodeStaticDirectory(string text, CliState state, bool hasBackOption, CliNode[] nodes) {
-        Text = text;
+
+    public CliNodeStaticDirectory(string text, CliState state, bool hasBackOption, CliNode[] nodes, NameUpdateHandler? nameUpdater = null) {
+        _text = text;
         Nodes = []; 
         _hasBackOption = hasBackOption;
-        
+        _nameUpdater = nameUpdater;
+
         if (hasBackOption) {
             Nodes.Add(new CliNodeAction("Back", state.NodeSystem.DirectoryBack));
         } else {
@@ -39,5 +44,9 @@ public class CliNodeStaticDirectory : CliNodeDirectory {
         if (_hasBackOption && (index < 1 || index >= Nodes.Count)) return;
         
         Nodes.RemoveAt(index);
+    }
+
+    public void UpdateName(int index) {
+        _nameUpdater!.Invoke(index);
     }
 }

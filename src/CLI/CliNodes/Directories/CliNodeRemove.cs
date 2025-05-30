@@ -19,7 +19,7 @@ public class CliNodeRemove : CliNode {
         var line = Console.ReadLine();
         var handled = string.IsNullOrEmpty(line)? "1" : line;
         var index = int.Parse(handled);
-        if (index < 1) index = 1;
+        if (index < 1) return;
         _remove.Invoke(index-1);
     }
 }

@@ -4,6 +4,7 @@ using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
+using ChatBot.Services.moderation;
 
 namespace ChatBot.Services.Static;
 
@@ -12,28 +13,35 @@ public static class ServiceManager {
                                                                                                 {
                                                                                                    ServiceName.GameRequests,
                                                                                                    (
-                                                                                                       new GameRequestsService(), 
+                                                                                                       new GameRequestsService(),
                                                                                                        new GameRequestsEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                }, {
                                                                                                    ServiceName.MessageRandomizer,
                                                                                                    (
                                                                                                        new MessageRandomizerService(),
                                                                                                        new MessageRandomizerEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                }, {
                                                                                                    ServiceName.ChatCommands,
                                                                                                    (
-                                                                                                       new ChatCommandsService(), 
+                                                                                                       new ChatCommandsService(),
                                                                                                        new ChatCommandsEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                },
                                                                                                {
                                                                                                    ServiceName.MessageFilter,
                                                                                                    (
-                                                                                                       new MessageFilterService(), 
+                                                                                                       new MessageFilterService(),
                                                                                                        new MessageFilterEvents()
-                                                                                                       )
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.Moderation,
+                                                                                                   (
+                                                                                                       new ModerationService(),
+                                                                                                       new ModerationEvents()
+                                                                                                   )
                                                                                                },
                                                                                            };
 

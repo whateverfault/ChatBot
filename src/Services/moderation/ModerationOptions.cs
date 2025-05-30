@@ -3,20 +3,20 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.Services.moderation;
 
-public class GameRequestsOptions : Options {
+public class ModerationOptions : Options {
     private SaveData? _saveData;
-
-    protected override string Name => "game_requests";
+    
+    protected override string Name => "moderation";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    public List<GameRequest>? GameRequests => _saveData!.GameRequests;
-    public HashSet<int>? GameRequestsSet => _saveData!.GameRequestsSet;
-    public Dictionary<string, int>? GameRequestsPoint => _saveData!.GameRequestsPoints;
+    public List<ModAction> ModerationActions => _saveData!.ModerationActions;
+    public List<WarnedUser> WarnedUsers => _saveData!.WarnedUsers;
+    
 
-
+    
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
@@ -33,7 +33,11 @@ public class GameRequestsOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(State.Disabled, [], [], []);
+        _saveData = new SaveData(
+                                 State.Disabled,
+                                 [],
+                                 []
+                                 );
         Save();
     }
 
@@ -44,5 +48,15 @@ public class GameRequestsOptions : Options {
 
     public override State GetState() {
         return ServiceState;
+    }
+
+    public void AddModAction(ModAction action) {
+        ModerationActions.Add(action);
+        Save();
+    }
+
+    public void RemoveModAction(int index) {
+        ModerationActions.RemoveAt(index);
+        Save();
     }
 }

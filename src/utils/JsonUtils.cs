@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ChatBot.utils;
 
 public static class JsonUtils {
     private static readonly JsonSerializerSettings _options
         = new() {
-                    NullValueHandling = NullValueHandling.Ignore,
+                    Converters = new List<JsonConverter> { new StringEnumConverter() },
+                    MissingMemberHandling = MissingMemberHandling.Error,
+                    NullValueHandling = NullValueHandling.Include,
                     Formatting = Formatting.Indented
                 };
 

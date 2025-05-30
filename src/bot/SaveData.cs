@@ -1,22 +1,25 @@
 ﻿using ChatBot.shared.interfaces;
+using Newtonsoft.Json;
 
 namespace ChatBot.bot;
 
 public class SaveData {
-    public State state;
-    public string? username;
-    public string? channel;
-    public string? oAuth;
-    public bool shouldPrintTwitchLogs;
+    [JsonProperty(PropertyName ="bot_state")]
+    public State ServiceState { get; set; }
+    [JsonProperty(PropertyName ="username")]
+    public string? Username { get; set; }
+    [JsonProperty(PropertyName ="channel")]
+    public string? Channel { get; set; }
+    [JsonProperty(PropertyName ="token")]
+    public string? OAuth { get; set; }
 
 
     public SaveData() {}
 
-    public SaveData(State state, string username, string oAuth, string channel, bool shouldPrintTwitchLogs) {
-        this.state = state;
-        this.username = username;
-        this.oAuth = oAuth;
-        this.channel = channel;
-        this.shouldPrintTwitchLogs = shouldPrintTwitchLogs;
+    public SaveData(State serviceState, string username, string oAuth, string channel) {
+        ServiceState = serviceState;
+        Username = username;
+        OAuth = oAuth;
+        Channel = channel;
     }
 }
