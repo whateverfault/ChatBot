@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ChatBot.Services.Static;
+using Newtonsoft.Json;
 
 namespace ChatBot.Services.moderation;
 
@@ -15,11 +16,23 @@ public class WarnedUser {
 
     public WarnedUser(string userId, ModAction modAction) {
         UserId = userId;
+        ModAction = modAction;
         Warns = 0;
+    }
+    
+    [JsonConstructor]
+    public WarnedUser(
+        [JsonProperty(PropertyName = "user_id")] string userId,
+        [JsonProperty(PropertyName = "warns")] int warns,
+        [JsonProperty(PropertyName = "moderation_action")] ModAction modAction
+        ) {
+        UserId = userId;
+        Warns = warns;
         ModAction = modAction;
     }
 
     public void GiveWarn() {
         Warns++;
+        ServiceManager.GetService(ServiceName.Moderation).Options.Save();
     }
 }

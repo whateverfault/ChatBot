@@ -11,7 +11,7 @@ public abstract class Service {
 
 
     public virtual ErrorCode Enable(ChatMessage message) {
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
         if (Options.ServiceState == State.Enabled) {
@@ -23,7 +23,7 @@ public abstract class Service {
     }
 
     public virtual ErrorCode Disable(ChatMessage message) {
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
         if (Options.ServiceState == State.Disabled) {
@@ -44,6 +44,14 @@ public abstract class Service {
         return Options.GetState();
     }
 
+    public virtual int GetServiceStateAsInt() {
+        return (int)Options.GetState();
+    }
+    
+    public virtual void ServiceStateNext() {
+        Options.SetState((State)(((int)Options.ServiceState+1)%Enum.GetValues(typeof(State)).Length));
+    }
+    
     public virtual void ToggleService() {
         Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }

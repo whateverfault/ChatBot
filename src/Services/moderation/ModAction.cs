@@ -1,4 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using ChatBot.bot;
+using ChatBot.extensions;
+using ChatBot.Services.Static;
+using ChatBot.shared.Handlers;
+using ChatBot.shared.interfaces;
+using Newtonsoft.Json;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
@@ -6,6 +11,8 @@ using TwitchLib.Client.Models;
 namespace ChatBot.Services.moderation;
 
 public class ModAction {
+    private static readonly Options _options = ServiceManager.GetService(ServiceName.Moderation).Options;
+
     [JsonProperty(PropertyName = "pattern_index")]
     public int PatternIndex { get; private set; }
     [JsonProperty(PropertyName = "duration")]
@@ -16,45 +23,59 @@ public class ModAction {
     public string ModeratorComment { get; private set; }
     [JsonProperty(PropertyName = "type")]
     public ModerationActionType Type { get; private set; }
+    [JsonProperty(PropertyName = "restriction")]
+    public Restriction Restriction { get; private set; }
+    [JsonProperty(PropertyName = "state")]
+    public State State { get; private set; }
 
     
     public ModAction() {}
     
-    public ModAction(int patternIndex, int duration, string moderatorComment) {
+    public ModAction(int patternIndex, int duration, string moderatorComment, Restriction restriction) {
         Type = ModerationActionType.Timeout;
         PatternIndex = patternIndex;
         Duration = duration;
         ModeratorComment = moderatorComment;
+        Restriction = restriction;
+        State = State.Disabled;
         MaxWarnCount = 1;
     }
 
-    public ModAction(int patternIndex, string moderatorComment) {
+    public ModAction(int patternIndex, string moderatorComment, Restriction restriction) {
         Type = ModerationActionType.Ban;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
+        Restriction = restriction;
+        State = State.Disabled;
         MaxWarnCount = 1;
     }
     
-    public ModAction(int patternIndex, string moderatorComment, ModerationActionType actionType) {
+    public ModAction(int patternIndex, string moderatorComment, ModerationActionType actionType, Restriction restriction) {
         Type = actionType;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
+        Restriction = restriction;
+        State = State.Disabled;
         MaxWarnCount = 1;
     }
     
-    public ModAction(int patternIndex, string moderatorComment, int maxWarnCount) {
+    public ModAction(int patternIndex, string moderatorComment, int maxWarnCount, Restriction restriction) {
         Type = ModerationActionType.WarnWithBan;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
         MaxWarnCount = maxWarnCount;
+        Restriction = restriction;
+        State = State.Disabled;
     }
     
-    public ModAction(int patternIndex, int duration, string moderatorComment, int maxWarnCount) {
+    public ModAction(int patternIndex, int duration, string moderatorComment, int maxWarnCount, Restriction restriction) {
         Type = ModerationActionType.WarnWithTimeout;
         PatternIndex = patternIndex;
         Duration = duration;
         ModeratorComment = moderatorComment;
         MaxWarnCount = maxWarnCount;
+        Restriction = restriction;
+        State = State.Disabled;
     }
     
     [JsonConstructor]
@@ -63,19 +84,25 @@ public class ModAction {
         [JsonProperty("duration")] int duration,
         [JsonProperty("max_warn_count")] int maxWarnCount,
         [JsonProperty("moderator_comment")] string moderatorComment,
-        [JsonProperty("type")] ModerationActionType type
+        [JsonProperty("type")] ModerationActionType type,
+        [JsonProperty("restriction")] Restriction restriction
         ) {
         PatternIndex = patternIndex;
         Duration = duration;
         MaxWarnCount = maxWarnCount;
         ModeratorComment = moderatorComment;
         Type = type;
+        Restriction = restriction;
+        State = State.Disabled;
     }
 
-    public void Activate(ITwitchClient client, ChatMessage message) {
+    public async Task Activate(ITwitchClient client, ChatBotOptions botOptions, ChatMessage message) {
+        if (State == State.Disabled) return;
+        if (!RestrictionHandler.Handle(Restriction, message)) return;
+        
         switch (Type) {
             case ModerationActionType.Ban: {
-                client.BanUser(message.Channel, message.Username, ModeratorComment);
+                await client.BanUserHelix(botOptions, message.Username, ModeratorComment);
                 break;
             }
             case ModerationActionType.Timeout: {
@@ -85,7 +112,10 @@ public class ModAction {
         }
     }
 
-    public void ActivateWarn(ITwitchClient client, ChatMessage message, List<WarnedUser> warnedUsers) {
+    public async Task ActivateWarn(ITwitchClient client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers) {
+        if (State == State.Disabled) return;
+        if (!RestrictionHandler.Handle(Restriction, message)) return;
+        
         if (Type == ModerationActionType.Warn) {
             client.SendReply(message.Channel, message.Id, ModeratorComment);
             return;
@@ -108,20 +138,25 @@ public class ModAction {
         }
         
         user.GiveWarn();
-        if (user.Warns != user.ModAction.MaxWarnCount) return;
+        if (user.Warns < user.ModAction.MaxWarnCount) {
+            _options.Save();
+            return;
+        }
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                client.BanUser(message.Channel, message.Username, ModeratorComment);
+                await client.BanUserHelix(options, message.Username, ModeratorComment);
                 warnedUsers.RemoveAt(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
-                client.TimeoutUser(message.Channel, message.Username, TimeSpan.FromSeconds(Duration), ModeratorComment);
+                await client.TimeoutUserHelix(options, message.Username, TimeSpan.FromSeconds(Duration), ModeratorComment);
                 warnedUsers.RemoveAt(userIndex);
                 break;
             }
         }
+        
+        _options.Save();
     }
     
     public int GetIndex() {
@@ -130,6 +165,7 @@ public class ModAction {
 
     public void SetIndex(int index) {
         PatternIndex = index;
+        _options.Save();
     }
     
     public int GetDuration() {
@@ -138,6 +174,7 @@ public class ModAction {
 
     public void SetDuration(int index) {
         Duration = index;
+        _options.Save();
     }
 
     public string GetComment() {
@@ -146,6 +183,7 @@ public class ModAction {
 
     public void SetComment(string comment) {
         ModeratorComment = comment;
+        _options.Save();
     }
     
     public int GetMaxWarnCount() {
@@ -154,5 +192,24 @@ public class ModAction {
 
     public void SetMaxWarnCount(int count) {
         MaxWarnCount = count;
+        _options.Save();
+    }
+
+    public int GetRestrictionAsInt() {
+        return (int)Restriction;
+    }
+
+    public void RestrictionNext() {
+        Restriction = (Restriction)(((int)Restriction+1)%Enum.GetValues(typeof(Restriction)).Length);
+        _options.Save();
+    }
+    
+    public int GetStateAsInt() {
+        return (int)State;
+    }
+
+    public void StateNext() {
+        State = (State)(((int)State+1)%Enum.GetValues(typeof(State)).Length);
+        _options.Save();
     }
 }

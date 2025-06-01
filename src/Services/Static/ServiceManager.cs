@@ -2,6 +2,7 @@
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
@@ -41,6 +42,13 @@ public static class ServiceManager {
                                                                                                    (
                                                                                                        new ModerationService(),
                                                                                                        new ModerationEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.Logger,
+                                                                                                   (
+                                                                                                       new LoggerService(),
+                                                                                                       new LoggerEvents()
                                                                                                    )
                                                                                                },
                                                                                            };

@@ -113,7 +113,7 @@ public class MessageRandomizerOptions : Options {
     }
 
     public void SetSpreading(Range range) {
-        var minRangeStart = 1;
+        const int minRangeStart = 1;
 
         var start = range.Start.Value;
         var end = range.End.Value;

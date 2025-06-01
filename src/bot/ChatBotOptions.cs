@@ -15,6 +15,7 @@ public class ChatBotOptions : Options {
     public string? Username => _saveData!.Username;
     public string? OAuth => _saveData!.OAuth;
     public string? Channel => _saveData!.Channel;
+    public string? ClientId => _saveData!.ClientId;
 
 
     public override bool TryLoad() {
@@ -31,6 +32,7 @@ public class ChatBotOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
+                                 "Empty",
                                  "Empty",
                                  "Empty",
                                  "Empty"
@@ -62,10 +64,6 @@ public class ChatBotOptions : Options {
     public void SetOAuth(string token) {
         _saveData!.OAuth = token;
     }
-
-    public void SetOAuthDynamic(dynamic token) {
-        _saveData!.OAuth = token;
-    }
     
     public string GetUsername() {
         return Username ?? "Empty";
@@ -77,5 +75,13 @@ public class ChatBotOptions : Options {
     
     public string GetOAuth() {
         return OAuth ?? "Empty";
+    }
+    
+    public string GetClientId() {
+        return ClientId ?? "Empty";
+    }
+    
+    public void SetClientId(string clientId) {
+        _saveData!.ClientId = clientId;
     }
 }

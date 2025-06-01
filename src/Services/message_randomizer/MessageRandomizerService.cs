@@ -1,18 +1,18 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.shared.Logging;
-using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 
 namespace ChatBot.Services.message_randomizer;
 
 public class MessageRandomizerService : Service {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private Bot _bot = null!;
     private ITwitchClient Client => _bot.GetClient();
 
@@ -27,7 +27,7 @@ public class MessageRandomizerService : Service {
         if (message.Message.Length > 0
             && message.Message[0]
             == ((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier) {
-            Logger.Log(LogLevel.Info, "Message wasn't handled. Reason: Is Command");
+            _logger.Log(LogLevel.Info, "Message wasn't handled. Reason: Is Command");
             return;
         }
         HandleCounter(Client, message.Channel);
@@ -74,8 +74,8 @@ public class MessageRandomizerService : Service {
         var randomIndex = Random.Shared.Next(0, Options.Logs.Count-1);
         Options.SetLastGeneratedMessage(Options.Logs[randomIndex]);
         Options.SetMessageState(MessageState.NotGuessed);
-        Logger.Log(LogLevel.Info,
-                   $"Message has been Generated.\nMessage: {Options.LastGeneratedMessage.Msg} - {Options.LastGeneratedMessage.Username}");
+        _logger.Log(LogLevel.Info,
+                    $"Message has been Generated.\nMessage: {Options.LastGeneratedMessage.Msg} - {Options.LastGeneratedMessage.Username}");
         return Options.LastGeneratedMessage;
     }
 

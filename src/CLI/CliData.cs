@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using ChatBot.Services.chat_commands;
+﻿using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
@@ -14,6 +14,7 @@ public class CliData {
     public ChatCommandsService ChatCommands { get; }
     public MessageFilterService MessageFilter { get; }
     public ModerationService Moderation { get; }
+    public LoggerService Logger { get; }
     
 
     public CliData(
@@ -22,13 +23,14 @@ public class CliData {
         MessageRandomizerService messageRandomizer,
         ChatCommandsService chatCommands,
         MessageFilterService messageFilter,
-        ModerationService moderation
-    ) {
+        ModerationService moderation,
+        LoggerService logger) {
         Bot = bot;
         GameRequests = gameRequests;
         MessageRandomizer = messageRandomizer;
         ChatCommands = chatCommands;
         MessageFilter = messageFilter;
         Moderation = moderation;
+        Logger = logger;
     }
 }

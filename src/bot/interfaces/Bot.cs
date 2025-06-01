@@ -24,8 +24,4 @@ public abstract class Bot : Service {
     public abstract ErrorCode TryGetClient(out ITwitchClient client);
 
     public abstract ITwitchClient GetClient();
-
-    public override State GetServiceState() {
-        return Options!.ServiceState;
-    }
 }

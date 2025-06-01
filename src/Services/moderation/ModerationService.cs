@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
@@ -26,7 +27,7 @@ public class ModerationService : Service {
     public override ModerationOptions Options { get; } = new();
 
 
-    public void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
+    public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.NotMatch) return;
 
@@ -38,9 +39,9 @@ public class ModerationService : Service {
         var modAction = Options.ModerationActions[patternIndex];
 
         if (modAction.Type is ModerationActionType.Ban or ModerationActionType.Timeout) {
-            modAction.Activate(client, message);
+            await modAction.Activate(client, (ChatBotOptions)_bot.Options, message);
         } else {
-            modAction.ActivateWarn(client, message, Options.WarnedUsers);
+            await modAction.ActivateWarn(client, (ChatBotOptions)_bot.Options, message, Options.WarnedUsers);
         }
     }
 

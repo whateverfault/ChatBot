@@ -1,5 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.chat_commands;
+using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -10,10 +11,12 @@ using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
+using LogLevel = ChatBot.Services.logger.LogLevel;
 
 namespace ChatBot.bot;
 
 public class ChatBot : Bot {
+    private static readonly LoggerService _messageLogger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private readonly ILogger<TwitchClient> _logger = null!;
     private readonly ChatBotOptions _options = new();
     private ITwitchClient _client = null!;
@@ -65,8 +68,10 @@ public class ChatBot : Bot {
         _client.OnLog += OnLog;
 
         _client.Connect();
+        _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
+        _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");
     }
-
+    
     public override void Enable() {
         _options.SetState(State.Enabled);
     }

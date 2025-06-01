@@ -1,6 +1,8 @@
 ﻿using ChatBot.Services.message_filter;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
+using ChatBot.shared.Handlers;
+using ChatBot.shared.interfaces;
 
 namespace ChatBot.CLI.CliNodes.Directories;
 
@@ -65,12 +67,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 nodeContent.SetIndex
                                                                ),
+                                                 new CliNodeEnum(
+                                                                 "Exclude Roles",
+                                                                 nodeContent.GetRestrictionAsInt,
+                                                                 typeof(Restriction),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.RestrictionNext
+                                                                ),
                                                  new CliNodeString(
                                                                    "Moderator Comment",
                                                                    nodeContent.GetComment,
                                                                    CliNodePermission.Default,
                                                                    nodeContent.SetComment
                                                                   ),
+                                                 new CliNodeEnum(
+                                                                 "State",
+                                                                 nodeContent.GetStateAsInt,
+                                                                 typeof(State),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.StateNext
+                                                                ),
                                              ]
                                             )
                                        );
@@ -95,12 +111,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 nodeContent.SetDuration
                                                                ),
+                                                 new CliNodeEnum(
+                                                                 "Exclude Roles",
+                                                                 nodeContent.GetRestrictionAsInt,
+                                                                 typeof(Restriction),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.RestrictionNext
+                                                                ),
                                                  new CliNodeString(
                                                                    "Moderator Comment",
                                                                    nodeContent.GetComment,
                                                                    CliNodePermission.Default,
                                                                    nodeContent.SetComment
                                                                   ),
+                                                 new CliNodeEnum(
+                                                                 "State",
+                                                                 nodeContent.GetStateAsInt,
+                                                                 typeof(State),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.StateNext
+                                                                ),
                                              ]
                                             )
                                        );
@@ -119,12 +149,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 nodeContent.SetIndex
                                                                ),
+                                                 new CliNodeEnum(
+                                                                 "Exclude Roles",
+                                                                 nodeContent.GetRestrictionAsInt,
+                                                                 typeof(Restriction),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.RestrictionNext
+                                                                ),
                                                  new CliNodeString(
                                                                    "Moderator Comment",
                                                                    nodeContent.GetComment,
                                                                    CliNodePermission.Default,
                                                                    nodeContent.SetComment
                                                                   ),
+                                                 new CliNodeEnum(
+                                                                 "State",
+                                                                 nodeContent.GetStateAsInt,
+                                                                 typeof(State),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.StateNext
+                                                                ),
                                              ]
                                             )
                                        );
@@ -155,12 +199,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 nodeContent.SetDuration
                                                                ),
+                                                 new CliNodeEnum(
+                                                                 "Exclude Roles",
+                                                                 nodeContent.GetRestrictionAsInt,
+                                                                 typeof(Restriction),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.RestrictionNext
+                                                                ),
                                                  new CliNodeString(
                                                                    "Moderator Comment",
                                                                    nodeContent.GetComment,
                                                                    CliNodePermission.Default,
                                                                    nodeContent.SetComment
                                                                   ),
+                                                 new CliNodeEnum(
+                                                                 "State",
+                                                                 nodeContent.GetStateAsInt,
+                                                                 typeof(State),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.StateNext
+                                                                ),
                                              ]
                                             )
                                        );
@@ -185,12 +243,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 nodeContent.SetMaxWarnCount
                                                                ),
+                                                 new CliNodeEnum(
+                                                                 "Exclude Roles",
+                                                                 nodeContent.GetRestrictionAsInt,
+                                                                 typeof(Restriction),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.RestrictionNext
+                                                                ),
                                                  new CliNodeString(
                                                                    "Moderator Comment",
                                                                    nodeContent.GetComment,
                                                                    CliNodePermission.Default,
                                                                    nodeContent.SetComment
                                                                   ),
+                                                 new CliNodeEnum(
+                                                                 "State",
+                                                                 nodeContent.GetStateAsInt,
+                                                                 typeof(State),
+                                                                 CliNodePermission.Default,
+                                                                 nodeContent.StateNext
+                                                                ),
                                              ]
                                             )
                                        );
@@ -224,12 +296,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                      CliNodePermission.Default,
                                                                      modAction.SetIndex
                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Exclude Roles",
+                                                                      modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.RestrictionNext
+                                                                     ),
                                                       new CliNodeString(
                                                                         "Moderator Comment",
                                                                         modAction.GetComment,
                                                                         CliNodePermission.Default,
                                                                         modAction.SetComment
                                                                        ),
+                                                      new CliNodeEnum(
+                                                                      "State",
+                                                                      modAction.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.StateNext
+                                                                     ),
                                                   ],
                                                   _messageFilter.GetComment
                                                  );
@@ -253,12 +339,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                      CliNodePermission.Default,
                                                                      modAction.SetDuration
                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Exclude Roles",
+                                                                      modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.RestrictionNext
+                                                                     ),
                                                       new CliNodeString(
                                                                         "Moderator Comment",
                                                                         modAction.GetComment,
                                                                         CliNodePermission.Default,
                                                                         modAction.SetComment
                                                                        ),
+                                                      new CliNodeEnum(
+                                                                      "State",
+                                                                      modAction.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.StateNext
+                                                                     ),
                                                   ],
                                                   _messageFilter.GetComment
                                                  );
@@ -276,12 +376,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                      CliNodePermission.Default,
                                                                      modAction.SetIndex
                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Exclude Roles",
+                                                                      modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.RestrictionNext
+                                                                     ),
                                                       new CliNodeString(
                                                                         "Moderator Comment",
                                                                         modAction.GetComment,
                                                                         CliNodePermission.Default,
                                                                         modAction.SetComment
                                                                        ),
+                                                      new CliNodeEnum(
+                                                                      "State",
+                                                                      modAction.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.StateNext
+                                                                     ),
                                                   ],
                                                   _messageFilter.GetComment
                                                  );
@@ -311,12 +425,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                      CliNodePermission.Default,
                                                                      modAction.SetDuration
                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Exclude Roles",
+                                                                      modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.RestrictionNext
+                                                                     ),
                                                       new CliNodeString(
                                                                         "Moderator Comment",
                                                                         modAction.GetComment,
                                                                         CliNodePermission.Default,
                                                                         modAction.SetComment
                                                                        ),
+                                                      new CliNodeEnum(
+                                                                      "State",
+                                                                      modAction.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.StateNext
+                                                                     ),
                                                   ],
                                                   _messageFilter.GetComment
                                                  );
@@ -339,12 +467,26 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                                      CliNodePermission.Default,
                                                                      modAction.SetMaxWarnCount
                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Exclude Roles",
+                                                                      modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.RestrictionNext
+                                                                     ),
                                                       new CliNodeString(
                                                                         "Moderator Comment",
                                                                         modAction.GetComment,
                                                                         CliNodePermission.Default,
                                                                         modAction.SetComment
                                                                        ),
+                                                      new CliNodeEnum(
+                                                                      "State",
+                                                                      modAction.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      modAction.StateNext
+                                                                     ),
                                                   ],
                                                   _messageFilter.GetComment
                                                  );

@@ -35,49 +35,25 @@ public class CliNodeModActionAdd : CliNode {
         
         switch (_actionType) {
             case ModerationActionType.Timeout:
-                Console.Write("Duration: ");
-                line = Console.ReadLine() ?? "0";
-                duration =  int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
-            
-                Console.Write("Moderator Comment: ");
-                modComment = Console.ReadLine() ?? "";
-
-                action = new ModAction(index-1, duration, modComment);
+                action = new ModAction(index-1, duration, modComment, Restriction.Everyone);
                 break;
             case ModerationActionType.Ban:
-                Console.Write("Moderator Comment: ");
-                modComment = Console.ReadLine() ?? "";
-
-                action = new ModAction(index-1, modComment);
+                action = new ModAction(index-1, modComment, Restriction.Everyone);
                 break;
             case ModerationActionType.Warn:
-                Console.Write("Moderator Comment: ");
-                modComment = Console.ReadLine() ?? "";
-
-                action = new ModAction(index-1, modComment, ModerationActionType.Warn);
+                action = new ModAction(index-1, modComment, ModerationActionType.Warn, Restriction.Everyone);
                 break;
             case ModerationActionType.WarnWithTimeout:
-                Console.Write("Warn Count: ");
-                line = Console.ReadLine() ?? "0";
-                warnCount =  int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
-                
-                Console.Write("Duration: ");
-                line = Console.ReadLine() ?? "0";
-                duration =  int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
-                
-                action = new ModAction(index-1, duration, modComment, warnCount);
+                action = new ModAction(index-1, duration, modComment, warnCount, Restriction.Everyone);
                 break;
             case ModerationActionType.WarnWithBan:
-                Console.Write("Warn Count: ");
-                line = Console.ReadLine() ?? "0";
-                warnCount =  int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
-                
-                action = new ModAction(index-1, modComment, warnCount);
+                action = new ModAction(index-1, modComment, warnCount, Restriction.Everyone);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
+        Console.Write("Now You Can Configure it by Going to 'Content->Your_Pattern'");
         _add.Invoke(action);
     }
 }

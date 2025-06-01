@@ -40,7 +40,7 @@ public class GameRequestsService : Service {
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
 
@@ -75,7 +75,7 @@ public class GameRequestsService : Service {
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
         if (index >= Options.GameRequests?.Count) {

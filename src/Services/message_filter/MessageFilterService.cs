@@ -2,9 +2,9 @@
 using ChatBot.bot.interfaces;
 using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.shared.interfaces;
-using ChatBot.shared.Logging;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
@@ -18,6 +18,8 @@ public enum FilterStatus {
 public delegate void MessageHandler(ChatMessage message, FilterStatus status, int patternIndex);
 
 public class MessageFilterService : Service {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    
     public override string Name => ServiceName.MessageFilter;
     public override MessageFilterOptions Options { get; } = new();
     public event MessageHandler? OnMessageFiltered;
@@ -73,7 +75,7 @@ public class MessageFilterService : Service {
     public void RemovePattern(int index) {
         var patterns = Options.GetPatterns();
         if (index > patterns.Count || index < 0) {
-            Logger.Log(LogLevel.Error, "Tried to delete not existing pattern");
+            _logger.Log(LogLevel.Error, "Tried to delete not existing pattern");
             return;
         }
 
