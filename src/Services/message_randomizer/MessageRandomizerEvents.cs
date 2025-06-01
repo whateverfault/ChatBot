@@ -1,19 +1,20 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.twitchAPI.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
+using ChatBot.Services.message_filter;
+using ChatBot.Services.Static;
 
 namespace ChatBot.Services.message_randomizer;
 
 public class MessageRandomizerEvents : ServiceEvents {
-    private Bot _bot;
-    private MessageRandomizerService _service;
+    private MessageRandomizerService _service = null!;
 
 
     public override void Init(Service service, Bot bot) {
         _service = (MessageRandomizerService)service;
-        _bot = bot;
     }
 
     public override void Subscribe() {
-        _bot.OnMessageReceived += _service.HandleMessage;
+        var regexService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        regexService.OnMessageFiltered += _service.HandleMessage;
     }
 }

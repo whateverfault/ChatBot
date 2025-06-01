@@ -1,30 +1,36 @@
-﻿using System.Text.RegularExpressions;
-using ChatBot.Services.chat_commands;
+﻿using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
+using ChatBot.Services.logger;
+using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
-using ChatBot.Services.regex;
+using ChatBot.Services.moderation;
 
 namespace ChatBot.CLI;
 
 public class CliData {
-    public twitchAPI.ChatBot Bot { get; }
+    public bot.ChatBot Bot { get; }
     public GameRequestsService GameRequests { get; }
     public MessageRandomizerService MessageRandomizer { get; }
     public ChatCommandsService ChatCommands { get; }
-    public RegexService Regex { get; }
+    public MessageFilterService MessageFilter { get; }
+    public ModerationService Moderation { get; }
+    public LoggerService Logger { get; }
     
 
     public CliData(
-        twitchAPI.ChatBot bot,
+        bot.ChatBot bot,
         GameRequestsService gameRequests,
         MessageRandomizerService messageRandomizer,
         ChatCommandsService chatCommands,
-        RegexService regex
-    ) {
+        MessageFilterService messageFilter,
+        ModerationService moderation,
+        LoggerService logger) {
         Bot = bot;
         GameRequests = gameRequests;
         MessageRandomizer = messageRandomizer;
         ChatCommands = chatCommands;
-        Regex = regex;
+        MessageFilter = messageFilter;
+        Moderation = moderation;
+        Logger = logger;
     }
 }

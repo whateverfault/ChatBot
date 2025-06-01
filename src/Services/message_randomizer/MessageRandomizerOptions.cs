@@ -16,18 +16,18 @@ public class MessageRandomizerOptions : Options {
     protected override string Name => "message_randomizer";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
-    public override State State => _saveData!.serviceState;
-    public State LoggerState => _saveData!.loggerState;
-    public int CounterMax => _saveData!.counterMax;
+    public override State ServiceState => _saveData!.ServiceState;
+    public State LoggerState => _saveData!.LoggerState;
+    public int CounterMax => _saveData!.CounterMax;
     public int Counter { get; private set; }
 
-    public State Randomness => _saveData!.randomness;
+    public State Randomness => _saveData!.Randomness;
     public int RandomValue { get; private set; }
 
-    public Range Spreading => new(_saveData!.spreadingFrom, _saveData!.spreadingTo);
-    public MessageState MessageState => _saveData!.messageState;
-    public Message LastGeneratedMessage => _saveData!.lastGeneratedMessage;
-    public List<Message> Logs => _saveData!.logs;
+    public Range Spreading => new(_saveData!.SpreadingFrom, _saveData!.SpreadingTo);
+    public MessageState MessageState => _saveData!.MessageState;
+    public Message LastGeneratedMessage => _saveData!.LastGeneratedMessage;
+    public List<Message> Logs => _saveData!.Logs;
 
 
     public override bool TryLoad() {
@@ -71,50 +71,49 @@ public class MessageRandomizerOptions : Options {
     }
 
     public override void SetState(State state) {
-        _saveData!.serviceState = state;
+        _saveData!.ServiceState = state;
         Save();
     }
 
     public override State GetState() {
-        return State;
+        return ServiceState;
     }
 
     public void SetRandomnessState(State state) {
-        _saveData!.randomness = state;
+        _saveData!.Randomness = state;
         Save();
     }
 
     public void SetLoggerState(State state) {
-        _saveData!.loggerState = state;
+        _saveData!.LoggerState = state;
         Save();
     }
 
     public void SetCounterMax(int value) {
-        _saveData!.counterMax = value;
+        _saveData!.CounterMax = value;
         Save();
     }
-
+    
     public int GetCounterMax() {
         return CounterMax;
     }
-
+    
     public void SetMessageState(MessageState state) {
-        _saveData!.messageState = state;
+        _saveData!.MessageState = state;
         Save();
     }
 
     public MessageState GetMessageState() {
-        return _saveData!.messageState;
+        return _saveData!.MessageState;
     }
 
     public void SetLastGeneratedMessage(Message message) {
-        _saveData!.lastGeneratedMessage = message;
+        _saveData!.LastGeneratedMessage = message;
         Save();
     }
 
     public void SetSpreading(Range range) {
-        var minRangeStart = 1;
-        var maxRangeEnd = CounterMax;
+        const int minRangeStart = 1;
 
         var start = range.Start.Value;
         var end = range.End.Value;
@@ -122,22 +121,19 @@ public class MessageRandomizerOptions : Options {
         if (start < minRangeStart) {
             start = minRangeStart;
         }
-        if (end > maxRangeEnd) {
-            end = maxRangeEnd;
-        }
         if (start > end) {
             (start, end) = (end, start);
         }
 
-        _saveData!.spreadingFrom = start;
-        _saveData!.spreadingTo = end;
+        _saveData!.SpreadingFrom = start;
+        _saveData!.SpreadingTo = end;
         Save();
     }
-
+    
     public Range GetSpreading() {
         return Spreading;
     }
-
+    
     public void SetRandomValue() {
         RandomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
         Save();

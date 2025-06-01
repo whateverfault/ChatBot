@@ -1,8 +1,9 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.chat_commands;
+using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.twitchAPI.interfaces;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -10,18 +11,20 @@ using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
+using LogLevel = ChatBot.Services.logger.LogLevel;
 
-namespace ChatBot.twitchAPI;
+namespace ChatBot.bot;
 
 public class ChatBot : Bot {
-    private readonly ILogger<TwitchClient> _logger;
+    private static readonly LoggerService _messageLogger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    private readonly ILogger<TwitchClient> _logger = null!;
     private readonly ChatBotOptions _options = new();
-    private ITwitchClient _client;
+    private ITwitchClient _client = null!;
     private bool _initialized;
     private ErrorCode LogInIssues => IsValidSave();
 
 
-    public override string Name { get; }
+    public override string Name { get; } = null!;
     public override ChatBotOptions Options => _options;
     public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
@@ -65,8 +68,10 @@ public class ChatBot : Bot {
         _client.OnLog += OnLog;
 
         _client.Connect();
+        _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
+        _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");
     }
-
+    
     public override void Enable() {
         _options.SetState(State.Enabled);
     }
@@ -74,9 +79,9 @@ public class ChatBot : Bot {
     public override void Disable() {
         _options.SetState(State.Disabled);
     }
-
+    
     public override ErrorCode TryGetClient(out ITwitchClient client) {
-        client = _client;
+        client = GetClient();
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
     }
 
@@ -84,9 +89,8 @@ public class ChatBot : Bot {
         return _client;
     }
 
-
     public override void ToggleService() {
-        _options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        _options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
     
     private ErrorCode IsValidSave() {

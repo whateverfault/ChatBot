@@ -1,11 +1,11 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.twitchAPI.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsEvents : ServiceEvents {
-    private Bot _bot;
-    private ChatCommandsService _service;
+    private Bot _bot = null!;
+    private ChatCommandsService _service = null!;
 
 
     public override void Init(Service service, Bot bot) {

@@ -1,19 +1,21 @@
 ﻿using System.Text;
+using ChatBot.bot.interfaces;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.shared.Logging;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsService : Service {
-    private Bot _bot;
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    
+    private Bot _bot = null!;
     private ITwitchClient Client => _bot.GetClient();
 
     public override string Name => ServiceName.ChatCommands;
@@ -36,11 +38,20 @@ public class ChatCommandsService : Service {
     public override State GetServiceState() {
         return Options.GetState();
     }
-
+    
     public override void ToggleService() {
-        Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 
+    public void SetCommandIdentifier(char identifier) {
+        var err = _bot.TryGetClient(out _);
+        if (ErrorHandler.LogErrorAndPrint(err)) {
+            return;
+        }
+        
+        Options.SetCommandIdentifier(identifier);
+    }
+    
     public void ChangeCommandIdentifier(char newId, char oldId) {
         Client.RemoveChatCommandIdentifier(oldId);
         Client.AddChatCommandIdentifier(newId);
@@ -79,12 +90,12 @@ public class ChatCommandsService : Service {
                 var gameRequest = new GameRequest(args.Command.ChatMessage.Username, commandArgs[0]!);
                 err = Options.GameRequestsService.AppendRequest(gameRequest, args.Command.ChatMessage);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GameRequestsService.AppendRequest' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GameRequestsService.AppendRequest' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра добалвена в очередь.");
-                Logger.Log(LogLevel.Info, "Game requests has been appended");
+                _logger.Log(LogLevel.Info, "Game requests has been appended");
                 break;
             }
             case "gr-rem": {
@@ -95,18 +106,18 @@ public class ChatCommandsService : Service {
                 }
 
                 if (!int.TryParse(commandArgs[0], out var index)) {
-                    err = ErrorCode.WrongInput;
+                    err = ErrorCode.InvalidInput;
                     errorHandler.ReplyWithError(err, args.Command.ChatMessage);
                     return;
                 }
                 err = Options.GameRequestsService.RemoveRequestAt(index-1, args.Command.ChatMessage);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'RemoveRequestAt' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'RemoveRequestAt' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра удалена из очереди.");
-                Logger.Log(LogLevel.Info, "Game requests has been removed");
+                _logger.Log(LogLevel.Info, "Game requests has been removed");
                 break;
             }
             case "gr-list": {
@@ -117,12 +128,12 @@ public class ChatCommandsService : Service {
 
                 err = Options.GameRequestsService.ListGameRequests(out var gameReqs);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
                     return;
                 }
                 if (gameReqs.Length == 0) {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Пусто.");
-                    Logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' tried to access empty game requests list");
+                    _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' tried to access empty game requests list");
                     break;
                 }
 
@@ -160,12 +171,12 @@ public class ChatCommandsService : Service {
                 err = Options.GameRequestsService.GivePoint(args.Command.ChatMessage, commandArgs[0]);
 
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GameRequestsService.GivePoint' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GameRequestsService.GivePoint' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Очко выдано пользователю '{commandArgs[0]}'.");
-                Logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has obtained a point");
+                _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has obtained a point");
                 break;
             }
             case "gr-take-point": {
@@ -177,37 +188,37 @@ public class ChatCommandsService : Service {
 
                 err = Options.GameRequestsService.TakePoint(args.Command.ChatMessage, commandArgs[0]);
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
                                  $"Очко забрано у пользователя '{commandArgs[0]}'.");
-                Logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has spent a point");
+                _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has spent a point");
                 break;
             }
             case "gr-disable": {
                 err = Options.GameRequestsService.Disable(args.Command.ChatMessage);
 
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GameRequestsService.Disable' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GameRequestsService.Disable' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы отключены.");
-                Logger.Log(LogLevel.Info, "GameRequestsService is now disabled");
+                _logger.Log(LogLevel.Info, "GameRequestsService is now disabled");
                 break;
             }
             case "gr-enable": {
                 err = Options.GameRequestsService.Enable(args.Command.ChatMessage);
 
                 if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    Logger.Log(LogLevel.Error, $"'GameRequestsService.Enable' returned an error: {err}");
+                    _logger.Log(LogLevel.Error, $"'GameRequestsService.Enable' returned an error: {err}");
                     return;
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы включены.");
-                Logger.Log(LogLevel.Info, "GameRequestsService is now enabled");
+                _logger.Log(LogLevel.Info, "GameRequestsService has been enabled");
                 break;
             }
 
@@ -217,43 +228,43 @@ public class ChatCommandsService : Service {
             case "mr-guess": {
                 if (Options.MessageRandomizerService.Options.MessageState == MessageState.Guessed) {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Уже отгадано.");
-                    Logger.Log(LogLevel.Error, $"{args.Command.ChatMessage.Username} tried to guess already guessed message");
+                    _logger.Log(LogLevel.Error, $"{args.Command.ChatMessage.Username} tried to guess already guessed message");
                     return;
                 }
 
                 if (commandArgs.Length < 1) {
                     ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, args.Command.ChatMessage, Client);
-                    Logger.Log(LogLevel.Error, $"Too few arguments for '{args.Command.CommandText}' command");
+                    _logger.Log(LogLevel.Error, $"Too few arguments for '{args.Command.CommandText}' command");
                     return;
                 }
 
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
                 if (ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client)) {
-                    Logger.Log(LogLevel.Info, "Tried to access last random message while there is no such.");
+                    _logger.Log(LogLevel.Info, "Tried to access last random message while there is no such.");
                     return;
                 }
 
                 if (commandArgs[0] != message!.Username) {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Неправильно.");
-                    Logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed wrong.");
+                    _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed wrong.");
                 } else {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
                                      $"Правильно, это было сообщение от {message.Username}.");
-                    Logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed right.");
+                    _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed right.");
                     Options.MessageRandomizerService.Options.SetMessageState(MessageState.Guessed);
                 }
                 break;
             }
             case "mr-whose": {
-                if (!PermissionHandler.Handle(Permission.Dev, args.Command.ChatMessage)) {
+                if (!RestrictionHandler.Handle(Restriction.Dev, args.Command.ChatMessage)) {
                     ErrorHandler.ReplyWithError(ErrorCode.PermDeny, args.Command.ChatMessage, Client);
-                    Logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' doesn't have enough rights to call this command.");
+                    _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' doesn't have enough rights to call this command.");
                 }
 
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
                 if (ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client)) {
                     ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client);
-                    Logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
+                    _logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
                     return;
                 }
 
@@ -264,11 +275,11 @@ public class ChatCommandsService : Service {
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
                 if (ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client)) {
                     ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client);
-                    Logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
+                    _logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
                     return;
                 }
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message!.Msg);
-                Logger.Log(LogLevel.Info, $"Repeated last message for {args.Command.ChatMessage.Username}.");
+                _logger.Log(LogLevel.Info, $"Repeated last message for {args.Command.ChatMessage.Username}.");
                 break;
             }
 

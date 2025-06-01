@@ -1,203 +1,314 @@
 ﻿using ChatBot.CLI.CliNodes;
+using ChatBot.CLI.CliNodes.Client;
+using ChatBot.CLI.CliNodes.Directories;
+using ChatBot.Services.moderation;
+using ChatBot.Services.Static;
 using ChatBot.shared.interfaces;
 
 namespace ChatBot.CLI;
 
 public class CliNodeSystem {
-    private readonly CliData _data;
-    private readonly List<CliNode> _directories;
+    private readonly CliState _state;
+    private readonly List<CliNodeDirectory> _directories;
     private int _dirPointer;
 
 
-    public CliNodeSystem(CliData data) {
-        _data = data;
+    public CliNodeSystem(CliState state) {
         _directories = [];
+        _state = state;
     }
 
-    public CliNode Current => _directories[_dirPointer];
+    public CliNodeDirectory Current => _directories[_dirPointer];
     
-    public void DirectoryEnter(CliNode dir) {
+    
+    public void DirectoryEnter(CliNodeDirectory dir) {
         _directories.Add(dir);
         _dirPointer++;
     }
-
-    private void DirectoryBack() {
+    
+    public void DirectoryBack() {
         if (_dirPointer > 0) {
             _directories.RemoveAt(_dirPointer--);
         }
     }
 
     public void InitNodes() {
-        var gameReqsDir = new CliNodeGeneric<int>(
-                                                      "Game Requests",
-                                                      [
-                                                          new CliNodeGeneric<State>(
-                                                                             "State",
-                                                                             _data.GameRequests.GetServiceState,
-                                                                             _data.GameRequests.ToggleService,
-                                                                             CliNodeValueType.State
+        var gameReqsDir = new CliNodeStaticDirectory(
+                                                     ServiceName.GameRequests,
+                                                     _state, 
+                                                     true,
+                                                     [
+                                                         new CliNodeEnum(
+                                                                         "Service State",
+                                                                         _state.Data.GameRequests.GetServiceStateAsInt,
+                                                                         typeof(State),
+                                                                         CliNodePermission.Default,
+                                                                         _state.Data.GameRequests.ServiceStateNext
+                                                                        )
+                                                     ]);
+
+        var randomMsgsDir = new CliNodeStaticDirectory(
+                                                       ServiceName.MessageRandomizer,
+                                                       _state,
+                                                       true,
+                                                       [
+                                                           new CliNodeInt(
+                                                                          "Max Counter Value",
+                                                                          _state.Data.MessageRandomizer.Options.GetCounterMax,
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.MessageRandomizer.Options.SetCounterMax
+                                                                          ),
+                                                           new CliNodeInt(
+                                                                          "Random Value", 
+                                                                          _state.Data.MessageRandomizer.Options.GetRandomValue,
+                                                                          CliNodePermission.ReadOnly
+                                                                          ),
+                                                           new CliNodeClientWithInt(
+                                                                                    "Increase Counter",
+                                                                                    _state.Data.MessageRandomizer.HandleCounter,
+                                                                                    _state.Data.MessageRandomizer.GetCounter
+                                                                                    ),
+                                                           new CliNodeClient(
+                                                                             "Generate Message",
+                                                                             _state.Data.MessageRandomizer.GenerateAndSendRandomMessage,
+                                                                             _state
+                                                                            ),
+                                                           new CliNodeEnum(
+                                                                           "Counter Randomness",
+                                                                           _state.Data.MessageRandomizer.GetServiceStateAsInt,
+                                                                           typeof(State),
+                                                                           CliNodePermission.Default,
+                                                                           _state.Data.MessageRandomizer.ServiceStateNext
+                                                                          ),
+                                                           new CliNodeRange(
+                                                                          "Random Spreading",
+                                                                          _state.Data.MessageRandomizer.Options.GetSpreading,
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.MessageRandomizer.Options.SetSpreading
+                                                                          ),
+                                                           new CliNodeEnum(
+                                                                           "Collect Logs",
+                                                                           _state.Data.MessageRandomizer.GetServiceStateAsInt,
+                                                                           typeof(State),
+                                                                           CliNodePermission.Default,
+                                                                           _state.Data.MessageRandomizer.ServiceStateNext
+                                                                          ),
+                                                           new CliNodeEnum(
+                                                                            "Service State",
+                                                                            _state.Data.MessageRandomizer.GetServiceStateAsInt,
+                                                                            typeof(State),
+                                                                            CliNodePermission.Default,
+                                                                            _state.Data.MessageRandomizer.ServiceStateNext
                                                                             )
-                                                      ],
-                                                      DirectoryBack
-                                                     );
+                                                       ]);
 
-        var randomMsgsDir = new CliNodeGeneric<int>(
-                                                        "Random Messages",
-                                                        [
-                                                            new CliNodeGeneric<int>(
-                                                                                    "Max Counter Value",
-                                                                                    _data.MessageRandomizer.Options.GetCounterMax,
-                                                                                    _data.MessageRandomizer.Options.SetCounterMax,
-                                                                                    CliNodeValueType.Int
-                                                                                   ),
-                                                            new CliNodeGeneric<int>(
-                                                                                    "Random Value",
-                                                                                    _data.MessageRandomizer.Options.GetRandomValue,
-                                                                                    CliNodeValueType.Int
-                                                                                   ),
-                                                            new CliNodeGeneric<int>(
-                                                                               "Increase Counter",
-                                                                               _data.MessageRandomizer.GetCounter,
-                                                                               _data.MessageRandomizer.HandleCounter,
-                                                                               CliNodeValueType.Int
-                                                                              ),
-                                                            new CliNodeGeneric<int>(
-                                                                               "Generate Message",
-                                                                               _data.MessageRandomizer.GenerateAndSendRandomMessage
-                                                                              ),
-                                                            new CliNodeGeneric<State>(
-                                                                                      "Counter Randomness",
-                                                                                      _data.MessageRandomizer.GetRandomness,
-                                                                                      _data.MessageRandomizer.ToggleRandomness,
-                                                                                      CliNodeValueType.State
-                                                                                     ),
-                                                            new CliNodeGeneric<Range>(
-                                                                                      "Random Spreading",
-                                                                                      _data.MessageRandomizer.Options.GetSpreading,
-                                                                                      _data.MessageRandomizer.Options.SetSpreading,
-                                                                                      CliNodeValueType.Range
-                                                                                     ),
-                                                            new CliNodeGeneric<State>(
-                                                                               "Collect Logs",
-                                                                               _data.MessageRandomizer.GetLoggerState,
-                                                                               _data.MessageRandomizer.ToggleLoggerState,
-                                                                               CliNodeValueType.State
-                                                                              ),
-                                                            new CliNodeGeneric<State>(
-                                                                               "State",
-                                                                               _data.MessageRandomizer.GetServiceState,
-                                                                               _data.MessageRandomizer.ToggleService,
-                                                                               CliNodeValueType.State
-                                                                              )
-                                                        ],
-                                                        DirectoryBack
-                                                       );
-
-        var chatCmdsDir = new CliNodeGeneric<int>(
-                                                      "Chat Commands",
+        var chatCmdsDir = new CliNodeStaticDirectory(
+                                                     ServiceName.ChatCommands,
+                                                      _state, 
+                                                      true,
                                                       [
-                                                          new CliNodeGeneric<char>(
-                                                                                   "Command Identifier",
-                                                                                   _data.ChatCommands.Options.GetCommandIdentifier,
-                                                                                   _data.ChatCommands.Options.SetCommandIdentifier,
-                                                                                   CliNodeValueType.Char
-                                                                                  ),
-                                                          new CliNodeGeneric<State>(
-                                                                             "Service State",
-                                                                             _data.ChatCommands.GetServiceState,
-                                                                             _data.ChatCommands.ToggleService,
-                                                                             CliNodeValueType.State
-                                                                            )
-                                                      ],
-                                                      DirectoryBack
-                                                     );
-
-        var regexDir = new CliNodeGeneric<int>(
-                                                   "Regex",
-                                                   [
-                                                       new CliNodeGeneric<int>(
-                                                                          "Patterns",
-                                                                          [
-                                                                              new CliNodeGeneric<string>(
-                                                                                   "Add Pattern",
-                                                                                   _data.Regex.AddPattern,
-                                                                                   CliNodeValueType.String
-                                                                                  )
-                                                                          ],
-                                                                          DirectoryBack
+                                                          new CliNodeChar(
+                                                                          "Command Identifier",
+                                                                          _state.Data.ChatCommands.Options.GetCommandIdentifier,
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.ChatCommands.SetCommandIdentifier
+                                                                          ), 
+                                                          new CliNodeEnum(
+                                                                         "Service State",
+                                                                         _state.Data.ChatCommands.GetServiceStateAsInt,
+                                                                         typeof(State),
+                                                                         CliNodePermission.Default,
+                                                                         _state.Data.ChatCommands.ServiceStateNext
                                                                          ),
-                                                       new CliNodeGeneric<State>(
-                                                                               "Service State",
-                                                                               _data.Regex.GetServiceState,
-                                                                               _data.Regex.ToggleService,
-                                                                               CliNodeValueType.State
-                                                                              )
-                                                   ],
-                                                   DirectoryBack
-                                                  );
+                                                      ]);
 
-        var services = new CliNodeGeneric<int>(
-                                                   "Services",
+        var timeoutDir = new CliNodeDynamicModerationDirectory(
+                                                               "Timeout Patterns",
+                                                               "Add Pattern",
+                                                               "Remove Pattern",
+                                                               ModerationActionType.Timeout,
+                                                               _state
+                                                              );
+        
+        var banDir = new CliNodeDynamicModerationDirectory(
+                                                               "Ban Patterns",
+                                                               "Add Pattern",
+                                                               "Remove Pattern",
+                                                               ModerationActionType.Ban,
+                                                               _state
+                                                              );
+        
+        var warnDir = new CliNodeDynamicModerationDirectory(
+                                                           "Warn Patterns",
+                                                           "Add Pattern",
+                                                           "Remove Pattern",
+                                                           ModerationActionType.Warn,
+                                                           _state
+                                                          );
+        
+        var warnWithTimeoutDir = new CliNodeDynamicModerationDirectory(
+                                                            "Warn With Timeout Patterns",
+                                                            "Add Pattern",
+                                                            "Remove Pattern",
+                                                            ModerationActionType.WarnWithTimeout,
+                                                            _state
+                                                           );
+        
+        var warnWithBanDir = new CliNodeDynamicModerationDirectory(
+                                                            "Warn With Ban Patterns",
+                                                            "Add Pattern",
+                                                            "Remove Pattern",
+                                                            ModerationActionType.WarnWithBan,
+                                                            _state
+                                                           );
+        
+        var moderationDir = new CliNodeStaticDirectory(
+                                                       ServiceName.Moderation,
+                                                       _state,
+                                                       true,
+                                                       [
+                                                           banDir,
+                                                           timeoutDir,
+                                                           warnWithBanDir,
+                                                           warnWithTimeoutDir,
+                                                           warnDir,
+                                                           new CliNodeEnum(
+                                                                           "Service State",
+                                                                           _state.Data.Moderation.GetServiceStateAsInt,
+                                                                           typeof(State),
+                                                                           CliNodePermission.Default,
+                                                                           _state.Data.Moderation.ServiceStateNext
+                                                                          ),
+                                                       ]
+                                                      );
+        
+        var globalPatterns = new CliNodeDynamicDirectory(
+                                                   "Global Patterns",
+                                                   "Add Pattern",
+                                                   "Remove Pattern",
+                                                   _state.Data.MessageFilter.AddPatternWithComment,
+                                                   _state.Data.MessageFilter.RemovePattern,
+                                                   _state.Data.MessageFilter.GetPatternsWithComments(),
+                                                   _state,
+                                                   true
+                                                   );
+        
+        var messageFilterDir = new CliNodeStaticDirectory(
+                                                  ServiceName.MessageFilter,
+                                                  _state,
+                                                  true,
+                                                  [
+                                                      globalPatterns,
+                                                      moderationDir,
+                                                      new CliNodeEnum(
+                                                                      "Service State",
+                                                                      _state.Data.MessageFilter.GetServiceStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      _state.Data.MessageFilter.ServiceStateNext
+                                                                     ),
+                                                  ]);
+
+        var loggerDir = new CliNodeStaticDirectory(
+                                                   ServiceName.Logger,
+                                                   _state,
+                                                   true,
                                                    [
-                                                       chatCmdsDir,
-                                                       gameReqsDir,
-                                                       randomMsgsDir,
-                                                       regexDir
-                                                   ],
-                                                   DirectoryBack
-                                                  );
-
-
-        var loginDir = new CliNodeGeneric<int>(
-                                                   "Credentials",
-                                                   [
-                                                       new CliNodeGeneric<int>(
-                                                                            "Load",
-                                                                            _data.Bot.Options.Load
-                                                                           ),
-                                                       new CliNodeGeneric<string>(
-                                                                                  "Bot Username",
-                                                                                  _data.Bot.Options.GetUsername,
-                                                                                  _data.Bot.Options.SetUsername,
-                                                                                  CliNodeValueType.String
-                                                                                 ),
-                                                       new CliNodeGeneric<string>(
-                                                                                  "Channel",
-                                                                                  _data.Bot.Options.GetChannel,
-                                                                                  _data.Bot.Options.SetChannel,
-                                                                                  CliNodeValueType.String
-                                                                                 ),
-                                                       new CliNodeGeneric<string>(
-                                                                                  "OAuth",
-                                                                                  _data.Bot.Options.GetOAuth,
-                                                                                  _data.Bot.Options.SetOAuth,
-                                                                                  CliNodeValueType.String
-                                                                                 ),
-                                                       new CliNodeGeneric<int>(
-                                                                               "Save",
-                                                                               _data.Bot.Options.Save
-                                                                              )
-                                                   ],
-                                                   DirectoryBack
-                                                  );
-
-        var rootDir = new CliNodeGeneric<int>(
-                                           "Root",
-                                           [
-                                               loginDir,
-                                               new CliNodeGeneric<int>(
-                                                                       "Initialize",
-                                                                       _data.Bot.Start
+                                                       new CliNodeLogDirectory(
+                                                                               "Non-Twitch Logs",
+                                                                               true,
+                                                                               _state,
+                                                                               _state.Data.Logger,
+                                                                               LogType.NonTwitch
+                                                                               ),
+                                                       new CliNodeLogDirectory(
+                                                                               "Twitch Logs",
+                                                                               true,
+                                                                               _state,
+                                                                               _state.Data.Logger,
+                                                                               LogType.Twitch
+                                                                              ),
+                                                       new CliNodeEnum(
+                                                                       "Service State",
+                                                                       _state.Data.Logger.GetServiceStateAsInt,
+                                                                       typeof(State),
+                                                                       CliNodePermission.Default,
+                                                                       _state.Data.Logger.ServiceStateNext
                                                                       ),
-                                               new CliNodeGeneric<State>(
-                                                                         "Enabled",
-                                                                         _data.Bot.GetServiceState,
-                                                                         _data.Bot.ToggleService,
-                                                                         CliNodeValueType.State
+                                                   ]
+                                                   ); 
+        
+        var services = new CliNodeStaticDirectory(
+                                                  "Services",
+                                                  _state,
+                                                  true,
+                                                  [
+                                                      chatCmdsDir,
+                                                      gameReqsDir,
+                                                      randomMsgsDir,
+                                                      messageFilterDir,
+                                                      loggerDir
+                                                  ]);
+        
+        var loginDir = new CliNodeStaticDirectory(
+                                                  "Credentials",
+                                                  _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString(
+                                                                        "Bot Username",
+                                                                        _state.Data.Bot.Options.GetUsername,
+                                                                        CliNodePermission.Default,
+                                                                        _state.Data.Bot.Options.SetUsername
                                                                         ),
-                                               services
-                                           ]
-                                          );
+                                                      new CliNodeString(
+                                                                        "Channel",
+                                                                        _state.Data.Bot.Options.GetChannel,
+                                                                        CliNodePermission.Default,
+                                                                        _state.Data.Bot.Options.SetChannel
+                                                                       ),
+                                                      new CliNodeStaticDirectory(
+                                                                                 "Secret",
+                                                                                 _state,
+                                                                                 true,
+                                                                                 [
+                                                                                     new CliNodeString(
+                                                                                          "OAuth",
+                                                                                          _state.Data.Bot.Options.GetOAuth,
+                                                                                          CliNodePermission.Default,
+                                                                                          _state.Data.Bot.Options.SetOAuth
+                                                                                         ),
+                                                                                     new CliNodeString(
+                                                                                          "ClientId",
+                                                                                          _state.Data.Bot.Options.GetClientId,
+                                                                                          CliNodePermission.Default,
+                                                                                          _state.Data.Bot.Options.SetClientId
+                                                                                         ),
+                                                                                 ]
+                                                                                 ),
+                                                      new CliNodeAction(
+                                                                        "Load",
+                                                                        _state.Data.Bot.Options.Load
+                                                                       ),
+                                                      new CliNodeAction(
+                                                                        "Save",
+                                                                        _state.Data.Bot.Options.Save
+                                                                       )
+                                                  ]
+                                                 );
+
+        var rootDir = new CliNodeStaticDirectory(
+                                                 "Root",
+                                                 _state,
+                                                 false,
+                                                 [
+                                                     loginDir, 
+                                                     new CliNodeAction(
+                                                                       "Initialize",
+                                                                       _state.Data.Bot.Start
+                                                                      ),
+                                                     services
+                                                 ]);
 
         _directories.Add(rootDir);
     }

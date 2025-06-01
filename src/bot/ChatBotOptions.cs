@@ -3,19 +3,19 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.twitchAPI;
+namespace ChatBot.bot;
 
 public class ChatBotOptions : Options {
     private SaveData? _saveData = new();
 
     protected override string Name => "chat_bot";
-    protected override string OptionsPath => Path.Combine($"{Directories.dataDirectory}{Name}/", $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine($"{Directories.dataDirectory}{Name}", $"{Name}_opt.json");
 
-    public override State State => _saveData!.state;
-    public string? Username => _saveData!.username;
-    public string? OAuth => _saveData!.oAuth;
-    public string? Channel => _saveData!.channel;
-    public bool ShouldPrintTwitchLogs => _saveData!.shouldPrintTwitchLogs;
+    public override State ServiceState => _saveData!.ServiceState;
+    public string? Username => _saveData!.Username;
+    public string? OAuth => _saveData!.OAuth;
+    public string? Channel => _saveData!.Channel;
+    public string? ClientId => _saveData!.ClientId;
 
 
     public override bool TryLoad() {
@@ -35,8 +35,8 @@ public class ChatBotOptions : Options {
                                  "Empty",
                                  "Empty",
                                  "Empty",
-                                 false
-                                );
+                                 "Empty"
+                                 );
         Save();
     }
 
@@ -45,39 +45,43 @@ public class ChatBotOptions : Options {
     }
 
     public override void SetState(State state) {
-        _saveData!.state = state;
+        _saveData!.ServiceState = state;
         Save();
     }
 
     public override State GetState() {
-        return State;
+        return ServiceState;
     }
 
     public void SetUsername(string username) {
-        _saveData!.username = username;
+        _saveData!.Username = username;
     }
-
+    
     public void SetChannel(string channel) {
-        _saveData!.channel = channel;
+        _saveData!.Channel = channel;
     }
-
+    
     public void SetOAuth(string token) {
-        _saveData!.oAuth = token;
+        _saveData!.OAuth = token;
     }
-
+    
     public string GetUsername() {
         return Username ?? "Empty";
     }
-
+    
     public string GetChannel() {
         return Channel ?? "Empty";
     }
-
+    
     public string GetOAuth() {
         return OAuth ?? "Empty";
     }
-
-    public void SetLoggingStatus(bool status) {
-        _saveData!.shouldPrintTwitchLogs = status;
+    
+    public string GetClientId() {
+        return ClientId ?? "Empty";
+    }
+    
+    public void SetClientId(string clientId) {
+        _saveData!.ClientId = clientId;
     }
 }

@@ -11,10 +11,10 @@ public class GameRequestsOptions : Options {
     protected override string Name => "game_requests";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
-    public override State State => _saveData!.state;
-    public List<GameRequest>? GameRequests => _saveData!.gameRequests;
-    public HashSet<int>? GameRequestsSet => _saveData!.gameRequestsSet;
-    public Dictionary<string, int>? GameRequestsPoint => _saveData!.gameRequestsPoints;
+    public override State ServiceState => _saveData!.ServiceState;
+    public List<GameRequest>? GameRequests => _saveData!.GameRequests;
+    public HashSet<int>? GameRequestsSet => _saveData!.GameRequestsSet;
+    public Dictionary<string, int>? GameRequestsPoint => _saveData!.GameRequestsPoints;
 
 
     public override bool TryLoad() {
@@ -38,11 +38,11 @@ public class GameRequestsOptions : Options {
     }
 
     public override void SetState(State state) {
-        _saveData!.state = state;
+        _saveData!.ServiceState = state;
         Save();
     }
 
     public override State GetState() {
-        return State;
+        return ServiceState;
     }
 }

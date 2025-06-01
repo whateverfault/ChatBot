@@ -1,9 +1,11 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
+using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
-using ChatBot.Services.regex;
-using ChatBot.twitchAPI.interfaces;
+using ChatBot.Services.moderation;
 
 namespace ChatBot.Services.Static;
 
@@ -12,28 +14,42 @@ public static class ServiceManager {
                                                                                                 {
                                                                                                    ServiceName.GameRequests,
                                                                                                    (
-                                                                                                       new GameRequestsService(), 
+                                                                                                       new GameRequestsService(),
                                                                                                        new GameRequestsEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                }, {
                                                                                                    ServiceName.MessageRandomizer,
                                                                                                    (
                                                                                                        new MessageRandomizerService(),
                                                                                                        new MessageRandomizerEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                }, {
                                                                                                    ServiceName.ChatCommands,
                                                                                                    (
-                                                                                                       new ChatCommandsService(), 
+                                                                                                       new ChatCommandsService(),
                                                                                                        new ChatCommandsEvents()
-                                                                                                       )
+                                                                                                   )
                                                                                                },
                                                                                                {
-                                                                                                   ServiceName.Regex,
+                                                                                                   ServiceName.MessageFilter,
                                                                                                    (
-                                                                                                       new RegexService(), 
-                                                                                                       new RegexEvents()
-                                                                                                       )
+                                                                                                       new MessageFilterService(),
+                                                                                                       new MessageFilterEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.Moderation,
+                                                                                                   (
+                                                                                                       new ModerationService(),
+                                                                                                       new ModerationEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.Logger,
+                                                                                                   (
+                                                                                                       new LoggerService(),
+                                                                                                       new LoggerEvents()
+                                                                                                   )
                                                                                                },
                                                                                            };
 

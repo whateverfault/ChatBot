@@ -1,4 +1,5 @@
-﻿using ChatBot.shared.Logging;
+﻿using ChatBot.Services.logger;
+using ChatBot.Services.Static;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 
@@ -6,7 +7,7 @@ namespace ChatBot.shared.Handlers;
 
 public enum ErrorCode {
     PermDeny = 0,
-    WrongInput = 1,
+    InvalidInput = 1,
     TooFewArgs = 2,
     AlreadyContains = 3,
     TooFewPoints = 4,
@@ -22,6 +23,8 @@ public enum ErrorCode {
 }
 
 public class ErrorHandler {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    
     private static readonly string[] _internalErrorMessages = [
                                                                   "Permission Denied.",
                                                                   "Invalid Input.",
@@ -84,7 +87,7 @@ public class ErrorHandler {
         if (code == ErrorCode.None) {
             return false;
         }
-        Logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
+        _logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
         return true;
     }
 

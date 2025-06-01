@@ -9,7 +9,7 @@ public abstract class Options {
     protected abstract string Name { get; }
     protected abstract string OptionsPath { get; }
 
-    public abstract State State { get; }
+    public abstract State ServiceState { get; }
 
 
     public abstract void Save();

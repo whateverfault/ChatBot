@@ -1,21 +1,22 @@
-﻿using System.Text.RegularExpressions;
-using ChatBot.shared;
+﻿using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.regex;
+namespace ChatBot.Services.moderation;
 
-public class RegexOptions : Options {
+public class ModerationOptions : Options {
     private SaveData? _saveData;
-    private List<Regex> Patterns => _saveData!.patterns;
+    
+    protected override string Name => "moderation";
+    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
-    protected override string Name => "regex";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+$"{Name}/", $"{Name}_opt.json");
+    public override State ServiceState => _saveData!.ServiceState;
+    public List<ModAction> ModerationActions => _saveData!.ModerationActions;
+    public List<WarnedUser> WarnedUsers => _saveData!.WarnedUsers;
+    
 
-    public override State State => _saveData!.state;
-
-
+    
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
@@ -34,31 +35,28 @@ public class RegexOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
+                                 [],
                                  []
-                                );
+                                 );
         Save();
     }
 
     public override void SetState(State state) {
-        _saveData!.state = state;
+        _saveData!.ServiceState = state;
         Save();
     }
 
     public override State GetState() {
-        return State;
+        return ServiceState;
     }
-    
-    public void AddPattern(Regex regex) {
-        Patterns.Add(regex);
+
+    public void AddModAction(ModAction action) {
+        ModerationActions.Add(action);
         Save();
     }
 
-    public void RemovePattern(int index) {
-        Patterns.RemoveAt(index);
+    public void RemoveModAction(int index) {
+        ModerationActions.RemoveAt(index);
         Save();
-    }
-
-    public List<Regex> GetPatterns() {
-        return Patterns;
     }
 }

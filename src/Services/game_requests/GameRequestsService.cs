@@ -1,8 +1,8 @@
-﻿using ChatBot.Services.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.interfaces;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.twitchAPI.interfaces;
 using TwitchLib.Client.Models;
 
 namespace ChatBot.Services.game_requests;
@@ -13,15 +13,15 @@ public class GameRequestsService : Service {
 
 
     public override State GetServiceState() {
-        return Options.State;
+        return Options.ServiceState;
     }
-
+    
     public override void ToggleService() {
-        Options.SetState(Options.State == State.Enabled ? State.Disabled : State.Enabled);
+        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 
     public ErrorCode GivePoint(ChatMessage message, string? userId) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
         if (!message.IsBroadcaster) {
@@ -37,17 +37,17 @@ public class GameRequestsService : Service {
     }
 
     public ErrorCode TakePoint(ChatMessage message, string? userId) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
 
         if (Options.GameRequestsPoint!.TryGetValue(userId!, out var value)) {
             Options.GameRequestsPoint[userId!] -= value <= 0 ? 0 : 1;
         } else {
-            return ErrorCode.WrongInput;
+            return ErrorCode.InvalidInput;
         }
 
         Options.Save();
@@ -55,7 +55,7 @@ public class GameRequestsService : Service {
     }
 
     public ErrorCode AppendRequest(GameRequest request, ChatMessage message) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
         if (Options.GameRequestsPoint!.TryGetValue(message.UserId, out var value) && value <= 0) {
@@ -72,14 +72,14 @@ public class GameRequestsService : Service {
     }
 
     public ErrorCode RemoveRequestAt(int index, ChatMessage message) {
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        if (!PermissionHandler.Handle(Permission.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
             return ErrorCode.PermDeny;
         }
         if (index >= Options.GameRequests?.Count) {
-            return ErrorCode.WrongInput;
+            return ErrorCode.InvalidInput;
         }
 
         Options.GameRequests?.RemoveAt(index);
@@ -89,7 +89,7 @@ public class GameRequestsService : Service {
 
     public ErrorCode ListGameRequests(out GameRequest[] gameRequests) {
         gameRequests = [];
-        if (Options.State == State.Disabled) {
+        if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
         gameRequests = Options.GameRequests!.ToArray();

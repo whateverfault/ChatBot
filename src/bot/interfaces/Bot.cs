@@ -4,7 +4,7 @@ using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
-namespace ChatBot.twitchAPI.interfaces;
+namespace ChatBot.bot.interfaces;
 
 public abstract class Bot : Service {
     public override abstract Options Options { get; }
@@ -24,8 +24,4 @@ public abstract class Bot : Service {
     public abstract ErrorCode TryGetClient(out ITwitchClient client);
 
     public abstract ITwitchClient GetClient();
-
-    public override State GetServiceState() {
-        return Options!.State;
-    }
 }
