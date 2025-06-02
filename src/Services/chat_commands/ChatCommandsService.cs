@@ -85,7 +85,13 @@ public class ChatCommandsService : Service {
                 }
 
                 var message = args.Command.ChatMessage;
-                Client.SendReply(message.Channel, message.Id, $"{commandArgs[0]} уже завтра!");
+                var argSb = new StringBuilder();
+                
+                foreach (var arg in commandArgs) {
+                    argSb.Append($"{arg} ");
+                }
+                
+                Client.SendReply(message.Channel, message.Id, $"{argSb} уже завтра!  PewPewPew  PewPewPew  PewPewPew ");
                 break;
             }
             case "ban": {
@@ -96,7 +102,13 @@ public class ChatCommandsService : Service {
                 }
 
                 var message = args.Command.ChatMessage;
-                Client.SendReply(message.Channel, message.Id, $"{commandArgs[0]} забанен.");
+                var argSb = new StringBuilder();
+                
+                foreach (var arg in commandArgs) {
+                    argSb.Append($"{arg} ");
+                }
+                
+                Client.SendReply(message.Channel, message.Id, $"{argSb.ToString()} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
                 break;
             }
 
