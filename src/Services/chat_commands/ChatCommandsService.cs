@@ -77,6 +77,28 @@ public class ChatCommandsService : Service {
                 SendUsage(args);
                 break;
             }
+            case "when": {
+                if (commandArgs.Length < 1) {
+                    err = ErrorCode.TooFewArgs;
+                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
+                    return;
+                }
+
+                var message = args.Command.ChatMessage;
+                Client.SendReply(message.Channel, message.Id, $"{commandArgs[0]} уже завтра!");
+                break;
+            }
+            case "ban": {
+                if (commandArgs.Length < 1) {
+                    err = ErrorCode.TooFewArgs;
+                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
+                    return;
+                }
+
+                var message = args.Command.ChatMessage;
+                Client.SendReply(message.Channel, message.Id, $"{commandArgs[0]} забанен.");
+                break;
+            }
 
             #endregion
             #region GameRequestsService
@@ -95,7 +117,7 @@ public class ChatCommandsService : Service {
                 }
 
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра добалвена в очередь.");
-                _logger.Log(LogLevel.Info, "Game requests has been appended");
+                _logger.Log(LogLevel.Info, "Game requests has been appended to the queue");
                 break;
             }
             case "gr-rem": {
