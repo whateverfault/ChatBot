@@ -98,7 +98,7 @@ public class ModAction {
 
     public async Task Activate(ITwitchClient client, ChatBotOptions botOptions, ChatMessage message) {
         if (State == State.Disabled) return;
-        if (!RestrictionHandler.Handle(Restriction, message)) return;
+        if (RestrictionHandler.Handle(Restriction, message)) return;
         
         switch (Type) {
             case ModerationActionType.Ban: {
@@ -114,10 +114,11 @@ public class ModAction {
 
     public async Task ActivateWarn(ITwitchClient client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers) {
         if (State == State.Disabled) return;
-        if (!RestrictionHandler.Handle(Restriction, message)) return;
+        if (RestrictionHandler.Handle(Restriction, message)) return;
         
         if (Type == ModerationActionType.Warn) {
             client.SendReply(message.Channel, message.Id, ModeratorComment);
+            await client.DeleteMessageHelix(options, message);
             return;
         }
         
@@ -133,13 +134,14 @@ public class ModAction {
             user = warnedUsers[index];
         }
         if (!found) {
-            warnedUsers.Add(new WarnedUser(message.UserId, this));
-            return;
+            user = new WarnedUser(message.UserId, this);
+            warnedUsers.Add(user);
         }
         
         user.GiveWarn();
+        client.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment}");
         if (user.Warns < user.ModAction.MaxWarnCount) {
-            _options.Save();
+            await client.DeleteMessageHelix(options, message);
             return;
         }
         

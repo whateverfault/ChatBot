@@ -1,4 +1,5 @@
-﻿using ChatBot.CLI;
+﻿using System.Text;
+using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.game_requests;
 using ChatBot.Services.logger;
@@ -16,6 +17,9 @@ internal static class Program {
 
 
     private static async Task Main() {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+        
         var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot);

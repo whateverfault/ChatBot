@@ -5,8 +5,6 @@ namespace ChatBot.utils;
 
 public static class TwitchLibUtils {
     public static async Task<string> GetUserId(ChatBotOptions options, string username) {
-        // TODO Unharcode clientId
-        
         var api = new TwitchAPI {
                                     Settings = {
                                                    AccessToken = options.OAuth,
