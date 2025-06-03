@@ -127,19 +127,20 @@ public class ModAction {
         var found = false;
 
         for (var index = 0; index < warnedUsers.Count; index++) {
+            userIndex = index;
             if (!warnedUsers[index].UserId.Equals(message.UserId)) continue;
 
             found = true;
-            userIndex = index;
             user = warnedUsers[index];
         }
         if (!found) {
             user = new WarnedUser(message.UserId, this);
             warnedUsers.Add(user);
+            userIndex++;
         }
         
         user.GiveWarn();
-        client.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment}");
+        client.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
             await client.DeleteMessageHelix(options, message);
             return;

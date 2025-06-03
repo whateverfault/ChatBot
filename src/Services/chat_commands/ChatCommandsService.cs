@@ -108,10 +108,25 @@ public class ChatCommandsService : Service {
                     argSb.Append($"{arg} ");
                 }
                 
-                Client.SendReply(message.Channel, message.Id, $"{argSb.ToString()} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
+                Client.SendReply(message.Channel, message.Id, $"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
                 break;
             }
-
+            case "carrot": {
+                var chatMessage = args.Command.ChatMessage;
+                Options.MessageRandomizerService.GenerateAndSendRandomMessage(Client, chatMessage.Channel);
+                break;
+            }
+            case "echo": {
+                var chatMessage = args.Command.ChatMessage;
+                var argSb = new StringBuilder();
+                
+                foreach (var arg in commandArgs) {
+                    argSb.Append($"{arg} ");
+                }
+                
+                Client.SendMessage(chatMessage.Channel, argSb.ToString());
+                break;
+            }
             #endregion
             #region GameRequestsService
 
@@ -259,7 +274,7 @@ public class ChatCommandsService : Service {
             #endregion
             #region MessageRandomizerService
 
-            case "mr-guess": {
+            case "guess": {
                 if (Options.MessageRandomizerService.Options.MessageState == MessageState.Guessed) {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Уже отгадано.");
                     _logger.Log(LogLevel.Error, $"{args.Command.ChatMessage.Username} tried to guess already guessed message");
@@ -289,7 +304,7 @@ public class ChatCommandsService : Service {
                 }
                 break;
             }
-            case "mr-whose": {
+            case "whose": {
                 if (!RestrictionHandler.Handle(Restriction.Dev, args.Command.ChatMessage)) {
                     ErrorHandler.ReplyWithError(ErrorCode.PermDeny, args.Command.ChatMessage, Client);
                     _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' doesn't have enough rights to call this command.");
@@ -305,7 +320,7 @@ public class ChatCommandsService : Service {
                 Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Это было сообщение от '{message!.Username}'");
                 break;
             }
-            case "mr-repeat": {
+            case "repeat": {
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
                 if (ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client)) {
                     ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client);
@@ -327,7 +342,7 @@ public class ChatCommandsService : Service {
     }
 
     private void SendUsage(OnChatCommandReceivedArgs args) {
-        var usage = $"{Options.CommandIdentifier}<комманда> \"аргумент1\" \"аргумент2\" ...";
+        var usage = $"{Options.CommandIdentifier}<комманда> \"аргумент1\" \"аргумент2\" ... | {Options.CommandIdentifier}cmds для списка комманд";
         Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, usage);
     }
 
@@ -336,15 +351,20 @@ public class ChatCommandsService : Service {
         var cmds = new[] {
                              $"1. {cmdId}cmds - список комманд. ",
                              $"2. {cmdId}help - использование комманд. ",
-                             $"3. {cmdId}gr-add <game_name> - добавить заказ игры. ",
-                             $"4. {cmdId}gr-rem <game_position> - удалить заказ игры. ",
-                             $"5. {cmdId}gr-list - список заказов игр. ",
-                             $"6. {cmdId}gr-give-point <nickname> - выдать очко.",
-                             $"7. {cmdId}gr-take-point <nickname> - забрать очко.",
-                             $"8. {cmdId}gr-enable - включить заказы.",
-                             $"9. {cmdId}gr-disable - отключить заказы.",
-                             $"10. {cmdId}mr-guess <nick_name> - угадать ник написавшего сообщение",
-                             $"11. {cmdId}mr-whose - вывести ник написавшего сообщение"
+                             $"3. {cmdId}echo <message> - буквально эхо",
+                             Page.PageTerminator,
+                             $"1. {cmdId}gr-add <game_name> - добавить заказ игры. ",
+                             $"2. {cmdId}gr-rem <game_position> - удалить заказ игры. ",
+                             $"3. {cmdId}gr-list - список заказов игр. ",
+                             $"4. {cmdId}gr-give-point <nickname> - выдать очко.",
+                             $"5. {cmdId}gr-take-point <nickname> - забрать очко.",
+                             $"6. {cmdId}gr-enable - включить заказы.",
+                             $"7. {cmdId}gr-disable - отключить заказы.",
+                             Page.PageTerminator,
+                             $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
+                             $"2. {cmdId}whose - вывести ник написавшего",
+                             $"3. {cmdId}carrot - сгенерировать новое сообщение",
+                             $"4. {cmdId}repeat - повторить сообщение",
                          };
 
         var page = 0;
@@ -361,8 +381,13 @@ public class ChatCommandsService : Service {
         }
 
         var message = new StringBuilder();
+        var pageTerminatorsCount = 0;
         for (var i = 0; i < cmds.Length; i++) {
-            if (pages[i] == page) {
+            if (cmds[i] == Page.PageTerminator) {
+                pageTerminatorsCount++;
+                continue;
+            }
+            if (pages[i-pageTerminatorsCount] == page) {
                 message.Append($"{cmds[i]} ");
             }
         }

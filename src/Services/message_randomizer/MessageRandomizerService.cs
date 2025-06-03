@@ -55,40 +55,37 @@ public class MessageRandomizerService : Service {
             Options.SetRandomValue();
         }
 
-        var message = GenerateRandomMessage();
-        if (message == null) {
+        var err = GenerateRandomMessage(out var message);
+        if (ErrorHandler.LogErrorAndPrint(err)) {
             return;
         }
-        client.SendMessage(channel, message.Msg);
+        client.SendMessage(channel, message!.Msg);
     }
 
-    private Message? GenerateRandomMessage() {
+    private ErrorCode GenerateRandomMessage(out Message? message) {
+        message = null;
         if (Options.ServiceState == State.Disabled) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
-            return null;
+            return ErrorCode.ServiceDisabled;
         }
         if (Options.Logs.Count <= 0) {
-            return null;
+            return ErrorCode.ListIsEmpty;
         }
 
-        var randomIndex = Random.Shared.Next(0, Options.Logs.Count-1);
+        var randomIndex = Random.Shared.Next(0, Options.Logs.Count);
         Options.SetLastGeneratedMessage(Options.Logs[randomIndex]);
         Options.SetMessageState(MessageState.NotGuessed);
         _logger.Log(LogLevel.Info,
-                    $"Message has been Generated.\nMessage: {Options.LastGeneratedMessage.Msg} - {Options.LastGeneratedMessage.Username}");
-        return Options.LastGeneratedMessage;
+                    $"Message has been Generated: {Options.LastGeneratedMessage.Msg} | {Options.LastGeneratedMessage.Username}");
+        
+        message = Options.LastGeneratedMessage;
+        return ErrorCode.None;
     }
 
     public void GenerateAndSendRandomMessage(ITwitchClient client, string channel) {
-        if (Options.ServiceState == State.Disabled) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
-            return;
-        }
-        if (Options.Logs.Count <= 0) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
-            return;
-        }
-        client.SendMessage(channel, GenerateRandomMessage()!.Msg);
+        var err = GenerateRandomMessage(out var message);
+        if (ErrorHandler.LogErrorAndPrint(err)) return;
+        
+        client.SendMessage(channel, message!.Msg);
     }
 
     public ErrorCode GetLastGeneratedMessage(out Message? message) {
@@ -96,7 +93,7 @@ public class MessageRandomizerService : Service {
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg) ? ErrorCode.InvalidData : ErrorCode.None;
+        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg) ? ErrorCode.NotEnoughData : ErrorCode.None;
     }
 
     public override void ToggleService() {
@@ -107,24 +104,24 @@ public class MessageRandomizerService : Service {
         return Options.ServiceState;
     }
     
-    public State GetLoggerState() {
-        return Options.LoggerState;
+    public int GetLoggerStateAsInt() {
+        return (int)Options.LoggerState;
     }
 
-    public void ToggleLoggerState() {
-        Options.SetLoggerState(Options.LoggerState == State.Enabled ? State.Disabled : State.Enabled);
+    public void LoggerStateNext() {
+        Options.SetLoggerState((State)(((int)Options.LoggerState+1)%Enum.GetValues(typeof(State)).Length));
     }
 
     public State GetRandomness() {
         return Options.Randomness;
     }
+
+    public int GetRandomnessAsInt() {
+        return (int)Options.Randomness;
+    }
     
-    public void ToggleRandomness() {
-        if (Options.ServiceState == State.Disabled) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
-            return;
-        }
-        Options.SetRandomnessState(Options.Randomness == State.Enabled ? State.Disabled : State.Enabled);
+    public void RandomnessNext() {
+        Options.SetRandomnessState((State)(((int)Options.Randomness+1)%Enum.GetValues(typeof(State)).Length));
     }
 
     public int GetCounter() {

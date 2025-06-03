@@ -13,7 +13,7 @@ namespace ChatBot;
 internal static class Program {
     private static Cli _cli = null!;
 
-    private static bool _forcedToRender = false;
+    private static bool _forcedToRender;
 
 
     private static async Task Main() {

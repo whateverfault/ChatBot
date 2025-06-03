@@ -75,10 +75,10 @@ public class CliNodeSystem {
                                                                             ),
                                                            new CliNodeEnum(
                                                                            "Counter Randomness",
-                                                                           _state.Data.MessageRandomizer.GetServiceStateAsInt,
+                                                                           _state.Data.MessageRandomizer.GetRandomnessAsInt,
                                                                            typeof(State),
                                                                            CliNodePermission.Default,
-                                                                           _state.Data.MessageRandomizer.ServiceStateNext
+                                                                           _state.Data.MessageRandomizer.RandomnessNext
                                                                           ),
                                                            new CliNodeRange(
                                                                           "Random Spreading",
@@ -88,10 +88,10 @@ public class CliNodeSystem {
                                                                           ),
                                                            new CliNodeEnum(
                                                                            "Collect Logs",
-                                                                           _state.Data.MessageRandomizer.GetServiceStateAsInt,
+                                                                           _state.Data.MessageRandomizer.GetLoggerStateAsInt,
                                                                            typeof(State),
                                                                            CliNodePermission.Default,
-                                                                           _state.Data.MessageRandomizer.ServiceStateNext
+                                                                           _state.Data.MessageRandomizer.LoggerStateNext
                                                                           ),
                                                            new CliNodeEnum(
                                                                             "Service State",

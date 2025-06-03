@@ -41,7 +41,7 @@ public class CliNodeLogDirectory : CliNodeDirectory {
     private void HandleLog(Log log) {
         Nodes.Add(
                   new CliNodeText(
-                                  $"{log.Time.TimeOfDay.Hours}:{log.Time.TimeOfDay.Minutes}:{log.Time.TimeOfDay.Seconds} [{log.Level}] {log.Message}",
+                                  $"{log.Time.TimeOfDay.Hours:D2}:{log.Time.TimeOfDay.Minutes:D2}:{log.Time.TimeOfDay.Seconds:D2} [{log.Level}] {log.Message}",
                                   false
                                   )
                   );

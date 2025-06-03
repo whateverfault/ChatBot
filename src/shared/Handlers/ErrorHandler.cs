@@ -19,7 +19,9 @@ public enum ErrorCode {
     NotInitialized = 10,
     SaveIssue,
     NotExist,
-    None
+    ListIsEmpty,
+    NotEnoughData,
+    None,
 }
 
 public class ErrorHandler {
@@ -33,12 +35,14 @@ public class ErrorHandler {
                                                                   "Not Enough Points.",
                                                                   "Function is Disabled.",
                                                                   "Already in Requested State.",
-                                                                  "Something went wrong while reading saved info. Try to login first. ",
+                                                                  "Something went wrong while reading saved info. Try to login first.",
                                                                   "Log in the bot first.",
                                                                   "Invalid data.",
                                                                   "Initialize the bot first.",
-                                                                  "Something went wrong while reading saved info. Try to delete or rename save files. ",
-                                                                  "Doesn't exist"
+                                                                  "Something went wrong while reading saved info. Try to delete or rename save files.",
+                                                                  "Doesn't exist.",
+                                                                  "Empty.",
+                                                                  "Too few data.",
                                                               ];
 
 
@@ -55,7 +59,9 @@ public class ErrorHandler {
                                                                 "Некорректные данные.",
                                                                 "Сначала инициализируйте бота.",
                                                                 "Что-то пошло не так при чтении сохраненных данных. Попробуйте удалить или переименовать файлы.",
-                                                                "Не существует"
+                                                                "Не существует.",
+                                                                "Пусто.",
+                                                                "Слишком мало данных.",
                                                             ];
 
 
