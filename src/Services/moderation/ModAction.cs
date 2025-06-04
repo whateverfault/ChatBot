@@ -97,9 +97,9 @@ public class ModAction {
         State = State.Disabled;
     }
 
-    public async Task Activate(ITwitchClient client, ChatBotOptions botOptions, ChatMessage message) {
-        if (State == State.Disabled) return;
-        if (RestrictionHandler.Handle(Restriction, message)) return;
+    public async Task Activate(ITwitchClient client, ChatBotOptions botOptions, ChatMessage message, bool bypass = false) {
+        if (State == State.Disabled && !bypass) return;
+        if (RestrictionHandler.Handle(Restriction, message) && !bypass) return;
         
         switch (Type) {
             case ModerationActionType.Ban: {
@@ -113,9 +113,9 @@ public class ModAction {
         }
     }
 
-    public async Task ActivateWarn(ITwitchClient client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers) {
-        if (State == State.Disabled) return;
-        if (RestrictionHandler.Handle(Restriction, message)) return;
+    public async Task ActivateWarn(ITwitchClient client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers, bool bypass = false) {
+        if (State == State.Disabled && !bypass) return;
+        if (RestrictionHandler.Handle(Restriction, message) && !bypass) return;
         
         if (Type == ModerationActionType.Warn) {
             client.SendReply(message.Channel, message.Id, ModeratorComment);

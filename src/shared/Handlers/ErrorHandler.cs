@@ -21,6 +21,7 @@ public enum ErrorCode {
     NotExist,
     ListIsEmpty,
     NotEnoughData,
+    SmthWentWrong,
     None,
 }
 
@@ -42,7 +43,8 @@ public class ErrorHandler {
                                                                   "Something went wrong while reading saved info. Try to delete or rename save files.",
                                                                   "Doesn't exist.",
                                                                   "Empty.",
-                                                                  "Too few data."
+                                                                  "Too Few Data.",
+                                                                  "Something Went Wrong.",
                                                               ];
 
 
@@ -61,7 +63,8 @@ public class ErrorHandler {
                                                                 "Что-то пошло не так при чтении сохраненных данных. Попробуйте удалить или переименовать файлы.",
                                                                 "Не существует.",
                                                                 "Пусто.",
-                                                                "Слишком мало данных."
+                                                                "Слишком мало данных.",
+                                                                "Что-то пошло не так.",
                                                             ];
 
 

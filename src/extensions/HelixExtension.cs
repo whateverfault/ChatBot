@@ -4,9 +4,7 @@ using ChatBot.bot;
 using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.utils;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using TwitchLib.Client;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using LogLevel = ChatBot.Services.logger.LogLevel;
@@ -125,7 +123,7 @@ public static class HelixExtension {
             var userId = await TwitchLibUtils.GetUserId(options, message.Username);
             
             if (string.IsNullOrEmpty(broadcasterId)) {
-                _logger.Log(LogLevel.Error, $"User {options.Channel!} not found");
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
                 return;
             } if (string.IsNullOrEmpty(botId)) {
                 _logger.Log(LogLevel.Error, $"User {options.Username!} not found");
@@ -164,4 +162,58 @@ public static class HelixExtension {
         }
     }
 
+    public static async Task<TimeSpan?> GetFollowageHelix(this ITwitchClient client, ChatBotOptions options, string username) {
+        try {
+            var userId = await TwitchLibUtils.GetUserId(options, username);
+            var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
+            
+            if (string.IsNullOrEmpty(userId)) {
+                _logger.Log(LogLevel.Error, $"User {username} not found");
+                return null;
+            }
+            if (string.IsNullOrEmpty(broadcasterId)) {
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
+                return null;
+            }
+
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            
+            var requestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://api.twitch.tv/helix/channels/followers?user_id={userId}&broadcaster_id={broadcasterId}"),
+                Headers =
+                {
+                    { "Client-ID", options.ClientId },
+                    { "Authorization", $"Bearer {options.OAuth}" }
+                }
+            };
+
+            var response = await httpClient.SendAsync(requestMessage);
+            
+            if (response.IsSuccessStatusCode) {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var followData = JsonConvert.DeserializeObject<FollowResponse>(responseContent);
+                
+                if (followData?.Data.Length > 0) {
+                    var followDate = followData.Data[0].FollowedAt;
+                    var followDuration = DateTime.UtcNow - followDate;
+                    _logger.Log(LogLevel.Info, $"{username} has been following since {followDate} ({followDuration.TotalDays} days)");
+                    return followDuration;
+                }
+                _logger.Log(LogLevel.Info, $"{username} is not following {options.Channel}");
+            }
+            else {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.Log(LogLevel.Error, $"Failed to get followage for {username}. Status: {response.StatusCode}. Response: {responseContent}");
+            }
+            return null;
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error getting followage: {ex.Message}");
+            return null;
+        } 
+    }
 }

@@ -107,6 +107,12 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.RequiredRoleNext
                                                                           ),
+                                                          new CliNodeInt(
+                                                                         "Moderation Action Index",
+                                                                         _state.Data.ChatCommands.GetModActionIndex,
+                                                                         CliNodePermission.Default,
+                                                                         _state.Data.ChatCommands.SetModActionIndex
+                                                                         ),
                                                           new CliNodeEnum(
                                                                          "Service State",
                                                                          _state.Data.ChatCommands.GetServiceStateAsInt,

@@ -2,10 +2,12 @@
 using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
+using ChatBot.utils;
 using Newtonsoft.Json.Converters;
 using TwitchLib.Client.Models;
 
@@ -21,6 +23,7 @@ public enum ModerationActionType {
 }
 
 public class ModerationService : Service {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private Bot _bot = null!;
     
     public override string Name => ServiceName.Moderation;
@@ -34,7 +37,7 @@ public class ModerationService : Service {
         if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) return;
         
         var err = _bot.TryGetClient(out var client);
-        if (err != ErrorCode.None) return;
+        if (ErrorHandler.LogError(err)) return;
 
         var modAction = Options.ModerationActions[patternIndex];
 
@@ -45,6 +48,27 @@ public class ModerationService : Service {
         }
     }
 
+    public async Task WarnUser(ChatMessage message, int patternIndex) {
+        if (Options.ServiceState == State.Disabled) return;
+
+        if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) {
+            _logger.Log(LogLevel.Error, $"Couldn't Warn User {message.Username}");
+            return;
+        }
+        
+        var err = _bot.TryGetClient(out var client);
+        if (ErrorHandler.LogError(err)) return;
+        
+        var userId = await TwitchLibUtils.GetUserId((ChatBotOptions)_bot.Options, message.Username, _logger);
+        
+        if (string.IsNullOrEmpty(userId)) {
+            _logger.Log(LogLevel.Error, $"Couldn't Warn User {message.Username}");
+            return;
+        }
+        var modAction = Options.ModerationActions[patternIndex];
+        await modAction.ActivateWarn(client, (ChatBotOptions)_bot.Options, message, Options.WarnedUsers, true);
+    }
+    
     public void AddModAction(ModAction action) {
         Options.AddModAction(action);
     }

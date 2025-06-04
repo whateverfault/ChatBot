@@ -15,7 +15,6 @@ public class ModerationOptions : Options {
     public List<ModAction> ModerationActions => _saveData!.ModerationActions;
     public List<WarnedUser> WarnedUsers => _saveData!.WarnedUsers;
     
-
     
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
@@ -57,6 +56,11 @@ public class ModerationOptions : Options {
 
     public void RemoveModAction(int index) {
         ModerationActions.RemoveAt(index);
+        Save();
+    }
+
+    public void AddWarnedUser(WarnedUser warnedUser) {
+        WarnedUsers.Add(warnedUser);
         Save();
     }
 }

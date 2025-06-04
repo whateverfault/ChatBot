@@ -1,5 +1,4 @@
-﻿using System.Resources;
-using ChatBot.shared;
+﻿using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;

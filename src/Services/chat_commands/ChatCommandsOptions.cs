@@ -1,4 +1,5 @@
 ﻿using ChatBot.Services.message_randomizer;
+using ChatBot.Services.moderation;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -16,8 +17,9 @@ public class ChatCommandsOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public Restriction RequiredRole => _saveData!.RequiredRole;
-
+    public int ModActionIndex => _saveData!.ModActionIndex;
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
+    public ModerationService ModerationService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -41,7 +43,8 @@ public class ChatCommandsOptions : Options {
         _saveData = new SaveData(
                                  State.Disabled,
                                  '~',
-                                 Restriction.Everyone
+                                 Restriction.Everyone,
+                                 0
                                 );
         Save();
     }
@@ -65,8 +68,9 @@ public class ChatCommandsOptions : Options {
         Save();
     }
     
-    public void SetServices(MessageRandomizerService mr) {
-        MessageRandomizerService = mr;
+    public void SetServices(MessageRandomizerService messageRandomizer, ModerationService moderation) {
+        MessageRandomizerService = messageRandomizer;
+        ModerationService = moderation;
     }
 
     public Restriction GetRequiredRole() {
@@ -75,5 +79,15 @@ public class ChatCommandsOptions : Options {
 
     public void SetRequiredRole(Restriction requiredRole) {
         _saveData!.RequiredRole = requiredRole;
+        Save();
+    }
+
+    public int GetModActionIndex() {
+        return ModActionIndex;
+    }
+
+    public void SetModActionIndex(int index) {
+        _saveData!.ModActionIndex = index;
+        Save();
     }
 }
