@@ -1,5 +1,4 @@
-﻿using ChatBot.Services.game_requests;
-using ChatBot.Services.message_randomizer;
+﻿using ChatBot.Services.message_randomizer;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -16,7 +15,7 @@ public class ChatCommandsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
-    public GameRequestsService GameRequestsService { get; private set; } = null!;
+    public Restriction RequiredRole => _saveData!.RequiredRole;
 
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
 
@@ -41,7 +40,8 @@ public class ChatCommandsOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
-                                 '~'
+                                 '~',
+                                 Restriction.Everyone
                                 );
         Save();
     }
@@ -65,8 +65,15 @@ public class ChatCommandsOptions : Options {
         Save();
     }
     
-    public void SetServices(GameRequestsService gr, MessageRandomizerService mr) {
-        GameRequestsService = gr;
+    public void SetServices(MessageRandomizerService mr) {
         MessageRandomizerService = mr;
+    }
+
+    public Restriction GetRequiredRole() {
+        return RequiredRole;
+    }
+
+    public void SetRequiredRole(Restriction requiredRole) {
+        _saveData!.RequiredRole = requiredRole;
     }
 }

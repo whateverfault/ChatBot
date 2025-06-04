@@ -42,8 +42,13 @@ public class MessageFilterOptions : Options {
                                      new CommentedRegex(
                                                         new Regex(@"^[!@~]+"),
                                                         true,
-                                                        "Commands"
+                                                        "Special Symbols"
                                                         ),
+                                     new CommentedRegex(
+                                                        new Regex(@"^~"),
+                                                        true,
+                                                        "Commands"
+                                                       ),
                                  ]
                                 );
         Save();

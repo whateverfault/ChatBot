@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
-using ChatBot.Services.game_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
@@ -25,7 +24,6 @@ internal static class Program {
         ServiceManager.InitServices(bot);
         var cliData = new CliData(
                                   bot,
-                                  (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests),
                                   (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
                                   (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands),
                                   (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter),

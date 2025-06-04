@@ -49,8 +49,7 @@ public class MessageRandomizerService : Service {
             Options.IncreaseCounter();
             return;
         }
-        Options.ZeroCounter();
-        Options.IncreaseCounter();
+
         if (Options.Randomness == State.Enabled) {
             Options.SetRandomValue();
         }
@@ -76,6 +75,9 @@ public class MessageRandomizerService : Service {
         Options.SetMessageState(MessageState.NotGuessed);
         _logger.Log(LogLevel.Info,
                     $"Message has been Generated: {Options.LastGeneratedMessage.Msg} | {Options.LastGeneratedMessage.Username}");
+        
+        Options.ZeroCounter();
+        Options.IncreaseCounter();
         
         message = Options.LastGeneratedMessage;
         return ErrorCode.None;
@@ -111,11 +113,7 @@ public class MessageRandomizerService : Service {
     public void LoggerStateNext() {
         Options.SetLoggerState((State)(((int)Options.LoggerState+1)%Enum.GetValues(typeof(State)).Length));
     }
-
-    public State GetRandomness() {
-        return Options.Randomness;
-    }
-
+    
     public int GetRandomnessAsInt() {
         return (int)Options.Randomness;
     }
@@ -131,8 +129,11 @@ public class MessageRandomizerService : Service {
     public override void Init(Bot bot) {
         _bot = bot;
 
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
+        if (Options.TryLoad()) {
+            Options.SetRandomValue();
+            return;
         }
+        Options.SetDefaults();
+        Options.SetRandomValue();
     }
 }

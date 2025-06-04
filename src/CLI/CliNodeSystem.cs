@@ -3,6 +3,7 @@ using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
+using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
 namespace ChatBot.CLI;
@@ -33,20 +34,6 @@ public class CliNodeSystem {
     }
 
     public void InitNodes() {
-        var gameReqsDir = new CliNodeStaticDirectory(
-                                                     ServiceName.GameRequests,
-                                                     _state, 
-                                                     true,
-                                                     [
-                                                         new CliNodeEnum(
-                                                                         "Service State",
-                                                                         _state.Data.GameRequests.GetServiceStateAsInt,
-                                                                         typeof(State),
-                                                                         CliNodePermission.Default,
-                                                                         _state.Data.GameRequests.ServiceStateNext
-                                                                        )
-                                                     ]);
-
         var randomMsgsDir = new CliNodeStaticDirectory(
                                                        ServiceName.MessageRandomizer,
                                                        _state,
@@ -113,6 +100,13 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.SetCommandIdentifier
                                                                           ), 
+                                                          new CliNodeEnum(
+                                                                          "Required Role",
+                                                                          _state.Data.ChatCommands.GetRequiredRoleAsInt,
+                                                                          typeof(Restriction),
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.ChatCommands.RequiredRoleNext
+                                                                          ),
                                                           new CliNodeEnum(
                                                                          "Service State",
                                                                          _state.Data.ChatCommands.GetServiceStateAsInt,
@@ -244,7 +238,6 @@ public class CliNodeSystem {
                                                   true,
                                                   [
                                                       chatCmdsDir,
-                                                      gameReqsDir,
                                                       randomMsgsDir,
                                                       messageFilterDir,
                                                       loggerDir

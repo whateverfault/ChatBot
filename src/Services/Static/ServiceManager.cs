@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.chat_commands;
-using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
@@ -10,26 +9,20 @@ using ChatBot.Services.moderation;
 namespace ChatBot.Services.Static;
 
 public static class ServiceManager {
-    private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() {
-                                                                                                {
-                                                                                                   ServiceName.GameRequests,
-                                                                                                   (
-                                                                                                       new GameRequestsService(),
-                                                                                                       new GameRequestsEvents()
-                                                                                                   )
-                                                                                               }, {
-                                                                                                   ServiceName.MessageRandomizer,
-                                                                                                   (
-                                                                                                       new MessageRandomizerService(),
-                                                                                                       new MessageRandomizerEvents()
-                                                                                                   )
-                                                                                               }, {
-                                                                                                   ServiceName.ChatCommands,
-                                                                                                   (
-                                                                                                       new ChatCommandsService(),
-                                                                                                       new ChatCommandsEvents()
-                                                                                                   )
-                                                                                               },
+    private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() { 
+                                                                                               {
+                                                                                                 ServiceName.MessageRandomizer,
+                                                                                                 (
+                                                                                                     new MessageRandomizerService(),
+                                                                                                     new MessageRandomizerEvents()
+                                                                                                 )
+                                                                                             }, {
+                                                                                                    ServiceName.ChatCommands,
+                                                                                                    (
+                                                                                                        new ChatCommandsService(),
+                                                                                                        new ChatCommandsEvents()
+                                                                                                    )
+                                                                                                },
                                                                                                {
                                                                                                    ServiceName.MessageFilter,
                                                                                                    (

@@ -5,13 +5,14 @@ namespace ChatBot.Services.moderation;
 
 public class WarnedUser {
     [JsonProperty(PropertyName = "user_id")]
-    public string UserId { get; }
+    public string UserId { get; } = null!;
+
     [JsonProperty(PropertyName = "warns")]
     public int Warns { get; private set; }
     [JsonProperty(PropertyName = "moderation_action")]
-    public ModAction ModAction { get; }
-    
-    
+    public ModAction ModAction { get; } = null!;
+
+
     public WarnedUser() {}
 
     public WarnedUser(string userId, ModAction modAction) {

@@ -20,7 +20,8 @@ public class ModAction {
     [JsonProperty(PropertyName = "max_warn_count")]
     public int MaxWarnCount { get; private set; }
     [JsonProperty(PropertyName = "moderator_comment")]
-    public string ModeratorComment { get; private set; }
+    public string ModeratorComment { get; private set; } = null!;
+
     [JsonProperty(PropertyName = "type")]
     public ModerationActionType Type { get; private set; }
     [JsonProperty(PropertyName = "restriction")]

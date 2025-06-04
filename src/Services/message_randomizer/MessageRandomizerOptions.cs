@@ -127,7 +127,7 @@ public class MessageRandomizerOptions : Options {
 
         _saveData!.SpreadingFrom = start;
         _saveData!.SpreadingTo = end;
-        Save();
+        SetRandomValue();
     }
     
     public Range GetSpreading() {

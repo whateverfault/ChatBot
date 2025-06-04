@@ -7,9 +7,10 @@ public class SaveData {
     [JsonProperty(PropertyName ="service_state")] 
     public State ServiceState { get; set; }
     [JsonProperty(PropertyName ="moderation_actions")]
-    public List<ModAction> ModerationActions { get; set; }
+    public List<ModAction> ModerationActions { get; set; } = null!;
+
     [JsonProperty(PropertyName = "warned_users")]
-    public List<WarnedUser> WarnedUsers { get; set; }
+    public List<WarnedUser> WarnedUsers { get; set; } = null!;
 
 
     public SaveData() {}

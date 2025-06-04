@@ -10,7 +10,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
     private readonly MessageFilterService _messageFilter;
     private readonly AddModActionHandler _addHandler;
     private readonly RemoveHandler _removeHandler;
-    private readonly CliNodeStaticDirectory _dynamicDir;
+    private readonly CliNodeStaticDirectory _content;
     private readonly CliState _state;
 
     protected override string Text { get; }
@@ -29,21 +29,21 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
         _addHandler = _state.Data.Moderation.AddModAction;
         _removeHandler = _state.Data.Moderation.RemoveModAction;
 
-        _dynamicDir = new CliNodeStaticDirectory(
-                                                 "Content",
-                                                 state,
-                                                 true,
-                                                 []
-                                                );
+        _content = new CliNodeStaticDirectory(
+                                              "Content",
+                                              state, 
+                                              true, 
+                                              []
+                                              );
 
-        _dynamicDir.AddNode(
-                            new CliNodeText(
-                                            "-----------------------------------",
-                                            false,
-                                            true,
-                                            1
-                                            )
-                            );
+        _content.AddNode(
+                         new CliNodeText(
+                                         "-----------------------------------",
+                                         false,
+                                         true,
+                                         1
+                                        )
+                         );
 
         _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
 
@@ -54,7 +54,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
 
             switch (nodeContent.Type) {
                 case ModerationActionType.Ban:
-                    _dynamicDir.AddNode(
+                    _content.AddNode(
                                         new CliNodeStaticDirectory
                                             (
                                              _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
@@ -92,7 +92,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                        );
                     break;
                 case ModerationActionType.Timeout:
-                    _dynamicDir.AddNode(
+                    _content.AddNode(
                                         new CliNodeStaticDirectory
                                             (
                                              _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
@@ -136,7 +136,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                        );
                     break;
                 case ModerationActionType.Warn:
-                    _dynamicDir.AddNode(
+                    _content.AddNode(
                                         new CliNodeStaticDirectory
                                             (
                                              _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
@@ -174,7 +174,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                        );
                     break;
                 case ModerationActionType.WarnWithTimeout:
-                    _dynamicDir.AddNode(
+                    _content.AddNode(
                                         new CliNodeStaticDirectory
                                             (
                                              _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
@@ -224,7 +224,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                        );
                     break;
                 case ModerationActionType.WarnWithBan:
-                    _dynamicDir.AddNode(
+                    _content.AddNode(
                                         new CliNodeStaticDirectory
                                             (
                                              _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
@@ -276,7 +276,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                     new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
                     new CliNodeModActionAdd(addText, Add, actionType),
                     new CliNodeRemove(removeText, Remove),
-                    _dynamicDir,
+                    _content,
                 ];
     }
     
@@ -495,16 +495,16 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                 throw new ArgumentOutOfRangeException();
         }
 
-        _dynamicDir.AddNode(node);
+        _content.AddNode(node);
         _addHandler.Invoke(modAction);
     }
     
     private void Remove(int index) {
-        if (index < 0 || index >= _dynamicDir.Nodes.Count-2) {
+        if (index < 0 || index >= _content.Nodes.Count-2) {
             return;
         }
         
-        _dynamicDir.RemoveNode(index+2);
+        _content.RemoveNode(index+2);
         _removeHandler.Invoke(index);
     }
 }

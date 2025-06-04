@@ -42,7 +42,7 @@ public class ErrorHandler {
                                                                   "Something went wrong while reading saved info. Try to delete or rename save files.",
                                                                   "Doesn't exist.",
                                                                   "Empty.",
-                                                                  "Too few data.",
+                                                                  "Too few data."
                                                               ];
 
 
@@ -61,7 +61,7 @@ public class ErrorHandler {
                                                                 "Что-то пошло не так при чтении сохраненных данных. Попробуйте удалить или переименовать файлы.",
                                                                 "Не существует.",
                                                                 "Пусто.",
-                                                                "Слишком мало данных.",
+                                                                "Слишком мало данных."
                                                             ];
 
 
@@ -76,7 +76,7 @@ public class ErrorHandler {
         if (code == ErrorCode.None) {
             return false;
         }
-        Console.WriteLine($"[ErrorHandler] Caught an error: {code}");
+        _logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
         _client.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
         return true;
     }

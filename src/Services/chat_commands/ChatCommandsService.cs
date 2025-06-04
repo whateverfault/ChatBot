@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using ChatBot.bot.interfaces;
-using ChatBot.Services.game_requests;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
@@ -30,7 +29,6 @@ public class ChatCommandsService : Service {
         }
 
         Options.SetServices(
-                            (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests),
                             (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer)
                            );
     }
@@ -61,23 +59,44 @@ public class ChatCommandsService : Service {
         return args.Where(arg => !string.IsNullOrEmpty(arg)).ToArray();
     }
 
+    public int GetRequiredRoleAsInt() {
+        return (int)Options.RequiredRole;
+    }
+    
+    public void RequiredRoleNext() {
+        Options.SetRequiredRole((Restriction)(((int)Options.RequiredRole+1)%Enum.GetValues(typeof(Restriction)).Length));
+    }
+    
     public void HandleMessage(object? sender, OnChatCommandReceivedArgs args) {
         var commandArgs = ProcessArgs(args.Command.ArgumentsAsList);
         var errorHandler = new ErrorHandler(Client);
+        var chatMessage = args.Command.ChatMessage;
         ErrorCode err;
 
         switch (args.Command.CommandText) {
             #region General
 
             case "cmds": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 SendCmds(args, commandArgs!);
                 break;
             }
             case "help": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 SendUsage(args);
                 break;
             }
             case "when": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 if (commandArgs.Length < 1) {
                     err = ErrorCode.TooFewArgs;
                     errorHandler.ReplyWithError(err, args.Command.ChatMessage);
@@ -90,11 +109,20 @@ public class ChatCommandsService : Service {
                 foreach (var arg in commandArgs) {
                     argSb.Append($"{arg} ");
                 }
-                
-                Client.SendReply(message.Channel, message.Id, $"{argSb} уже завтра!  PewPewPew  PewPewPew  PewPewPew ");
+
+                var random = Random.Shared.Next(0, 2);
+                var randomizedMessage = 
+                    random == 0 ? 
+                        $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew" : 
+                        $"{argSb} никогда GAGAGA GAGAGA GAGAGA";
+                Client.SendReply(message.Channel, message.Id, randomizedMessage);
                 break;
             }
             case "ban": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 if (commandArgs.Length < 1) {
                     err = ErrorCode.TooFewArgs;
                     errorHandler.ReplyWithError(err, args.Command.ChatMessage);
@@ -112,169 +140,58 @@ public class ChatCommandsService : Service {
                 break;
             }
             case "carrot": {
-                var chatMessage = args.Command.ChatMessage;
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 Options.MessageRandomizerService.GenerateAndSendRandomMessage(Client, chatMessage.Channel);
                 break;
             }
             case "echo": {
-                var chatMessage = args.Command.ChatMessage;
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 var argSb = new StringBuilder();
                 
                 foreach (var arg in commandArgs) {
                     argSb.Append($"{arg} ");
                 }
+
+                var message =
+                    commandArgs.Length == 0 ?
+                        "Я GANDON" :
+                        argSb.ToString();
                 
-                Client.SendMessage(chatMessage.Channel, argSb.ToString());
+                Client.SendMessage(chatMessage.Channel, message);
                 break;
             }
-            #endregion
-            #region GameRequestsService
-
-            case "gr-add": {
-                if (commandArgs.Length < 1) {
-                    err = ErrorCode.TooFewArgs;
-                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
+            case "rizz": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
                     return;
                 }
-                var gameRequest = new GameRequest(args.Command.ChatMessage.Username, commandArgs[0]!);
-                err = Options.GameRequestsService.AppendRequest(gameRequest, args.Command.ChatMessage);
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GameRequestsService.AppendRequest' returned an error: {err}");
-                    return;
-                }
+                var argSb = new StringBuilder();
 
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра добалвена в очередь.");
-                _logger.Log(LogLevel.Info, "Game requests has been appended to the queue");
+                foreach (var arg in commandArgs) {
+                    argSb.Append($"{arg} ");
+                }
+                
+                var message =
+                    commandArgs.Length == 0 ?
+                        "КШЯЯ" :
+                        argSb.ToString();
+                
+                Client.SendMessage(chatMessage.Channel, $"{message} RIZZ RIZZ RIZZ");
                 break;
             }
-            case "gr-rem": {
-                if (commandArgs.Length < 1) {
-                    err = ErrorCode.TooFewArgs;
-                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
-                    return;
-                }
-
-                if (!int.TryParse(commandArgs[0], out var index)) {
-                    err = ErrorCode.InvalidInput;
-                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
-                    return;
-                }
-                err = Options.GameRequestsService.RemoveRequestAt(index-1, args.Command.ChatMessage);
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'RemoveRequestAt' returned an error: {err}");
-                    return;
-                }
-
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Игра удалена из очереди.");
-                _logger.Log(LogLevel.Info, "Game requests has been removed");
-                break;
-            }
-            case "gr-list": {
-                var page = 0;
-                if (commandArgs.Length > 0) {
-                    int.TryParse(commandArgs[0], out page);
-                }
-
-                err = Options.GameRequestsService.ListGameRequests(out var gameReqs);
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
-                    return;
-                }
-                if (gameReqs.Length == 0) {
-                    Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Пусто.");
-                    _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' tried to access empty game requests list");
-                    break;
-                }
-
-                var reqsArr = new List<string>();
-                for (var i = 0; i < gameReqs.Length; i++) {
-                    reqsArr.Add($"{i+1}. {gameReqs[i].GameName} - {gameReqs[i].Requester}");
-                }
-
-                var pages = Page.CalculatePages(reqsArr.ToArray());
-
-                if (page < pages[0]) {
-                    page = pages[0];
-                } else if (page > pages[^1]) {
-                    page = pages[^1];
-                }
-
-                var message = new StringBuilder();
-                for (var i = 0; i < reqsArr.Count; i++) {
-                    if (pages[i] == page) {
-                        message.Append($"{reqsArr[i]} ");
-                    }
-                }
-
-                message.Append($"|Page {page} of {pages[^1]}| ");
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message.ToString());
-                break;
-            }
-            case "gr-give-point": {
-                if (commandArgs.Length < 1) {
-                    err = ErrorCode.TooFewArgs;
-                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
-                    return;
-                }
-
-                err = Options.GameRequestsService.GivePoint(args.Command.ChatMessage, commandArgs[0]);
-
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GameRequestsService.GivePoint' returned an error: {err}");
-                    return;
-                }
-
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Очко выдано пользователю '{commandArgs[0]}'.");
-                _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has obtained a point");
-                break;
-            }
-            case "gr-take-point": {
-                if (commandArgs.Length < 1) {
-                    err = ErrorCode.TooFewArgs;
-                    errorHandler.ReplyWithError(err, args.Command.ChatMessage);
-                    return;
-                }
-
-                err = Options.GameRequestsService.TakePoint(args.Command.ChatMessage, commandArgs[0]);
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GetGameRequests' returned an error: {err}");
-                    return;
-                }
-
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
-                                 $"Очко забрано у пользователя '{commandArgs[0]}'.");
-                _logger.Log(LogLevel.Info, $"User '{args.Command.ChatMessage.Username}' has spent a point");
-                break;
-            }
-            case "gr-disable": {
-                err = Options.GameRequestsService.Disable(args.Command.ChatMessage);
-
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GameRequestsService.Disable' returned an error: {err}");
-                    return;
-                }
-
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы отключены.");
-                _logger.Log(LogLevel.Info, "GameRequestsService is now disabled");
-                break;
-            }
-            case "gr-enable": {
-                err = Options.GameRequestsService.Enable(args.Command.ChatMessage);
-
-                if (errorHandler.ReplyWithError(err, args.Command.ChatMessage)) {
-                    _logger.Log(LogLevel.Error, $"'GameRequestsService.Enable' returned an error: {err}");
-                    return;
-                }
-
-                Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Заказы включены.");
-                _logger.Log(LogLevel.Info, "GameRequestsService has been enabled");
-                break;
-            }
-
             #endregion
             #region MessageRandomizerService
 
             case "guess": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 if (Options.MessageRandomizerService.Options.MessageState == MessageState.Guessed) {
                     Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Уже отгадано.");
                     _logger.Log(LogLevel.Error, $"{args.Command.ChatMessage.Username} tried to guess already guessed message");
@@ -305,9 +222,8 @@ public class ChatCommandsService : Service {
                 break;
             }
             case "whose": {
-                if (!RestrictionHandler.Handle(Restriction.Dev, args.Command.ChatMessage)) {
-                    ErrorHandler.ReplyWithError(ErrorCode.PermDeny, args.Command.ChatMessage, Client);
-                    _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' doesn't have enough rights to call this command.");
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
                 }
 
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
@@ -321,6 +237,10 @@ public class ChatCommandsService : Service {
                 break;
             }
             case "repeat": {
+                if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                    return;
+                }
+                
                 err = Options.MessageRandomizerService.GetLastGeneratedMessage(out var message);
                 if (ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client)) {
                     ErrorHandler.ReplyWithError(err, args.Command.ChatMessage, Client);
@@ -351,15 +271,8 @@ public class ChatCommandsService : Service {
         var cmds = new[] {
                              $"1. {cmdId}cmds - список комманд. ",
                              $"2. {cmdId}help - использование комманд. ",
-                             $"3. {cmdId}echo <message> - буквально эхо",
-                             Page.PageTerminator,
-                             $"1. {cmdId}gr-add <game_name> - добавить заказ игры. ",
-                             $"2. {cmdId}gr-rem <game_position> - удалить заказ игры. ",
-                             $"3. {cmdId}gr-list - список заказов игр. ",
-                             $"4. {cmdId}gr-give-point <nickname> - выдать очко.",
-                             $"5. {cmdId}gr-take-point <nickname> - забрать очко.",
-                             $"6. {cmdId}gr-enable - включить заказы.",
-                             $"7. {cmdId}gr-disable - отключить заказы.",
+                             $"3. {cmdId}echo [message] - эхо",
+                             $"4. {cmdId}rizz [message] - RIZZ",
                              Page.PageTerminator,
                              $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",

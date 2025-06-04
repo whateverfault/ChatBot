@@ -5,8 +5,8 @@ using TwitchLib.Client.Events;
 namespace ChatBot.Services.logger;
 
 public class LoggerEvents : ServiceEvents {
-    private LoggerService _service;
-    private Bot _bot;
+    private LoggerService _service = null!;
+    private Bot _bot = null!;
     
     
     public override void Init(Service service, Bot bot) {

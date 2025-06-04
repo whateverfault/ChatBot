@@ -15,11 +15,16 @@ public class CliNodeHandler {
             return;
         }
 
-        Console.Clear();
-        while (currentNodes[index].ShouldSkip) {
-            index++;
-            if (index >= currentNodes.Count) return;
+        var indexIncrease = 0;
+        for (var i = 0; i <= index; i++) {
+            if (currentNodes[i].ShouldSkip) {
+                indexIncrease++;
+            }
         }
+        index += indexIncrease;
+        
+        Console.Clear();
+        if (index >= currentNodes.Count) return;
         currentNodes[index].Activate(_state);
     }
 }

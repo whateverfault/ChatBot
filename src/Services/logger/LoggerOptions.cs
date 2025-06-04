@@ -12,9 +12,9 @@ public class LoggerOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public List<Log> Logs => _saveData!.Logs;
-    public List<Log> TwitchLogs { get; private set; }
+    public List<Log> TwitchLogs { get; } = [];
 
-    
+
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
@@ -32,7 +32,6 @@ public class LoggerOptions : Options {
 
     public override void SetDefaults() {
         _saveData = new SaveData(State.Disabled);
-        TwitchLogs = [];
         Save();
     }
 

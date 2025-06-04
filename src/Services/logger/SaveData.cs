@@ -6,7 +6,7 @@ namespace ChatBot.Services.logger;
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; private set; }
-    [JsonProperty(PropertyName = "non_twitch_logs")]
+    [JsonProperty(PropertyName = "logs")]
     public List<Log> Logs { get; private set; }
 
 

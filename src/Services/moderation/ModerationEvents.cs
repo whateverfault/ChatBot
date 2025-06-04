@@ -6,7 +6,7 @@ using ChatBot.Services.Static;
 namespace ChatBot.Services.moderation;
 
 public class ModerationEvents : ServiceEvents {
-    private ModerationService _service;
+    private ModerationService _service = null!;
     
     
     public override void Init(Service service, Bot bot) {
