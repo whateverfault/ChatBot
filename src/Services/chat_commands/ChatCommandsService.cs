@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Mime;
+using System.Text;
 using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.extensions;
@@ -7,6 +8,7 @@ using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
+using ChatBot.Services.text_generator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
@@ -34,7 +36,8 @@ public class ChatCommandsService : Service {
 
         Options.SetServices(
                             (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
-                            (ModerationService)ServiceManager.GetService(ServiceName.Moderation)
+                            (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
+                            (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator)
                            );
     }
 
@@ -231,6 +234,15 @@ public class ChatCommandsService : Service {
                     Client.SendReply(chatMessage.Channel, chatMessage.Id, message);
                     break;
                 }
+                case "potato": {
+                    if (Options.TextGeneratorService.GetServiceState() == State.Disabled) {
+                        ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
+                        return;
+                    }
+                    
+                    Options.TextGeneratorService.GenerateAndSend();
+                    break;
+                }
                 #endregion
                 #region MessageRandomizerService
 
@@ -305,8 +317,12 @@ public class ChatCommandsService : Service {
                     if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
                         return;
                     }
-                
-                    Options.MessageRandomizerService.GenerateAndSendRandomMessage(Client, chatMessage.Channel);
+                    if (Options.MessageRandomizerService.GetServiceState() == State.Disabled) {
+                        ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
+                        return;
+                    }
+                    
+                    Options.MessageRandomizerService.GenerateAndSend(Client, chatMessage.Channel);
                     break;
                 }
                 #endregion
@@ -340,15 +356,17 @@ public class ChatCommandsService : Service {
     private void SendFullCmds(OnChatCommandReceivedArgs args, string[] commandArgs) {
         var cmdId = Options.CommandIdentifier;
         var cmds = new[] {
-                             $"1. {cmdId}cmds - список комманд. ",
-                             $"2. {cmdId}help - использование комманд. ",
-                             $"3. {cmdId}echo [message] - эхо",
-                             $"4. {cmdId}rizz [message] - RIZZ",
-                             $"5. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
+                             $"1. {cmdId}cmds - список комманд.",
+                             $"2. {cmdId}help - использование комманд.",
+                             $"3. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
+                             Page.PageTerminator,
+                             $"1. {cmdId}echo [message] - эхо",
+                             $"2. {cmdId}rizz [message] - RIZZ",
+                             $"3. {cmdId}potato - сгенерировать новое сообщение",
                              Page.PageTerminator,
                              $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",
-                             $"3. {cmdId}carrot - сгенерировать новое сообщение",
+                             $"3. {cmdId}carrot - зарандомить новое сообщение",
                              $"4. {cmdId}repeat - повторить сообщение",
                          };
 

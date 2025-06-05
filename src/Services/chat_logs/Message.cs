@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Services.message_randomizer;
+﻿namespace ChatBot.Services.chat_logs;
 
 public class Message {
 

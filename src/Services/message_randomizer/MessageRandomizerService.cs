@@ -1,8 +1,7 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.chat_commands;
+using ChatBot.Services.chat_logs;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
-using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -20,23 +19,9 @@ public class MessageRandomizerService : Service {
     public override MessageRandomizerOptions Options { get; } = new();
 
 
-    public void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
+    public void HandleChatLog(ChatMessage message) {
         if (Options.ServiceState == State.Disabled) return;
-        if (status == FilterStatus.Match) return;
-        
-        if (message.Message.Length > 0
-            && message.Message[0]
-            == ((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier) {
-            _logger.Log(LogLevel.Info, "Message wasn't handled. Reason: Is Command");
-            return;
-        }
         HandleCounter(Client, message.Channel);
-        var msg = new Message(message.Message, message.Username);
-        if (Options.LoggerState == State.Disabled) {
-            return;
-        }
-        Options.Logs.Add(msg);
-        Options.Save();
     }
 
     public void HandleCounter(ITwitchClient client, string channel) {
@@ -54,24 +39,26 @@ public class MessageRandomizerService : Service {
             Options.SetRandomValue();
         }
 
-        var err = GenerateRandomMessage(out var message);
+        var err = Generate(out var message);
         if (ErrorHandler.LogErrorAndPrint(err)) {
             return;
         }
         client.SendMessage(channel, message!.Msg);
     }
 
-    private ErrorCode GenerateRandomMessage(out Message? message) {
+    private ErrorCode Generate(out Message? message) {
         message = null;
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        if (Options.Logs.Count <= 0) {
+        
+        var logs = Options.ChatLogsService.GetLogs();
+        if (logs.Count <= 0) {
             return ErrorCode.ListIsEmpty;
         }
 
-        var randomIndex = Random.Shared.Next(0, Options.Logs.Count);
-        Options.SetLastGeneratedMessage(Options.Logs[randomIndex]);
+        var randomIndex = Random.Shared.Next(0, logs.Count);
+        Options.SetLastGeneratedMessage(logs[randomIndex]);
         Options.SetMessageState(MessageState.NotGuessed);
         _logger.Log(LogLevel.Info,
                     $"Message has been Generated: {Options.LastGeneratedMessage.Msg} | {Options.LastGeneratedMessage.Username}");
@@ -83,9 +70,9 @@ public class MessageRandomizerService : Service {
         return ErrorCode.None;
     }
 
-    public void GenerateAndSendRandomMessage(ITwitchClient client, string channel) {
-        var err = GenerateRandomMessage(out var message);
-        if (ErrorHandler.LogErrorAndPrint(err)) return;
+    public void GenerateAndSend(ITwitchClient client, string channel) {
+        var err = Generate(out var message);
+        if (ErrorHandler.LogError(err)) return;
         
         client.SendMessage(channel, message!.Msg);
     }
@@ -104,14 +91,6 @@ public class MessageRandomizerService : Service {
 
     public override State GetServiceState() {
         return Options.ServiceState;
-    }
-    
-    public int GetLoggerStateAsInt() {
-        return (int)Options.LoggerState;
-    }
-
-    public void LoggerStateNext() {
-        Options.SetLoggerState((State)(((int)Options.LoggerState+1)%Enum.GetValues(typeof(State)).Length));
     }
     
     public int GetRandomnessAsInt() {

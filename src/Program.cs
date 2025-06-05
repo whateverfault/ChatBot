@@ -1,11 +1,13 @@
 ﻿using System.Text;
 using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
+using ChatBot.Services.chat_logs;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
+using ChatBot.Services.text_generator;
 
 namespace ChatBot;
 
@@ -28,7 +30,9 @@ internal static class Program {
                                   (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands),
                                   (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter),
                                   (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
-                                  (LoggerService)ServiceManager.GetService(ServiceName.Logger)
+                                  (LoggerService)ServiceManager.GetService(ServiceName.Logger),
+                                  (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs),
+                                  (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator)
                                  );
         _cli = new Cli(cliData);
         _cli.RenderNodes();

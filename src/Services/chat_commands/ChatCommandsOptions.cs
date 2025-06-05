@@ -1,5 +1,6 @@
 ﻿using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
+using ChatBot.Services.text_generator;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -20,6 +21,7 @@ public class ChatCommandsOptions : Options {
     public int ModActionIndex => _saveData!.ModActionIndex;
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
     public ModerationService ModerationService { get; private set; } = null!;
+    public TextGeneratorService TextGeneratorService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -68,9 +70,14 @@ public class ChatCommandsOptions : Options {
         Save();
     }
     
-    public void SetServices(MessageRandomizerService messageRandomizer, ModerationService moderation) {
+    public void SetServices(
+        MessageRandomizerService messageRandomizer,
+        ModerationService moderation,
+        TextGeneratorService textGenerator
+        ) {
         MessageRandomizerService = messageRandomizer;
         ModerationService = moderation;
+        TextGeneratorService = textGenerator;
     }
 
     public Restriction GetRequiredRole() {

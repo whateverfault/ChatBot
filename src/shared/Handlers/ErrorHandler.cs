@@ -84,6 +84,15 @@ public class ErrorHandler {
         return true;
     }
 
+    public static bool SendError(ErrorCode code, ITwitchClient client, string channel) {
+        if (code == ErrorCode.None) {
+            return false;
+        }
+        _logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
+        client.SendMessage(channel, _twitchErrorMessages[(int)code]);
+        return true;
+    }
+    
     public static bool ReplyWithError(ErrorCode code, ChatMessage message, ITwitchClient client) {
         if (code == ErrorCode.None) {
             return false;

@@ -1,10 +1,12 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.chat_commands;
+using ChatBot.Services.chat_logs;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
+using ChatBot.Services.text_generator;
 
 namespace ChatBot.Services.Static;
 
@@ -15,14 +17,15 @@ public static class ServiceManager {
                                                                                                  (
                                                                                                      new MessageRandomizerService(),
                                                                                                      new MessageRandomizerEvents()
-                                                                                                 )
-                                                                                             }, {
+                                                                                                 ) 
+                                                                                               }, 
+                                                                                               {
                                                                                                     ServiceName.ChatCommands,
                                                                                                     (
                                                                                                         new ChatCommandsService(),
                                                                                                         new ChatCommandsEvents()
                                                                                                     )
-                                                                                                },
+                                                                                               },
                                                                                                {
                                                                                                    ServiceName.MessageFilter,
                                                                                                    (
@@ -42,6 +45,20 @@ public static class ServiceManager {
                                                                                                    (
                                                                                                        new LoggerService(),
                                                                                                        new LoggerEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.TextGenerator,
+                                                                                                   (
+                                                                                                       new TextGeneratorService(),
+                                                                                                       new TextGeneratorEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.ChatLogs,
+                                                                                                   (
+                                                                                                       new ChatLogsService(),
+                                                                                                       new ChatLogsEvents()
                                                                                                    )
                                                                                                },
                                                                                            };

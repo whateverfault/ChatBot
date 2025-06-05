@@ -1,4 +1,6 @@
-﻿using ChatBot.shared;
+﻿using ChatBot.Services.chat_logs;
+using ChatBot.Services.Static;
+using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
@@ -17,7 +19,6 @@ public class MessageRandomizerOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    public State LoggerState => _saveData!.LoggerState;
     public int CounterMax => _saveData!.CounterMax;
     public int Counter { get; private set; }
 
@@ -27,7 +28,7 @@ public class MessageRandomizerOptions : Options {
     public Range Spreading => new(_saveData!.SpreadingFrom, _saveData!.SpreadingTo);
     public MessageState MessageState => _saveData!.MessageState;
     public Message LastGeneratedMessage => _saveData!.LastGeneratedMessage;
-    public List<Message> Logs => _saveData!.Logs;
+    public ChatLogsService ChatLogsService => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
 
 
     public override bool TryLoad() {
@@ -51,13 +52,11 @@ public class MessageRandomizerOptions : Options {
                                  counterMax,
                                  State.Disabled,
                                  State.Disabled,
-                                 State.Disabled,
                                  1,
                                  counterMax,
                                  MessageState.NotGuessed,
-                                 new Message(string.Empty, string.Empty),
-                                 []
-                                );
+                                 new Message(string.Empty, string.Empty)
+                                 );
         Save();
     }
 
@@ -81,11 +80,6 @@ public class MessageRandomizerOptions : Options {
 
     public void SetRandomnessState(State state) {
         _saveData!.Randomness = state;
-        Save();
-    }
-
-    public void SetLoggerState(State state) {
-        _saveData!.LoggerState = state;
         Save();
     }
 

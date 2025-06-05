@@ -34,6 +34,21 @@ public class CliNodeSystem {
     }
 
     public void InitNodes() {
+        var chatLogsDir = new CliNodeStaticDirectory(
+                                                     ServiceName.ChatLogs,
+                                                     _state,
+                                                     true,
+                                                     [
+                                                         new CliNodeEnum(
+                                                                         "ServiceState",
+                                                                         _state.Data.ChatLogs.GetServiceStateAsInt,
+                                                                         typeof(State),
+                                                                         CliNodePermission.Default,
+                                                                         _state.Data.MessageRandomizer.ServiceStateNext
+                                                                        ),
+                                                     ]
+                                                     );
+        
         var randomMsgsDir = new CliNodeStaticDirectory(
                                                        ServiceName.MessageRandomizer,
                                                        _state,
@@ -57,7 +72,7 @@ public class CliNodeSystem {
                                                                                     ),
                                                            new CliNodeClient(
                                                                              "Generate Message",
-                                                                             _state.Data.MessageRandomizer.GenerateAndSendRandomMessage,
+                                                                             _state.Data.MessageRandomizer.GenerateAndSend,
                                                                              _state
                                                                             ),
                                                            new CliNodeEnum(
@@ -74,13 +89,6 @@ public class CliNodeSystem {
                                                                           _state.Data.MessageRandomizer.Options.SetSpreading
                                                                           ),
                                                            new CliNodeEnum(
-                                                                           "Collect Logs",
-                                                                           _state.Data.MessageRandomizer.GetLoggerStateAsInt,
-                                                                           typeof(State),
-                                                                           CliNodePermission.Default,
-                                                                           _state.Data.MessageRandomizer.LoggerStateNext
-                                                                          ),
-                                                           new CliNodeEnum(
                                                                             "Service State",
                                                                             _state.Data.MessageRandomizer.GetServiceStateAsInt,
                                                                             typeof(State),
@@ -88,6 +96,48 @@ public class CliNodeSystem {
                                                                             _state.Data.MessageRandomizer.ServiceStateNext
                                                                             )
                                                        ]);
+        
+        var textGeneratorDir = new CliNodeStaticDirectory(
+                                                          ServiceName.TextGenerator,
+                                                          _state,
+                                                          true,
+                                                          [
+                                                              new CliNodeAction(
+                                                                                "Generate",
+                                                                                _state.Data.TextGenerator.GenerateAndSend
+                                                                                ),
+                                                              new CliNodeStaticDirectory(
+                                                                                         "Model",
+                                                                                         _state,
+                                                                                         true,
+                                                                                         [
+                                                                                             new CliNodeAction(
+                                                                                                  "Train",
+                                                                                                  _state.Data.TextGenerator.Train
+                                                                                                  ),
+                                                                                             new CliNodeInt(
+                                                                                                  "Context Size",
+                                                                                                  _state.Data.TextGenerator.Options.GetContextSize,
+                                                                                                  CliNodePermission.Default,
+                                                                                                  _state.Data.TextGenerator.Options.SetContextSize
+                                                                                                 ),
+                                                                                             new CliNodeInt(
+                                                                                                  "Max Message Length",
+                                                                                                  _state.Data.TextGenerator.Options.GetMaxLength,
+                                                                                                  CliNodePermission.Default,
+                                                                                                  _state.Data.TextGenerator.Options.SetMaxLength
+                                                                                                 )
+                                                                                         ]
+                                                                                         ),
+                                                              new CliNodeEnum(
+                                                                              "Service State",
+                                                                              _state.Data.TextGenerator.GetServiceStateAsInt,
+                                                                              typeof(State),
+                                                                              CliNodePermission.Default,
+                                                                              _state.Data.TextGenerator.ServiceStateNext
+                                                                              ),
+                                                          ]
+                                                          );
 
         var chatCmdsDir = new CliNodeStaticDirectory(
                                                      ServiceName.ChatCommands,
@@ -244,7 +294,9 @@ public class CliNodeSystem {
                                                   true,
                                                   [
                                                       chatCmdsDir,
+                                                      chatLogsDir,
                                                       randomMsgsDir,
+                                                      textGeneratorDir,
                                                       messageFilterDir,
                                                       loggerDir
                                                   ]);
