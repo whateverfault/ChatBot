@@ -81,6 +81,16 @@ public class ModerationService : Service {
         return Options.ModerationActions;
     }
     
+    public bool GetModAction(int index, out ModAction? modAction) {
+        modAction = null;
+        if (index < 0 || index >= Options.ModerationActions.Count) {
+            return false;
+        }
+
+        modAction = Options.ModerationActions[index];
+        return true;
+    }
+    
     public override void Init(Bot bot) {
         if (!Options.TryLoad()) {
             Options.SetDefaults();

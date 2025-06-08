@@ -66,7 +66,7 @@ public class ChatBot : Bot {
         _client.OnJoinedChannel += OnJoinedChannel;
         _client.OnConnected += OnConnected;
         _client.OnLog += OnLog;
-
+        
         _client.Connect();
         _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
         _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");

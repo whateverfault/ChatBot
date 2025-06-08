@@ -1,18 +1,19 @@
-﻿using ChatBot.shared;
+﻿using ChatBot.Services.moderation;
+using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.chat_logs;
+namespace ChatBot.Services.level_requests;
 
-public class ChatLogsOptions : Options {
+public class LevelRequestsOptions : Options {
     private SaveData? _saveData;
-    
-    protected override string Name => "chat_logs";
+    protected override string Name => "level_requests";
     protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
-
     public override State ServiceState => _saveData!.ServiceState;
-    public List<Message> Logs => _saveData!.Logs;
+    public int PatternIndex => _saveData!.PatternIndex;
+    public Restriction Restriction => _saveData!.Restriction;
+    public ModerationService ModerationService { get; set; } = null!;
 
     
     public override bool TryLoad() {
@@ -31,10 +32,7 @@ public class ChatLogsOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 State.Disabled,
-                                 []
-                                 );
+        _saveData = new SaveData();
         Save();
     }
 
@@ -46,13 +44,22 @@ public class ChatLogsOptions : Options {
     public override State GetState() {
         return ServiceState;
     }
+    
+    public int GetPatternIndex() {
+        return PatternIndex;
+    }
 
-    public void AddLog(Message message) {
-        Logs.Add(message);
+    public void SetPatternIndex(int index) {
+        _saveData!.PatternIndex = index;
         Save();
     }
     
-    public List<Message> GetLogs() {
-        return Logs;
+    public Restriction GetRestriction() {
+        return Restriction;
+    }
+
+    public void SetRestriction(Restriction restriction) {
+        _saveData!.Restriction = restriction;
+        Save();
     }
 }

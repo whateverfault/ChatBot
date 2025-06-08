@@ -1,5 +1,6 @@
 ﻿using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
@@ -17,6 +18,7 @@ public class CliData {
     public LoggerService Logger { get; }
     public ChatLogsService ChatLogs { get; }
     public TextGeneratorService TextGenerator { get; }
+    public LevelRequestsService LevelRequests { get; }
     
 
     public CliData(
@@ -27,7 +29,7 @@ public class CliData {
         ModerationService moderation,
         LoggerService logger,
         ChatLogsService chatLogs, 
-        TextGeneratorService textGenerator) {
+        TextGeneratorService textGenerator, LevelRequestsService levelRequests) {
         Bot = bot;
         MessageRandomizer = messageRandomizer;
         ChatCommands = chatCommands;
@@ -36,5 +38,6 @@ public class CliData {
         Logger = logger;
         ChatLogs = chatLogs;
         TextGenerator = textGenerator;
+        this.LevelRequests = levelRequests;
     }
 }

@@ -2,6 +2,7 @@
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
@@ -13,18 +14,18 @@ namespace ChatBot.Services.Static;
 public static class ServiceManager {
     private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() { 
                                                                                                {
-                                                                                                 ServiceName.MessageRandomizer,
-                                                                                                 (
-                                                                                                     new MessageRandomizerService(),
-                                                                                                     new MessageRandomizerEvents()
-                                                                                                 ) 
+                                                                                                   ServiceName.MessageRandomizer,
+                                                                                                   (
+                                                                                                       new MessageRandomizerService(),
+                                                                                                       new MessageRandomizerEvents()
+                                                                                                   ) 
                                                                                                }, 
                                                                                                {
-                                                                                                    ServiceName.ChatCommands,
-                                                                                                    (
-                                                                                                        new ChatCommandsService(),
-                                                                                                        new ChatCommandsEvents()
-                                                                                                    )
+                                                                                                   ServiceName.ChatCommands,
+                                                                                                   (
+                                                                                                       new ChatCommandsService(),
+                                                                                                       new ChatCommandsEvents()
+                                                                                                   )
                                                                                                },
                                                                                                {
                                                                                                    ServiceName.MessageFilter,
@@ -59,6 +60,13 @@ public static class ServiceManager {
                                                                                                    (
                                                                                                        new ChatLogsService(),
                                                                                                        new ChatLogsEvents()
+                                                                                                   )
+                                                                                               },
+                                                                                               {
+                                                                                                   ServiceName.LevelRequests,
+                                                                                                   (
+                                                                                                       new LevelRequestsService(),
+                                                                                                       new LevelRequestsEvents()
                                                                                                    )
                                                                                                },
                                                                                            };

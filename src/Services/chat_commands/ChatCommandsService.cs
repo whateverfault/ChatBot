@@ -1,9 +1,9 @@
-﻿using System.Net.Mime;
-using System.Text;
+﻿using System.Text;
 using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.extensions;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
@@ -37,7 +37,8 @@ public class ChatCommandsService : Service {
         Options.SetServices(
                             (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
                             (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
-                            (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator)
+                            (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
+                            (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests)
                            );
     }
 
@@ -63,8 +64,14 @@ public class ChatCommandsService : Service {
         Client.AddChatCommandIdentifier(newId);
     }
 
-    private string?[] ProcessArgs(List<string?> args) {
-        return args.Where(arg => !string.IsNullOrEmpty(arg)).ToArray();
+    private List<string> ProcessArgs(List<string?> args) {
+        var processedArgs = new List<string>();
+        foreach (var arg in args) {
+            if (!string.IsNullOrEmpty(arg)) continue;
+            if (arg!.Length == 1 && !char.IsLetterOrDigit(arg[0])) continue;
+            processedArgs.Add(arg);
+        }
+        return processedArgs;
     }
 
     public int GetRequiredRoleAsInt() {
@@ -99,12 +106,15 @@ public class ChatCommandsService : Service {
                 #region General
 
                 case "cmds": {
-                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
-                        SendClippedCmds(args, commandArgs);
+                    if (!RestrictionHandler.Handle(Restriction.Vip, chatMessage)) {
+                        SendEveryonesCmds(args, commandArgs);
+                        return;
+                    } if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
+                        SendVipCmds(args, commandArgs!);
                         return;
                     }
                 
-                    SendFullCmds(args, commandArgs!);
+                    SendDevModCmds(args, commandArgs!);
                     break;
                 }
                 case "help": {
@@ -117,7 +127,7 @@ public class ChatCommandsService : Service {
                         return;
                     }
                 
-                    if (commandArgs.Length < 1) {
+                    if (commandArgs.Count < 1) {
                         err = ErrorCode.TooFewArgs;
                         errorHandler.ReplyWithError(err, args.Command.ChatMessage);
                         return;
@@ -144,7 +154,7 @@ public class ChatCommandsService : Service {
                         return;
                     }
                 
-                    if (commandArgs.Length < 1) {
+                    if (commandArgs.Count < 1) {
                         err = ErrorCode.TooFewArgs;
                         errorHandler.ReplyWithError(err, args.Command.ChatMessage);
                         return;
@@ -173,7 +183,7 @@ public class ChatCommandsService : Service {
                     }
 
                     var message =
-                        commandArgs.Length == 0 ?
+                        commandArgs.Count == 0 ?
                             "Я GANDON" :
                             argSb.ToString();
                 
@@ -192,7 +202,7 @@ public class ChatCommandsService : Service {
                     }
                 
                     var message =
-                        commandArgs.Length == 0 ?
+                        commandArgs.Count == 0 ?
                             "КШЯЯ" :
                             argSb.ToString();
                 
@@ -202,16 +212,24 @@ public class ChatCommandsService : Service {
                 case "followage": {
                     string message;
                     var username = chatMessage.Username;
-                    if (commandArgs.Length > 0) {
+                    if (commandArgs.Count > 0) {
                         username = commandArgs[0];
                     }
                 
                     var followage = await Client.GetFollowageHelix((ChatBotOptions)_bot.Options, username!);
                     if (followage == null) {
-                        message = 
-                            username == chatMessage.Channel ?
-                                $"{username} это владелец канала" :
-                                $"{username} не фолловнут на {chatMessage.Channel}";
+                        if (commandArgs.Count > 0) {
+                            message = 
+                                username == chatMessage.Channel ?
+                                    $"{username} это владелец канала RIZZ" :
+                                    $"{username} не фолловнут на {chatMessage.Channel} Sadding";
+                        } else {
+                            message = 
+                                username == chatMessage.Channel ?
+                                    "Вы владелец канала RIZZ" :
+                                    $"Вы не фолловнуты на {chatMessage.Channel} Sadding";
+                        }
+
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, message);
                         return;
                     }
@@ -228,7 +246,7 @@ public class ChatCommandsService : Service {
                             "" :
                             $"{followage.Value.Days%365%30} {Declensioner.Days(followage.Value.Days%365%30)}";
                     message = 
-                        commandArgs.Length > 0 ? 
+                        commandArgs.Count > 0 ? 
                             $"{username} фолловнут на {chatMessage.Channel} {years} {months} {days}" :
                             $"Вы фолловнуты на {chatMessage.Channel} {years} {months} {days}";
                     Client.SendReply(chatMessage.Channel, chatMessage.Id, message);
@@ -241,6 +259,38 @@ public class ChatCommandsService : Service {
                     }
                     
                     Options.TextGeneratorService.GenerateAndSend();
+                    break;
+                }
+                #endregion
+                #region Moderation
+
+                case "req": {
+                    var reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
+                    var reqsState = Options.LevelRequestsService.GetServiceState();
+                    var shouldToggle = true;
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr}");
+                        return;
+                    }
+
+                    if (commandArgs.Count > 0) {
+                        if (commandArgs[0] == "on") {
+                            reqsState = State.Enabled;
+                            shouldToggle = false;
+                        }
+                        if (commandArgs[0] == "off") {
+                            reqsState = State.Disabled;
+                            shouldToggle = false;
+                        }
+                    }
+                    if (shouldToggle) {
+                        Options.LevelRequestsService.ServiceStateNext();
+                    } else {
+                        Options.LevelRequestsService.Options.SetState(reqsState);
+                    }
+                    
+                    reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Теперь реквесты {reqsStateStr}");
                     break;
                 }
                 #endregion
@@ -258,7 +308,7 @@ public class ChatCommandsService : Service {
                         return;
                     }
 
-                    if (commandArgs.Length < 1) {
+                    if (commandArgs.Count < 1) {
                         ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, args.Command.ChatMessage, Client);
                         _logger.Log(LogLevel.Error, $"Too few arguments for '{args.Command.CommandText}' command");
                         return;
@@ -326,11 +376,6 @@ public class ChatCommandsService : Service {
                     break;
                 }
                 #endregion
-                default: {
-                    Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
-                                     $"Неизвестная комманда: {Options.CommandIdentifier}{args.Command.CommandText}");
-                    break;
-                }
             }
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Error while handling the command: {e.Message}");
@@ -342,18 +387,19 @@ public class ChatCommandsService : Service {
         Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, usage);
     }
 
-    private void SendClippedCmds(OnChatCommandReceivedArgs args, string?[] commandArgs) {
+    private void SendEveryonesCmds(OnChatCommandReceivedArgs args, List<string> commandArgs) {
         var cmdId = Options.CommandIdentifier;
         var cmds = new[] {
                              $"1. {cmdId}cmds - список комманд.",
                              $"2. {cmdId}help - использование комманд.",
                              $"3. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
+                             $"4. {cmdId}req - включены ли реквесты"
                          };
         
         SendPagedReply(cmds, args, commandArgs);
     }
     
-    private void SendFullCmds(OnChatCommandReceivedArgs args, string[] commandArgs) {
+    private void SendVipCmds(OnChatCommandReceivedArgs args, List<string> commandArgs) {
         var cmdId = Options.CommandIdentifier;
         var cmds = new[] {
                              $"1. {cmdId}cmds - список комманд.",
@@ -364,6 +410,29 @@ public class ChatCommandsService : Service {
                              $"2. {cmdId}rizz [message] - RIZZ",
                              $"3. {cmdId}potato - сгенерировать новое сообщение",
                              Page.PageTerminator,
+                             $"1. {cmdId}guess <username> - угадать ник написавшего",
+                             $"2. {cmdId}whose - вывести ник написавшего",
+                             $"3. {cmdId}carrot - зарандомить новое сообщение",
+                             $"4. {cmdId}repeat - повторить сообщение",
+                         };
+
+        SendPagedReply(cmds, args, commandArgs);
+    }
+
+    
+    private void SendDevModCmds(OnChatCommandReceivedArgs args, List<string> commandArgs) {
+        var cmdId = Options.CommandIdentifier;
+        var cmds = new[] {
+                             $"1. {cmdId}cmds - список комманд.",
+                             $"2. {cmdId}help - использование комманд.",
+                             $"3. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
+                             Page.PageTerminator,
+                             $"1. {cmdId}echo [message] - эхо",
+                             $"2. {cmdId}rizz [message] - RIZZ",
+                             $"3. {cmdId}potato - сгенерировать новое сообщение",
+                             Page.PageTerminator,
+                             $"1. {cmdId}req [on/off] - включить/выключить реквесты",
+                             Page.PageTerminator,
                              $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",
                              $"3. {cmdId}carrot - зарандомить новое сообщение",
@@ -373,9 +442,9 @@ public class ChatCommandsService : Service {
         SendPagedReply(cmds, args, commandArgs);
     }
 
-    private void SendPagedReply(string[] reply, OnChatCommandReceivedArgs args, string?[] commandArgs) {
+    private void SendPagedReply(string[] reply, OnChatCommandReceivedArgs args, List<string> commandArgs) {
         var page = 0;
-        if (commandArgs.Length > 0) {
+        if (commandArgs.Count > 0) {
             int.TryParse(commandArgs[0], out page);
         }
 
@@ -389,6 +458,9 @@ public class ChatCommandsService : Service {
 
         var message = new StringBuilder();
         var pageTerminatorsCount = 0;
+        
+        message.Append($"Page {page} of {pages[^1]} | ");
+        
         for (var i = 0; i < reply.Length; i++) {
             if (reply[i] == Page.PageTerminator) {
                 pageTerminatorsCount++;
@@ -398,8 +470,7 @@ public class ChatCommandsService : Service {
                 message.Append($"{reply[i]} ");
             }
         }
-
-        message.Append($"|Page {page} of {pages[^1]}| ");
+        
         Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message.ToString());
     }
 }

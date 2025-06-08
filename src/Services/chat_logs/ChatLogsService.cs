@@ -1,6 +1,7 @@
 ﻿using ChatBot.Services.interfaces;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.Static;
+using ChatBot.shared;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Models;
 
@@ -17,6 +18,8 @@ public class ChatLogsService : Service {
     public void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
+        //TODO unhardcode this line
+        if (Constants.excludeUsersIds.Contains(message.UserId)) return;
         
         var msg = new Message(message.Message, message.Username);
         Options.AddLog(msg);

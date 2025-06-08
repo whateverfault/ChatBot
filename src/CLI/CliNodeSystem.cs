@@ -44,7 +44,7 @@ public class CliNodeSystem {
                                                                          _state.Data.ChatLogs.GetServiceStateAsInt,
                                                                          typeof(State),
                                                                          CliNodePermission.Default,
-                                                                         _state.Data.MessageRandomizer.ServiceStateNext
+                                                                         _state.Data.ChatLogs.ServiceStateNext
                                                                         ),
                                                      ]
                                                      );
@@ -157,7 +157,7 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.RequiredRoleNext
                                                                           ),
-                                                          new CliNodeInt(
+                                                          new CliNodeIndex(
                                                                          "Moderation Action Index",
                                                                          _state.Data.ChatCommands.GetModActionIndex,
                                                                          CliNodePermission.Default,
@@ -249,7 +249,6 @@ public class CliNodeSystem {
                                                   true,
                                                   [
                                                       globalPatterns,
-                                                      moderationDir,
                                                       new CliNodeEnum(
                                                                       "Service State",
                                                                       _state.Data.MessageFilter.GetServiceStateAsInt,
@@ -286,7 +285,35 @@ public class CliNodeSystem {
                                                                        _state.Data.Logger.ServiceStateNext
                                                                       ),
                                                    ]
-                                                   ); 
+                                                   );
+
+        var levelReqsDir = new CliNodeStaticDirectory(
+                                                      "Level Requests",
+                                                      _state,
+                                                      true,
+                                                      [
+                                                      new CliNodeIndex(
+                                                                       "Moderation Pattern Index",
+                                                                       _state.Data.LevelRequests.GetPatternIndex,
+                                                                       CliNodePermission.Default,
+                                                                       _state.Data.LevelRequests.SetPatternIndex
+                                                                   ),
+                                                      new CliNodeEnum(
+                                                                      "Permission",
+                                                                      _state.Data.LevelRequests.GetRestrictionAsInt,
+                                                                      typeof(Restriction),
+                                                                      CliNodePermission.Default,
+                                                                      _state.Data.LevelRequests.RestrictionNext
+                                                                     ),
+                                                      new CliNodeEnum(
+                                                                      "Service State",
+                                                                      _state.Data.LevelRequests.GetServiceStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      _state.Data.LevelRequests.ServiceStateNext
+                                                                     ),
+                                                      ]
+                                                     );
         
         var services = new CliNodeStaticDirectory(
                                                   "Services",
@@ -298,7 +325,9 @@ public class CliNodeSystem {
                                                       randomMsgsDir,
                                                       textGeneratorDir,
                                                       messageFilterDir,
-                                                      loggerDir
+                                                      moderationDir,
+                                                      levelReqsDir,
+                                                      loggerDir,
                                                   ]);
         
         var loginDir = new CliNodeStaticDirectory(

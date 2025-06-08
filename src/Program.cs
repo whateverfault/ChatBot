@@ -2,6 +2,7 @@
 using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
@@ -32,7 +33,8 @@ internal static class Program {
                                   (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
                                   (LoggerService)ServiceManager.GetService(ServiceName.Logger),
                                   (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs),
-                                  (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator)
+                                  (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
+                                  (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests)
                                  );
         _cli = new Cli(cliData);
         _cli.RenderNodes();

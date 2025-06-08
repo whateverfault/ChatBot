@@ -34,7 +34,22 @@ public class ModerationOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
-                                 [],
+                                 [
+                                 new ModAction(
+                                               0,
+                                               600,
+                                               "Реквесты только для випов и выше",
+                                               2,
+                                               Restriction.Vip
+                                               ),
+                                 new ModAction(
+                                               1,
+                                               69,
+                                               "Эта команда доступна только випам и выше",
+                                               3,
+                                               Restriction.Vip
+                                              ),
+                                 ],
                                  []
                                  );
         Save();
