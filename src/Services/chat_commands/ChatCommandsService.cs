@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using ChatBot.bot;
 using ChatBot.bot.interfaces;
-using ChatBot.extensions;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
@@ -12,6 +11,9 @@ using ChatBot.Services.text_generator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
+using ChatBot.utils.Helix;
+using TwitchLib.Api.Helix;
+using TwitchLib.Api.Helix.Models.Search;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
@@ -20,7 +22,7 @@ namespace ChatBot.Services.chat_commands;
 public class ChatCommandsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     
-    private Bot _bot = null!;
+    private bot.ChatBot _bot = null!;
     private ITwitchClient Client => _bot.GetClient();
 
     public override string Name => ServiceName.ChatCommands;
@@ -28,7 +30,7 @@ public class ChatCommandsService : Service {
 
 
     public override void Init(Bot bot) {
-        _bot = bot;
+        _bot = (bot.ChatBot)bot;
 
         if (!Options.TryLoad()) {
             Options.SetDefaults();
@@ -67,8 +69,8 @@ public class ChatCommandsService : Service {
     private List<string> ProcessArgs(List<string?> args) {
         var processedArgs = new List<string>();
         foreach (var arg in args) {
-            if (!string.IsNullOrEmpty(arg)) continue;
-            if (arg!.Length == 1 && !char.IsLetterOrDigit(arg[0])) continue;
+            if (string.IsNullOrEmpty(arg)) continue;
+            if (arg!.Length is 1 or 2 && !char.IsLetterOrDigit(arg[0])) continue;
             processedArgs.Add(arg);
         }
         return processedArgs;
@@ -216,7 +218,7 @@ public class ChatCommandsService : Service {
                         username = commandArgs[0];
                     }
                 
-                    var followage = await Client.GetFollowageHelix((ChatBotOptions)_bot.Options, username!);
+                    var followage = await HelixUtils.GetFollowageHelix((ChatBotOptions)_bot.Options, username!);
                     if (followage == null) {
                         if (commandArgs.Count > 0) {
                             message = 
@@ -267,32 +269,89 @@ public class ChatCommandsService : Service {
                 case "req": {
                     var reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
                     var reqsState = Options.LevelRequestsService.GetServiceState();
-                    var shouldToggle = true;
+                    var comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
                     if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr}");
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr} {comment}");
                         return;
                     }
 
                     if (commandArgs.Count > 0) {
                         if (commandArgs[0] == "on") {
                             reqsState = State.Enabled;
-                            shouldToggle = false;
                         }
                         if (commandArgs[0] == "off") {
                             reqsState = State.Disabled;
-                            shouldToggle = false;
                         }
                     }
-                    if (shouldToggle) {
-                        Options.LevelRequestsService.ServiceStateNext();
-                    } else {
-                        Options.LevelRequestsService.Options.SetState(reqsState);
-                    }
+                    
+                    Options.LevelRequestsService.Options.SetState(reqsState);
                     
                     reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Теперь реквесты {reqsStateStr}");
+                    comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {reqsStateStr} {comment}");
                     break;
                 }
+
+                case "title": {
+                    var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
+                    
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
+                        return;
+                    }
+                    
+                    var titleSb = new StringBuilder();
+
+                    foreach (var arg in commandArgs) {
+                        titleSb.Append($"{arg} ");
+                    }
+                    
+                    var result = await HelixUtils.UpdateChannelInfo(_bot.Options, titleSb.ToString(), channelInfo!.GameId);
+                    if (!result) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить категорию на {titleSb}");
+                        return;
+                    }
+                    channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима изменено на {channelInfo!.Title}");
+                    break;
+                }
+                
+                case "game": {
+                    var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
+                    
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
+                        return;
+                    }
+
+                    var gameSb = new StringBuilder();
+
+                    for (var i = 0; i < commandArgs.Count; i++) {
+                        if (i == commandArgs.Count-1) {
+                            gameSb.Append($"{commandArgs[i]}");
+                            break;
+                        }
+                        gameSb.Append($"{commandArgs[i]} ");
+                    }
+
+                    var gameId = await HelixUtils.FindGameId(_bot.Options, gameSb.ToString());
+                    var result = await HelixUtils.UpdateChannelInfo(_bot.Options, channelInfo!.Title, gameId!);
+                    if (!result || gameId == null) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить категорию на {gameSb}");
+                        return;
+                    }
+                    channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
+                    break;
+                }
+                
+                case "delay": {
+                    var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
+                    
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo!.Delay)}");
+                    break;
+                }
+                
                 #endregion
                 #region MessageRandomizerService
 
@@ -393,7 +452,9 @@ public class ChatCommandsService : Service {
                              $"1. {cmdId}cmds - список комманд.",
                              $"2. {cmdId}help - использование комманд.",
                              $"3. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
-                             $"4. {cmdId}req - включены ли реквесты"
+                             $"4. {cmdId}title - название стрима",
+                             $"5. {cmdId}game - категория стрима",
+                             $"6. {cmdId}req - включены ли реквесты"
                          };
         
         SendPagedReply(cmds, args, commandArgs);
@@ -405,6 +466,8 @@ public class ChatCommandsService : Service {
                              $"1. {cmdId}cmds - список комманд.",
                              $"2. {cmdId}help - использование комманд.",
                              $"3. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
+                             $"4. {cmdId}title - название стрима",
+                             $"5. {cmdId}game - категория стрима",
                              Page.PageTerminator,
                              $"1. {cmdId}echo [message] - эхо",
                              $"2. {cmdId}rizz [message] - RIZZ",
@@ -432,6 +495,8 @@ public class ChatCommandsService : Service {
                              $"3. {cmdId}potato - сгенерировать новое сообщение",
                              Page.PageTerminator,
                              $"1. {cmdId}req [on/off] - включить/выключить реквесты",
+                             $"2. {cmdId}title [new_title] - посмотреть/изменить название стрима",
+                             $"3. {cmdId}game [new_game] - посмотреть/изменить категорию стрима",
                              Page.PageTerminator,
                              $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",

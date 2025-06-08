@@ -359,6 +359,12 @@ public class CliNodeSystem {
                                                                                           _state.Data.Bot.Options.SetOAuth
                                                                                          ),
                                                                                      new CliNodeString(
+                                                                                          "Broadcaster OAuth",
+                                                                                          _state.Data.Bot.Options.GetBroadcasterOAuth,
+                                                                                          CliNodePermission.Default,
+                                                                                          _state.Data.Bot.Options.SetBroadcasterOAuth
+                                                                                         ),
+                                                                                     new CliNodeString(
                                                                                           "ClientId",
                                                                                           _state.Data.Bot.Options.GetClientId,
                                                                                           CliNodePermission.Default,

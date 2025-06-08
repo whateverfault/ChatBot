@@ -14,6 +14,7 @@ public class ChatBotOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public string? Username => _saveData!.Username;
     public string? OAuth => _saveData!.OAuth;
+    public string? BroadcasterOAuth => _saveData!.BroadcasterOAuth;
     public string? Channel => _saveData!.Channel;
     public string? ClientId => _saveData!.ClientId;
 
@@ -32,6 +33,7 @@ public class ChatBotOptions : Options {
     public override void SetDefaults() {
         _saveData = new SaveData(
                                  State.Disabled,
+                                 "Empty",
                                  "Empty",
                                  "Empty",
                                  "Empty",
@@ -65,6 +67,10 @@ public class ChatBotOptions : Options {
         _saveData!.OAuth = token;
     }
     
+    public void SetBroadcasterOAuth(string token) {
+        _saveData!.BroadcasterOAuth = token;
+    }
+    
     public string GetUsername() {
         return Username ?? "Empty";
     }
@@ -75,6 +81,10 @@ public class ChatBotOptions : Options {
     
     public string GetOAuth() {
         return OAuth ?? "Empty";
+    }
+    
+    public string GetBroadcasterOAuth() {
+        return BroadcasterOAuth ?? "Empty";
     }
     
     public string GetClientId() {

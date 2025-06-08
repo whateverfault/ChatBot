@@ -16,7 +16,7 @@ public static class TwitchLibUtils {
         var user = await api.Helix.Users.GetUsersAsync(logins: [username]);
         if (user.Users.Length > 0) {
             var userId = user.Users[0].Id;
-            logger?.Log(LogLevel.Error, $"User {username} successfully found under id: {userId}");
+            logger?.Log(LogLevel.Info, $"User {username} successfully found under id: {userId}");
             return userId;
         }
 

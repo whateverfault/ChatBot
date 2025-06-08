@@ -1,8 +1,8 @@
 ﻿using ChatBot.bot;
-using ChatBot.extensions;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
+using ChatBot.utils.Helix;
 using Newtonsoft.Json;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Interfaces;
@@ -103,7 +103,7 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.Ban: {
-                await client.BanUserHelix(botOptions, message.Username, ModeratorComment);
+                await HelixUtils.BanUserHelix(botOptions, message.Username, ModeratorComment);
                 break;
             }
             case ModerationActionType.Timeout: {
@@ -119,7 +119,7 @@ public class ModAction {
         
         if (Type == ModerationActionType.Warn) {
             client.SendReply(message.Channel, message.Id, ModeratorComment);
-            await client.DeleteMessageHelix(options, message);
+            await HelixUtils.DeleteMessageHelix(options, message);
             return;
         }
         
@@ -143,18 +143,18 @@ public class ModAction {
         user.GiveWarn();
         client.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
-            await client.DeleteMessageHelix(options, message);
+            await HelixUtils.DeleteMessageHelix(options, message);
             return;
         }
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                await client.BanUserHelix(options, message.Username, ModeratorComment);
+                await HelixUtils.BanUserHelix(options, message.Username, ModeratorComment);
                 warnedUsers.RemoveAt(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
-                await client.TimeoutUserHelix(options, message.Username, TimeSpan.FromSeconds(Duration), ModeratorComment);
+                await HelixUtils.TimeoutUserHelix(options, message.Username, TimeSpan.FromSeconds(Duration), ModeratorComment);
                 warnedUsers.RemoveAt(userIndex);
                 break;
             }
