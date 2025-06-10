@@ -3,5 +3,5 @@
 namespace ChatBot.utils.Helix.Responses;
 
 public class GameSearchResponse {
-    public GameData[] Data { get; set; }
+    public GameData[] Data => null!;
 }

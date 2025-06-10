@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ChatBot.extensions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace ChatBot.utils;
@@ -20,9 +21,8 @@ public static class JsonUtils {
 
     public static bool TryRead<T>(string fileName, out T? obj) {
         obj = default;
-        if (!File.Exists(fileName)) {
-            return false;
-        }
+        if (new FileInfo(fileName).IsLocked()) return false;
+        if (!File.Exists(fileName)) return false;
         Read(fileName, out obj);
         return true;
     }
@@ -43,6 +43,7 @@ public static class JsonUtils {
     }
 
     public static void WriteSafe<T>(string fileName, string directory, T data) {
+        if (new FileInfo(fileName).IsLocked()) return;
         Clear(fileName, directory);
         Write(fileName, data);
     }

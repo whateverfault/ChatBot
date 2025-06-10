@@ -13,9 +13,10 @@ namespace ChatBot.utils.Helix;
 
 public static class HelixUtils {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    private static readonly HttpClient _client = new HttpClient();
+    private static readonly HttpClient _httpClient = new();
     
     
+    #region ban user
     public static async Task BanUserHelix(ChatBotOptions options, string username, string message) {
         try {
             var userId = await TwitchLibUtils.GetUserId(options, username);
@@ -32,9 +33,9 @@ public static class HelixUtils {
                 return;
             }
             
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
             
             var request = new
                           {
@@ -46,7 +47,7 @@ public static class HelixUtils {
                           };
 
             var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={broadcasterId}&moderator_id={botId}", content);
+            var response = await _httpClient.PostAsync($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={broadcasterId}&moderator_id={botId}", content);
 
             if (response.IsSuccessStatusCode) {
                 Console.WriteLine();
@@ -60,6 +61,9 @@ public static class HelixUtils {
             _logger.Log(LogLevel.Error, $"Error banning user: {ex.Message}");
         }
     }
+    #endregion
+    
+    #region timeout
     public static async Task TimeoutUserHelix(ChatBotOptions options, string username, TimeSpan durationSeconds, string message) {
         try {
             var userId = await TwitchLibUtils.GetUserId(options, username);
@@ -76,9 +80,9 @@ public static class HelixUtils {
                 return;
             } 
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
             
             var request = new
                           {
@@ -102,7 +106,7 @@ public static class HelixUtils {
                                      }
                                  };
 
-            var response = await _client.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
             if (response.IsSuccessStatusCode) {
                 _logger.Log(LogLevel.Error, $"Successfully timed out {username} for {(int)durationSeconds.TotalSeconds} seconds. Reason: {message}");
             }
@@ -115,7 +119,9 @@ public static class HelixUtils {
             _logger.Log(LogLevel.Error, $"Error timing out user: {ex.Message}");
         }
     }
+    #endregion
     
+    #region delete message
     public static async Task DeleteMessageHelix(ChatBotOptions options, ChatMessage message) {
         try {
             var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
@@ -133,9 +139,9 @@ public static class HelixUtils {
                 return;
             }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
             
             var requestUri = $"https://api.twitch.tv/helix/moderation/chat?broadcaster_id={broadcasterId}&moderator_id={botId}&message_id={message.Id}&user_id={userId}";
             var requestMessage = new HttpRequestMessage
@@ -148,7 +154,7 @@ public static class HelixUtils {
                                          { "Authorization", $"Bearer {options.OAuth}" }
                                      }
                                  };
-            var response = await _client.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
             
             if (response.IsSuccessStatusCode) {
                 _logger.Log(LogLevel.Info, $"Successfully deleted message {message.Id ?? $"from user {message.Username}"}");
@@ -161,7 +167,9 @@ public static class HelixUtils {
             _logger.Log(LogLevel.Error, $"Error deleting message: {ex.Message}");
         }
     }
-
+    #endregion
+    
+    #region followage
     public static async Task<TimeSpan?> GetFollowageHelix(ChatBotOptions options, string username) {
         try {
             var userId = await TwitchLibUtils.GetUserId(options, username);
@@ -176,9 +184,9 @@ public static class HelixUtils {
                 return null;
             }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
             
             var requestMessage = new HttpRequestMessage
             {
@@ -191,7 +199,7 @@ public static class HelixUtils {
                 }
             };
 
-            var response = await _client.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
             
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -216,6 +224,9 @@ public static class HelixUtils {
             return null;
         } 
     }
+    #endregion
+    
+    #region channel info
     
     public static async Task<bool> UpdateChannelInfo(ChatBotOptions options, string newTitle, string newGameId) {
         try {
@@ -225,9 +236,9 @@ public static class HelixUtils {
                 return false;
             }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.BroadcasterOAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.BroadcasterOAuth);
 
             var requestBody = new 
                               {
@@ -247,7 +258,7 @@ public static class HelixUtils {
                                                             } 
                                                         };
 
-            var response = await _client.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode) {
                 _logger.Log(LogLevel.Info, $"Successfully updated channel info: Title='{newTitle}', GameID='{newGameId}'");
@@ -272,9 +283,9 @@ public static class HelixUtils {
                 return null;
             }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
 
             var requestMessage = new HttpRequestMessage
                                  {
@@ -287,7 +298,7 @@ public static class HelixUtils {
                                      }
                                  };
 
-            var response = await _client.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -399,4 +410,53 @@ public static class HelixUtils {
         }
         return distances[lengthA, lengthB];
     }
+    #endregion
+    
+    #region create clip
+    public static async Task<string?> CreateClipHelix(ChatBotOptions options) {
+        try {
+            var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
+            if (string.IsNullOrEmpty(broadcasterId)) {
+                Console.WriteLine($"User {options.Channel!} not found");
+                return null;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Post,
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/clips?broadcaster_id={broadcasterId}"),
+                                     Headers =
+                                     {
+                                         { "Client-ID", options.ClientId },
+                                         { "Authorization", $"Bearer {options.OAuth}" }
+                                     }
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            if (response.IsSuccessStatusCode) {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var clipResponse = JsonConvert.DeserializeObject<ClipCreationResponse>(responseContent);
+            
+                if (clipResponse?.Data?.Count > 0) {
+                    var clipId = clipResponse.Data[0].Id;
+                    _logger.Log(LogLevel.Info, $"Successfully created clip with ID: {clipId}");
+                    return clipId;
+                }
+            }
+            else {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.Log(LogLevel.Error, $"Failed to create clip. Status: {response.StatusCode}. Response: {responseContent}");
+            }
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error creating clip: {ex.Message}");
+        }
+
+        return null;
+    }
+    #endregion
 }

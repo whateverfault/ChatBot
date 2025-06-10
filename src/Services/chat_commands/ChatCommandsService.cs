@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
@@ -12,8 +11,6 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 using ChatBot.utils.Helix;
-using TwitchLib.Api.Helix;
-using TwitchLib.Api.Helix.Models.Search;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
@@ -70,7 +67,7 @@ public class ChatCommandsService : Service {
         var processedArgs = new List<string>();
         foreach (var arg in args) {
             if (string.IsNullOrEmpty(arg)) continue;
-            if (arg!.Length is 1 or 2 && !char.IsLetterOrDigit(arg[0])) continue;
+            if (arg.Length is 1 or 2 && !char.IsLetterOrDigit(arg[0])) continue;
             processedArgs.Add(arg);
         }
         return processedArgs;
@@ -112,11 +109,11 @@ public class ChatCommandsService : Service {
                         SendEveryonesCmds(args, commandArgs);
                         return;
                     } if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
-                        SendVipCmds(args, commandArgs!);
+                        SendVipCmds(args, commandArgs);
                         return;
                     }
                 
-                    SendDevModCmds(args, commandArgs!);
+                    SendDevModCmds(args, commandArgs);
                     break;
                 }
                 case "help": {
@@ -218,7 +215,7 @@ public class ChatCommandsService : Service {
                         username = commandArgs[0];
                     }
                 
-                    var followage = await HelixUtils.GetFollowageHelix((ChatBotOptions)_bot.Options, username!);
+                    var followage = await HelixUtils.GetFollowageHelix(_bot.Options, username!);
                     if (followage == null) {
                         if (commandArgs.Count > 0) {
                             message = 
@@ -261,6 +258,18 @@ public class ChatCommandsService : Service {
                     }
                     
                     Options.TextGeneratorService.GenerateAndSend();
+                    break;
+                }
+
+                case "clip": {
+                    var clipId = await HelixUtils.CreateClipHelix(_bot.Options);
+
+                    if (clipId == null) {
+                        ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, Client);
+                        return;
+                    }
+                    
+                    Client.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан. Айди клипа - {clipId}");
                     break;
                 }
                 #endregion
@@ -348,7 +357,7 @@ public class ChatCommandsService : Service {
                 case "delay": {
                     var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
                     
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo!.Delay)}");
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo.Delay)}");
                     break;
                 }
                 

@@ -22,6 +22,7 @@ public enum ErrorCode {
     ListIsEmpty,
     NotEnoughData,
     SmthWentWrong,
+    ClipCreationFailed,
     None,
 }
 
@@ -45,6 +46,7 @@ public class ErrorHandler {
                                                                   "Empty.",
                                                                   "Too Few Data.",
                                                                   "Something Went Wrong.",
+                                                                  "Failed to create a clip",
                                                               ];
 
 
@@ -65,6 +67,7 @@ public class ErrorHandler {
                                                                 "Пусто.",
                                                                 "Слишком мало данных.",
                                                                 "Что-то пошло не так.",
+                                                                "Не удалось создать клип",
                                                             ];
 
 
@@ -97,6 +100,7 @@ public class ErrorHandler {
         if (code == ErrorCode.None) {
             return false;
         }
+        LogError(code);
         client.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
         return true;
     }
