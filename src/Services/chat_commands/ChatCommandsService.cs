@@ -20,6 +20,7 @@ public class ChatCommandsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     
     private bot.ChatBot _bot = null!;
+    private long _time;
     private ITwitchClient Client => _bot.GetClient();
 
     public override string Name => ServiceName.ChatCommands;
@@ -94,13 +95,27 @@ public class ChatCommandsService : Service {
         Options.SetModActionIndex(index);
         return true;
     }
+
+    public int GetCooldown() {
+        return Options.Cooldown;
+    }
+
+    public void SetCooldown(int cooldown) {
+        Options.SetCooldown(cooldown);
+    }
     
-    public async void HandleMessage(object? sender, OnChatCommandReceivedArgs args) {
+    public async void HandleCmd(object? sender, OnChatCommandReceivedArgs args) {
         try {
             var commandArgs = ProcessArgs(args.Command.ArgumentsAsList);
             var errorHandler = new ErrorHandler(Client);
             var chatMessage = args.Command.ChatMessage;
             ErrorCode err;
+
+            var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (curTime-_time < Options.Cooldown) {
+                return;
+            }
+            _time = curTime;
 
             switch (args.Command.CommandText) {
                 #region General

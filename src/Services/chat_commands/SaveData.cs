@@ -13,18 +13,24 @@ public class SaveData {
     public Restriction RequiredRole { get; set; }
     [JsonProperty(PropertyName ="pattern_index")]
     public int ModActionIndex { get; set; }
+    [JsonProperty(PropertyName ="cooldown")]
+    public int Cooldown { get; set; }
 
 
+    public SaveData() {}
+    
     [JsonConstructor]
     public SaveData(
         [JsonProperty(PropertyName ="service_state")] State serviceState,
         [JsonProperty(PropertyName ="command_identifier")] char commandIdentifier,
         [JsonProperty(PropertyName ="required_role")] Restriction requiredRole,
-        [JsonProperty(PropertyName ="pattern_index")] int modActionIndex
+        [JsonProperty(PropertyName ="pattern_index")] int modActionIndex,
+        [JsonProperty(PropertyName ="cooldown")] int cooldown
         ) {
         ServiceState = serviceState;
         CommandIdentifier = commandIdentifier;
         RequiredRole = requiredRole;
         ModActionIndex = modActionIndex;
+        Cooldown = cooldown;
     }
 }

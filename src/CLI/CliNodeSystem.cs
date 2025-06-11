@@ -163,6 +163,12 @@ public class CliNodeSystem {
                                                                          CliNodePermission.Default,
                                                                          _state.Data.ChatCommands.SetModActionIndex
                                                                          ),
+                                                          new CliNodeInt(
+                                                                           "Cooldown",
+                                                                           _state.Data.ChatCommands.GetCooldown,
+                                                                           CliNodePermission.Default,
+                                                                           _state.Data.ChatCommands.SetCooldown
+                                                                          ),
                                                           new CliNodeEnum(
                                                                          "Service State",
                                                                          _state.Data.ChatCommands.GetServiceStateAsInt,

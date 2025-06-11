@@ -20,6 +20,7 @@ public class ChatCommandsOptions : Options {
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public Restriction RequiredRole => _saveData!.RequiredRole;
     public int ModActionIndex => _saveData!.ModActionIndex;
+    public int Cooldown => _saveData!.Cooldown;
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
     public ModerationService ModerationService { get; private set; } = null!;
     public TextGeneratorService TextGeneratorService { get; private set; } = null!;
@@ -44,12 +45,7 @@ public class ChatCommandsOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 State.Disabled,
-                                 '~',
-                                 Restriction.Everyone,
-                                 0
-                                );
+        _saveData = new SaveData();
         Save();
     }
 
@@ -100,5 +96,9 @@ public class ChatCommandsOptions : Options {
     public void SetModActionIndex(int index) {
         _saveData!.ModActionIndex = index;
         Save();
+    }
+
+    public void SetCooldown(int cooldown) {
+        _saveData!.Cooldown = cooldown;
     }
 }
