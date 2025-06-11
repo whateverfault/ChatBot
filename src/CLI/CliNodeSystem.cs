@@ -314,8 +314,32 @@ public class CliNodeSystem {
                                                                      ),
                                                       ]
                                                      );
+
+        var presetsDir = new CliNodeStaticDirectory(
+                                                    "Presets",
+                                                    _state,
+                                                    true,
+                                                    [
+                                                    new CliNodeIndex(
+                                                                     "Current Preset",
+                                                                     _state.Data.Presets.Options.GetCurrentPreset,
+                                                                     CliNodePermission.Default,
+                                                                     _state.Data.Presets.SetCurrentPreset
+                                                                     ),
+                                                    new CliNodeDynamicDirectory(
+                                                                                "Presets",
+                                                                                "Add Preset",
+                                                                                "Remove Preset",
+                                                                                _state.Data.Presets.AddPreset,
+                                                                                _state.Data.Presets.RemovePreset,
+                                                                                _state.Data.Presets.GetPresetsAsContent(),
+                                                                                _state,
+                                                                                false
+                                                                                ),
+                                                    ]
+                                                    );
         
-        var services = new CliNodeStaticDirectory(
+        var servicesDir = new CliNodeStaticDirectory(
                                                   "Services",
                                                   _state,
                                                   true,
@@ -388,12 +412,13 @@ public class CliNodeSystem {
                                                  _state,
                                                  false,
                                                  [
-                                                     loginDir, 
+                                                     loginDir,
                                                      new CliNodeAction(
                                                                        "Initialize",
                                                                        _state.Data.Bot.Start
                                                                       ),
-                                                     services
+                                                     presetsDir,
+                                                     servicesDir
                                                  ]);
 
         _directories.Add(rootDir);

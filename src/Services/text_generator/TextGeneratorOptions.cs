@@ -11,7 +11,7 @@ public class TextGeneratorOptions : Options {
     private SaveData? _saveData;
 
     protected override string Name => "text_generator";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     public int ContextSize => _saveData!.ContextSize;
@@ -32,7 +32,7 @@ public class TextGeneratorOptions : Options {
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 
     public override void SetDefaults() {

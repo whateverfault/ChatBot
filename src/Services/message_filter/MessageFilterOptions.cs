@@ -11,7 +11,7 @@ public class MessageFilterOptions : Options {
     private List<CommentedRegex> Patterns => _saveData!.Patterns;
     
     protected override string Name => "messageFilter";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.State;
 
@@ -28,7 +28,7 @@ public class MessageFilterOptions : Options {
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 
     public override void SetDefaults() {

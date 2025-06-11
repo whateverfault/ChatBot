@@ -85,13 +85,14 @@ public class ChatCommandsService : Service {
         return Options.GetModActionIndex();
     }
 
-    public void SetModActionIndex(int index) {
+    public bool SetModActionIndex(int index) {
         var modAction = Options.ModerationService.GetModActions();
         if (index < 0 || index >= modAction.Count) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidInput);
-            return;
+            return false;
         }
         Options.SetModActionIndex(index);
+        return true;
     }
     
     public async void HandleMessage(object? sender, OnChatCommandReceivedArgs args) {
@@ -262,14 +263,18 @@ public class ChatCommandsService : Service {
                 }
 
                 case "clip": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                        return;
+                    }
+                    
                     var clipId = await HelixUtils.CreateClipHelix(_bot.Options);
 
                     if (clipId == null) {
                         ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, Client);
                         return;
                     }
-                    
-                    Client.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан. Айди клипа - {clipId}");
+                    Client.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан - https://www.twitch.tv/{_bot.Options.Channel}/clip/{clipId}");
                     break;
                 }
                 #endregion

@@ -9,7 +9,7 @@ namespace ChatBot.Services.level_requests;
 public class LevelRequestsOptions : Options {
     private SaveData? _saveData;
     protected override string Name => "level_requests";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public int PatternIndex => _saveData!.PatternIndex;
     public Restriction Restriction => _saveData!.Restriction;
@@ -28,7 +28,7 @@ public class LevelRequestsOptions : Options {
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 
     public override void SetDefaults() {

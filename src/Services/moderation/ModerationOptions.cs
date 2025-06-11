@@ -9,7 +9,7 @@ public class ModerationOptions : Options {
     private SaveData? _saveData;
     
     protected override string Name => "moderation";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public List<ModAction> ModerationActions => _saveData!.ModerationActions;
@@ -28,7 +28,7 @@ public class ModerationOptions : Options {
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 
     public override void SetDefaults() {

@@ -15,7 +15,10 @@ public class SaveData {
 
     public SaveData() {}
     
-    public SaveData(State serviceState, List<ModAction> actions, List<WarnedUser> warnedUsers) {
+    public SaveData(
+        [JsonProperty(PropertyName ="service_state")]  State serviceState,
+        [JsonProperty(PropertyName ="moderation_actions")] List<ModAction> actions,
+        [JsonProperty(PropertyName = "warned_users")] List<WarnedUser> warnedUsers) {
         ServiceState = serviceState;
         ModerationActions = new List<ModAction>(actions);
         WarnedUsers = warnedUsers;

@@ -7,12 +7,20 @@ using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
+using ChatBot.Services.presets;
 using ChatBot.Services.text_generator;
 
 namespace ChatBot.Services.Static;
 
 public static class ServiceManager {
-    private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() { 
+    private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() {
+                                                                                               {
+                                                                                                   ServiceName.Presets,
+                                                                                                   (
+                                                                                                       new PresetsService(),
+                                                                                                       new PresetsEvents()
+                                                                                                   )
+                                                                                               },
                                                                                                {
                                                                                                    ServiceName.MessageRandomizer,
                                                                                                    (
@@ -72,8 +80,9 @@ public static class ServiceManager {
                                                                                            };
 
 
-    public static void InitServices(Bot bot) {
+    public static void InitServices(Bot bot, string[] exclude) {
         foreach (var (_, (service, events)) in _services) {
+            if (exclude.Contains(service.Name)) continue;
             service.Init(bot);
 
             events.Init(service, bot);
@@ -81,6 +90,13 @@ public static class ServiceManager {
         }
     }
 
+    public static void ServicesToDefault(string[] exclude) {
+        foreach (var (_, (service, _)) in _services) {
+            if (exclude.Contains(service.Name)) continue;
+            service.Options.SetDefaults();
+        }
+    }
+    
     public static Service GetService(string key) {
         return _services[key].Item1;
     }

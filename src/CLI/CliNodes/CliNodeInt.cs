@@ -32,6 +32,8 @@ public class CliNodeInt : CliNode {
         
         Console.WriteLine($"Value: {_getter.Invoke()}");
         Console.Write("New Value: ");
-        _setter.Invoke(int.Parse(Console.ReadLine() ?? "0"));
+        var line = Console.ReadLine() ?? "0";
+        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
+        _setter.Invoke(index);
     }
 }

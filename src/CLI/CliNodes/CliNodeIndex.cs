@@ -1,14 +1,19 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿using ChatBot.shared.Handlers;
+
+namespace ChatBot.CLI.CliNodes;
+
+public delegate int IndexGetter();
+public delegate bool IndexSetter(int index);
 
 public class CliNodeIndex : CliNode {
-    private readonly IntGetter _getter;
-    private readonly IntSetter _setter = null!;
+    private readonly IndexGetter _getter;
+    private readonly IndexSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
     protected override string Text { get; }
 
 
-    public CliNodeIndex(string text, IntGetter getter, CliNodePermission permission, IntSetter? setter = null) {
+    public CliNodeIndex(string text, IndexGetter getter, CliNodePermission permission, IndexSetter? setter = null) {
         Text = text;
         _getter = getter;
         _permission = permission;
@@ -29,6 +34,12 @@ public class CliNodeIndex : CliNode {
         
         Console.WriteLine($"Value: {_getter.Invoke()+1}");
         Console.Write("New Value: ");
-        _setter.Invoke(int.Parse(Console.ReadLine() ?? "1")-1);
+        var line = Console.ReadLine() ?? "1";
+        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "1" : line);
+        var result = _setter.Invoke(index-1);
+
+        if (!result) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidInput);
+        }
     }
 }

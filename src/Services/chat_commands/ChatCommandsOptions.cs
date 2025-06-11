@@ -15,7 +15,7 @@ public class ChatCommandsOptions : Options {
     private SaveData? _saveData;
 
     protected override string Name => "chat_commands";
-    protected override string OptionsPath => Path.Combine(Directories.serviceDirectory+Name, $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public Restriction RequiredRole => _saveData!.RequiredRole;
@@ -40,7 +40,7 @@ public class ChatCommandsOptions : Options {
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.serviceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 
     public override void SetDefaults() {

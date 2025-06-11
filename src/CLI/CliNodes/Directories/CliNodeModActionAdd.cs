@@ -25,8 +25,8 @@ public class CliNodeModActionAdd : CliNode {
         ModAction action;
 
         Console.Write("Global Pattern Index: ");
-        var line = Console.ReadLine() ?? "0";
-        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
+        var line = Console.ReadLine() ?? "1";
+        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "1" : line);
         var patterns = state.Data.MessageFilter.GetPatterns();
         if (index < 1 || index > patterns.Count) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidInput);

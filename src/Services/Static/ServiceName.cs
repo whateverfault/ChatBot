@@ -9,4 +9,5 @@ public static class ServiceName {
     public const string TextGenerator = "Text Generator";
     public const string ChatLogs = "Chat Logs";
     public const string LevelRequests = "Level Requests";
+    public const string Presets = "Presets";
 }

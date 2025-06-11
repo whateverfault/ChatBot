@@ -32,10 +32,7 @@ public static class JsonUtils {
         File.WriteAllText(fileName, json);
     }
 
-    public static void Clear(string fileName, string directory) {
-        if (!Directory.Exists(directory)) {
-            Directory.CreateDirectory(directory);
-        }
+    public static void Clear(string fileName) {
         if (File.Exists(fileName)) {
             File.Delete(fileName);
         }
@@ -43,8 +40,11 @@ public static class JsonUtils {
     }
 
     public static void WriteSafe<T>(string fileName, string directory, T data) {
-        if (new FileInfo(fileName).IsLocked()) return;
-        Clear(fileName, directory);
+        if (!Directory.Exists(directory)) {
+            Directory.CreateDirectory(directory);
+        }
+        if (File.Exists(fileName) && new FileInfo(fileName).IsLocked()) return;
+        Clear(fileName);
         Write(fileName, data);
     }
 }

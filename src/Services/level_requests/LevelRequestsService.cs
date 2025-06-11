@@ -39,8 +39,11 @@ public class LevelRequestsService : Service {
         return Options.PatternIndex;
     }
 
-    public void SetPatternIndex(int index) {
+    public bool SetPatternIndex(int index) {
+        if (index < 0 || index >= Options.ModerationService.GetModActions().Count) return false;
+        
         Options.SetPatternIndex(index);
+        return true;
     }
 
     public int GetRestrictionAsInt() {

@@ -7,6 +7,7 @@ using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
+using ChatBot.Services.presets;
 using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
 
@@ -24,7 +25,7 @@ internal static class Program {
         
         var bot = new bot.ChatBot();
 
-        ServiceManager.InitServices(bot);
+        ServiceManager.InitServices(bot, []);
         var cliData = new CliData(
                                   bot,
                                   (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
@@ -34,7 +35,8 @@ internal static class Program {
                                   (LoggerService)ServiceManager.GetService(ServiceName.Logger),
                                   (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs),
                                   (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
-                                  (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests)
+                                  (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
+                                  (PresetsService)ServiceManager.GetService(ServiceName.Presets)
                                  );
         _cli = new Cli(cliData);
         _cli.RenderNodes();
@@ -48,7 +50,6 @@ internal static class Program {
     public static void ForceToRender() {
         _forcedToRender = true;
     }
-        
     
     private static Task Render() {
         while (true) {
