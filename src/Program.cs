@@ -27,8 +27,8 @@ internal static class Program {
         Console.OutputEncoding = Encoding.UTF8;
 
         
-        var userInfo = await AredlUtils.FindUserProfile("foxtailo");
-        var userRecords = await AredlUtils.GetUserRecord(userInfo?.hardest?.id!, userInfo?.user?.id!);
+        var userInfo = await AredlUtils.FindProfile("foxtailo");
+        var userRecords = await AredlUtils.GetRecord(userInfo?.hardest?.id!, userInfo?.user?.id!);
             
         var bot = new bot.ChatBot();
 

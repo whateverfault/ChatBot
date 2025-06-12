@@ -105,23 +105,30 @@ public class ChatCommandsService : Service {
     public void SetCooldown(int cooldown) {
         Options.SetCooldown(cooldown);
     }
+
+    public int GetVerboseStateAsInt() {
+        return (int)Options.VerboseState;
+    }
+
+    public void VerboseStateNext() {
+        Options.SetVerboseState((State)(((int)Options.VerboseState+1)%Enum.GetValues(typeof(State)).Length));
+    }
     
     public async void HandleCmd(object? sender, OnChatCommandReceivedArgs args) {
-        try {
-            var commandArgs = ProcessArgs(args.Command.ArgumentsAsList);
-            var errorHandler = new ErrorHandler(Client);
-            var chatMessage = args.Command.ChatMessage;
-            ErrorCode err;
+        var commandArgs = ProcessArgs(args.Command.ArgumentsAsList);
+        var errorHandler = new ErrorHandler(Client);
+        var chatMessage = args.Command.ChatMessage;
 
+        try {
             var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (curTime-_time < Options.Cooldown) {
                 return;
             }
             _time = curTime;
 
+            ErrorCode err;
             switch (args.Command.CommandText) {
                 #region General
-
                 case "cmds": {
                     if (!RestrictionHandler.Handle(Restriction.Vip, chatMessage)) {
                         SendEveryonesCmds(args, commandArgs);
@@ -297,11 +304,48 @@ public class ChatCommandsService : Service {
                 #endregion
                 #region Moderation
 
+                case "verbose": {
+                    var verboseStateStr = 
+                        Options.VerboseState == State.Enabled?
+                            "включены" :
+                            "отключены";
+                    var comment =
+                        Options.VerboseState == State.Enabled ?
+                            "Shiza":
+                            "ZACHTO";
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
+                        return;
+                    }
+                    
+                    if (commandArgs.Count > 0) {
+                        if (commandArgs[0] == "on") {
+                            Options.SetVerboseState(State.Enabled);
+                        }
+                        if (commandArgs[0] == "off") {
+                            Options.SetVerboseState(State.Disabled);
+                        }
+                    }
+                    
+                    verboseStateStr = 
+                        Options.VerboseState == State.Enabled?
+                            "включены" :
+                            "отключены";
+                    comment =
+                        Options.VerboseState == State.Enabled ?
+                            "Shiza":
+                            "ZACHTO";
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи теперь {verboseStateStr} {comment}");
+                    break;
+                }
                 case "req": {
-                    var reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
+                    var reqsStateStr = 
+                        Options.LevelRequestsService.GetServiceState() == State.Enabled?
+                            "включены" :
+                            "отключены";
                     var reqsState = Options.LevelRequestsService.GetServiceState();
                     var comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
-                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr} {comment}");
                         return;
                     }
@@ -317,7 +361,10 @@ public class ChatCommandsService : Service {
                     
                     Options.LevelRequestsService.Options.SetState(reqsState);
                     
-                    reqsStateStr = Options.LevelRequestsService.GetServiceState() == State.Enabled? "включены" : "отключены";
+                    reqsStateStr = 
+                        Options.LevelRequestsService.GetServiceState() == State.Enabled? 
+                            "включены" : 
+                            "отключены";
                     comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
                     Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {reqsStateStr} {comment}");
                     break;
@@ -326,7 +373,7 @@ public class ChatCommandsService : Service {
                 case "title": {
                     var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
                     
-                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
+                    if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
                         return;
                     }
@@ -582,6 +629,41 @@ public class ChatCommandsService : Service {
                 
                 case "hardest": {
                     if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex); 
+                        return;
+                    }
+                    if (Options.DemonListService.GetServiceState() == State.Disabled) {
+                        errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
+                        return;
+                    }
+                                     
+                    if (commandArgs.Count < 1) {
+                        errorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage);
+                        return;
+                    }
+                 
+                    var username = commandArgs[0];
+                    var profile = await Options.DemonListService.GetProfile(username);
+                    if (profile == null) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Пользователь не найден.");
+                        return;
+                    }
+                    var submissionInfo = await Options.DemonListService.GetHardest(profile);
+                    if (submissionInfo == null) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
+                        return;
+                    }
+                    var levelInfo = await Options.DemonListService.GetLevelInfoByName(profile.hardest?.name!);
+                    if (levelInfo == null) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
+                        return;
+                    }
+                    
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {submissionInfo.videoUrl}");
+                    break;
+                                 }
+                case "phardest": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
                         await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
                         return;
                     }
@@ -596,23 +678,37 @@ public class ChatCommandsService : Service {
                     }
 
                     var username = commandArgs[0];
-                    var profile = await Options.DemonListService.GetUserProfile(username);
+                    var profile = await Options.DemonListService.GetPlatformerProfile(username);
                     if (profile == null) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Пользователь не найден.");
                         return;
                     }
-                    var hardest = await Options.DemonListService.GetUserHardest(profile);
+                    var hardest = await Options.DemonListService.GetPlatformerHardest(profile);
                     if (hardest == null) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест Платформер не найден.");
+                        return;
+                    }
+                    var levelInfo = await Options.DemonListService.GetPlatformerLevelInfoByName(profile.hardest?.name!);
+                    if (levelInfo == null) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
                         return;
                     }
                     
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест {profile.user?.globalName} - {profile.hardest?.name} | {hardest.videoUrl}");
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест Платформер {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {hardest.videoUrl}");
                     break;
                 }
                 #endregion
+                default: {
+                    if (Options.VerboseState == State.Enabled) {
+                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Неизвестная комманда: {Options.CommandIdentifier}{args.Command.CommandText}");
+                    }
+                    break;
+                }
             }
         } catch (Exception e) {
+            if (Options.VerboseState == State.Enabled) {
+                Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{args.Command.CommandText}.");
+            }
             _logger.Log(LogLevel.Error, $"Error while handling the command: {e.Message}");
         }
     }
@@ -631,8 +727,10 @@ public class ChatCommandsService : Service {
                              $"1. {cmdId}followage [username] - время, которое пользователь отслеживает канал",
                              $"2. {cmdId}title - название стрима",
                              $"3. {cmdId}game - категория стрима",
-                             $"4. {cmdId}req - включены ли реквесты",
-                             $"5. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             Page.PageTerminator,
+                             $"1. {cmdId}req - включены ли реквесты",
+                             $"2. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             $"3. {cmdId}phardest <aredl_username> - хардест платформер пользователя по Pemon List",
                          };
         
         SendPagedReply(cmds, args, commandArgs);
@@ -658,9 +756,10 @@ public class ChatCommandsService : Service {
                              Page.PageTerminator,
                              $"1. {cmdId}top <placement> - уровень стоящий на данной позиции по AREDL",
                              $"2. {cmdId}place <level_name> [by creator_name] - позиция уровня по AREDL",
-                             $"3. {cmdId}ptop <placement> - уровень стоящий на данной позиции по Pemon List",
-                             $"4. {cmdId}pplace <level_name> [by creator_name] - позиция уровня по Pemon List",
-                             $"5. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             $"3. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             $"4. {cmdId}ptop <placement> - уровень стоящий на данной позиции по Pemon List",
+                             $"5. {cmdId}pplace <level_name> [by creator_name] - позиция уровня по Pemon List",
+                             $"6. {cmdId}phardest <aredl_username> - хардест платформер пользователя по Pemon List",
                          };
 
         SendPagedReply(cmds, args, commandArgs);
@@ -681,6 +780,7 @@ public class ChatCommandsService : Service {
                              $"1. {cmdId}req [on/off] - включить/выключить реквесты",
                              $"2. {cmdId}title [new_title] - посмотреть/изменить название стрима",
                              $"3. {cmdId}game [new_game] - посмотреть/изменить категорию стрима",
+                             $"4. {cmdId}verbose [on/off] - включить/выключить дополнительные логи",
                              Page.PageTerminator,
                              $"1. {cmdId}guess <nick_name> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",
@@ -689,9 +789,10 @@ public class ChatCommandsService : Service {
                              Page.PageTerminator,
                              $"1. {cmdId}top <placement> - уровень стоящий на данной позиции по AREDL",
                              $"2. {cmdId}place <level_name> [by creator_name] - позиция уровня по AREDL",
-                             $"3. {cmdId}ptop <placement> - уровень стоящий на данной позиции по Pemon List",
-                             $"4. {cmdId}pplace <level_name> [by creator_name] - позиция уровня по Pemon List",
-                             $"5. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             $"3. {cmdId}hardest <aredl_username> - хардест пользователя по AREDL",
+                             $"4. {cmdId}ptop <placement> - уровень стоящий на данной позиции по Pemon List",
+                             $"5. {cmdId}pplace <level_name> [by creator_name] - позиция уровня по Pemon List",
+                             $"6. {cmdId}phardest <aredl_username> - хардест платформер пользователя по Pemon List",
                          };
 
         SendPagedReply(cmds, args, commandArgs);

@@ -15,6 +15,8 @@ public class SaveData {
     public int ModActionIndex { get; set; }
     [JsonProperty(PropertyName ="cooldown")]
     public int Cooldown { get; set; }
+    [JsonProperty(PropertyName = "verbose_state")]
+    public State VerboseState { get; set; }
 
 
     public SaveData() {}
@@ -25,12 +27,13 @@ public class SaveData {
         [JsonProperty(PropertyName ="command_identifier")] char commandIdentifier,
         [JsonProperty(PropertyName ="required_role")] Restriction requiredRole,
         [JsonProperty(PropertyName ="pattern_index")] int modActionIndex,
-        [JsonProperty(PropertyName ="cooldown")] int cooldown
-        ) {
+        [JsonProperty(PropertyName ="cooldown")] int cooldown,
+        [JsonProperty(PropertyName = "verbose_state")] State verboseState) {
         ServiceState = serviceState;
         CommandIdentifier = commandIdentifier;
         RequiredRole = requiredRole;
         ModActionIndex = modActionIndex;
         Cooldown = cooldown;
+        VerboseState = verboseState;
     }
 }

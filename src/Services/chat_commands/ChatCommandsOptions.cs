@@ -22,6 +22,7 @@ public class ChatCommandsOptions : Options {
     public Restriction RequiredRole => _saveData!.RequiredRole;
     public int ModActionIndex => _saveData!.ModActionIndex;
     public int Cooldown => _saveData!.Cooldown;
+    public State VerboseState => _saveData!.VerboseState;
     public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
     public ModerationService ModerationService { get; private set; } = null!;
     public TextGeneratorService TextGeneratorService { get; private set; } = null!;
@@ -104,6 +105,15 @@ public class ChatCommandsOptions : Options {
 
     public void SetCooldown(int cooldown) {
         _saveData!.Cooldown = cooldown;
+        Save();
+    }
+
+    public State GetVerboseState() {
+        return VerboseState;
+    }
+
+    public void SetVerboseState(State state) {
+        _saveData!.VerboseState = state;
         Save();
     }
 }

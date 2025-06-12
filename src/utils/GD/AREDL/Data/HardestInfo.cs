@@ -7,6 +7,7 @@ public class HardestInfo {
     public string name;
 
 
+    [JsonConstructor]
     public HardestInfo(
         [JsonProperty(PropertyName = "id")] string id,
         [JsonProperty(PropertyName = "name")] string name) {

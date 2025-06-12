@@ -170,6 +170,13 @@ public class CliNodeSystem {
                                                                            _state.Data.ChatCommands.SetCooldown
                                                                           ),
                                                           new CliNodeEnum(
+                                                                          "Verbose State",
+                                                                          _state.Data.ChatCommands.GetVerboseStateAsInt,
+                                                                          typeof(State),
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.ChatCommands.VerboseStateNext
+                                                                         ),
+                                                          new CliNodeEnum(
                                                                          "Service State",
                                                                          _state.Data.ChatCommands.GetServiceStateAsInt,
                                                                          typeof(State),

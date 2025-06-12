@@ -184,7 +184,7 @@ public partial class AredlUtils {
         }
     }
 
-    public static async Task<UserProfile?> FindUserProfile(string username, LoggerService? logger = null) {
+    public static async Task<UserProfile?> FindProfile(string username, LoggerService? logger = null) {
         try {
             var requestMessage = new HttpRequestMessage
                                  {
@@ -241,7 +241,7 @@ public partial class AredlUtils {
         }
     }
     
-    public static async Task<SubmissionInfo?> GetUserRecord(string levelId, string userId, LoggerService? logger = null) {
+    public static async Task<SubmissionInfo?> GetRecord(string levelId, string userId, LoggerService? logger = null) {
         try {
             var levelRecords = await ListRecords(levelId, logger);
             if (levelRecords?.Count < 1) {
@@ -257,6 +257,83 @@ public partial class AredlUtils {
         }
         catch(Exception e){
             logger?.Log(LogLevel.Error, $"Error while fetching user record data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<UserProfile?> FindPlatformerProfile(string username, LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/arepl/leaderboard?name_filter={username}&page=1"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while fetching platformer profile data. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<LeaderboardResponse?>(content);
+            logger?.Log(LogLevel.Info, "Successfully fetched platformer profile data");
+            if (result?.data.Count > 0) {
+                return result.data[0];
+            }
+            
+            logger?.Log(LogLevel.Error, $"Error while fetching platformer profile data. Status: {response.StatusCode}. Response: {content}");
+            return null;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching platformer profile data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<List<SubmissionInfo?>?> ListPlatformerRecords(string levelId, LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/arepl/levels/{levelId}/records"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<List<SubmissionInfo?>>(content);
+            logger?.Log(LogLevel.Info, "Successfully fetched level records data");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<SubmissionInfo?> GetPlatformerRecord(string levelId, string userId, LoggerService? logger = null) {
+        try {
+            var levelRecords = await ListPlatformerRecords(levelId, logger);
+            if (levelRecords?.Count < 1) {
+                logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data.");
+                return null;
+            }
+
+            foreach (var record in levelRecords!) {
+                if (record?.submittedBy?.id != userId) continue;
+                return record;
+            }
+            return null;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e.Message}");
             return null;
         }
     }
