@@ -3,7 +3,12 @@
 namespace ChatBot.Services.interfaces;
 
 public abstract class ServiceEvents {
+    protected bool subscribed;
+    
+    
     public abstract void Init(Service service, Bot bot);
 
-    public abstract void Subscribe();
+    public virtual void Subscribe() {
+        subscribed = true;
+    }
 }

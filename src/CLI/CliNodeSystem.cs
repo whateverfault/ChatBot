@@ -321,6 +321,21 @@ public class CliNodeSystem {
                                                       ]
                                                      );
 
+        var demonListDir = new CliNodeStaticDirectory(
+                                                      "Demon List",
+                                                      _state,
+                                                      true,
+                                                      [
+                                                      new CliNodeEnum(
+                                                                      "Service State",
+                                                                      _state.Data.DemonList.GetServiceStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      _state.Data.DemonList.ServiceStateNext
+                                                                      ),
+                                                      ]
+                                                      );
+        
         var presetsDir = new CliNodeStaticDirectory(
                                                     "Presets",
                                                     _state,
@@ -354,6 +369,7 @@ public class CliNodeSystem {
                                                       chatLogsDir,
                                                       randomMsgsDir,
                                                       textGeneratorDir,
+                                                      demonListDir,
                                                       messageFilterDir,
                                                       moderationDir,
                                                       levelReqsDir,

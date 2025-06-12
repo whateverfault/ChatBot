@@ -14,6 +14,8 @@ public class ChatCommandsEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        if (subscribed) return;
+        base.Subscribe();
         _bot.OnChatCommandReceived += _service.HandleCmd;
         _service.Options.OnCommandIdentifierChanged += _service.ChangeCommandIdentifier;
     }

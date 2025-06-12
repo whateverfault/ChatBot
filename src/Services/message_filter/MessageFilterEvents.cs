@@ -14,6 +14,8 @@ public class MessageFilterEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        if (subscribed) return;
+        base.Subscribe();
         _bot.OnMessageReceived += _service.HandleMessage;
     }
 }

@@ -3,5 +3,5 @@
 namespace ChatBot.utils.Helix.Responses;
 
 public class FollowResponse {
-    public FollowData[] Data { get; set; } = null!;
+    public List<FollowData>? Data { get; set; }
 }

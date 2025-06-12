@@ -205,7 +205,7 @@ public static class HelixUtils {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var followData = JsonConvert.DeserializeObject<FollowResponse>(responseContent);
                 
-                if (followData?.Data.Length > 0) {
+                if (followData?.Data?.Count > 0) {
                     var followDate = followData.Data[0].FollowedAt;
                     var followDuration = DateTime.UtcNow - followDate;
                     _logger.Log(LogLevel.Info, $"{username} has been following since {followDate} ({followDuration.TotalDays} days)");
@@ -277,8 +277,7 @@ public static class HelixUtils {
     public static async Task<ChannelInfo?> GetChannelInfo(ChatBotOptions options) {
         try {
             var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
-            if (string.IsNullOrEmpty(broadcasterId))
-            {
+            if (string.IsNullOrEmpty(broadcasterId)) {
                 _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
                 return null;
             }
@@ -304,15 +303,14 @@ public static class HelixUtils {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var channelData = JsonConvert.DeserializeObject<ChannelInfoResponse>(responseContent);
                 _logger.Log(LogLevel.Info, "Successfully fetched channel info");
-                return channelData?.Data.FirstOrDefault();
+                return channelData?.Data?.FirstOrDefault();
             }
         
             var errorContent = await response.Content.ReadAsStringAsync();
             _logger.Log(LogLevel.Error, $"Failed to get channel info. Status: {response.StatusCode}. Response: {errorContent}");
             return null;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.Log(LogLevel.Error, $"Error getting channel info: {ex.Message}");
             return null;
         }
@@ -320,9 +318,8 @@ public static class HelixUtils {
     
     public static async Task<string?> FindGameId(ChatBotOptions options, string searchQuery) {
         try {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
 
             var exactMatch = await SearchSingleGame(options, searchQuery);
             if (exactMatch != null) return exactMatch.Id;
@@ -339,12 +336,12 @@ public static class HelixUtils {
                                      }
                                  };
 
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
             if (!response.IsSuccessStatusCode) return null;
             
             var responseContent = await response.Content.ReadAsStringAsync();
             var searchResults = JsonConvert.DeserializeObject<GameSearchResponse>(responseContent);
-            if (!(searchResults?.Data.Length > 0)) return null;
+            if (!(searchResults?.Data?.Count > 0)) return null;
             
             var bestMatch = searchResults.Data
                                       .OrderBy(g => CalculateLevenshteinDistance(g.Name.ToLower(), searchQuery.ToLower()))
@@ -360,9 +357,8 @@ public static class HelixUtils {
     
     private static async Task<GameData?> SearchSingleGame(ChatBotOptions options, string gameName) {
         try {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
 
             var encodedGameName = Uri.EscapeDataString(gameName);
             var requestMessage = new HttpRequestMessage
@@ -376,12 +372,12 @@ public static class HelixUtils {
                                      }
                                  };
 
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
             if (!response.IsSuccessStatusCode) return null;
             
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<GameSearchResponse>(content);
-            return result?.Data.FirstOrDefault();
+            return result?.Data?.FirstOrDefault();
         }
         catch {
             return null;

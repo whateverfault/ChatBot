@@ -14,6 +14,8 @@ public class LevelRequestsEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        base.Subscribe();
+        if (subscribed) return;
         var messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
         messageFilter.OnMessageFiltered += _service.HandleMessage;
     }

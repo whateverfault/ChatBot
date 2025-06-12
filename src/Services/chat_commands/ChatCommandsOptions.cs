@@ -1,4 +1,5 @@
-﻿using ChatBot.Services.level_requests;
+﻿using ChatBot.Services.demon_list;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.text_generator;
@@ -25,6 +26,7 @@ public class ChatCommandsOptions : Options {
     public ModerationService ModerationService { get; private set; } = null!;
     public TextGeneratorService TextGeneratorService { get; private set; } = null!;
     public LevelRequestsService LevelRequestsService { get; private set; } = null!;
+    public DemonListService DemonListService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -72,12 +74,14 @@ public class ChatCommandsOptions : Options {
         MessageRandomizerService messageRandomizer,
         ModerationService moderation,
         TextGeneratorService textGenerator,
-        LevelRequestsService levelReqs
+        LevelRequestsService levelReqs,
+        DemonListService demonList
         ) {
         MessageRandomizerService = messageRandomizer;
         ModerationService = moderation;
         TextGeneratorService = textGenerator;
         LevelRequestsService = levelReqs;
+        DemonListService = demonList;
     }
 
     public Restriction GetRequiredRole() {
@@ -100,5 +104,6 @@ public class ChatCommandsOptions : Options {
 
     public void SetCooldown(int cooldown) {
         _saveData!.Cooldown = cooldown;
+        Save();
     }
 }

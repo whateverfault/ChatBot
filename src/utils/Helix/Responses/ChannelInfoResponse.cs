@@ -3,5 +3,5 @@
 namespace ChatBot.utils.Helix.Responses;
 
 public class ChannelInfoResponse {
-    public ChannelInfo[] Data => null!;
+    public List<ChannelInfo>? Data { get; set; }
 }

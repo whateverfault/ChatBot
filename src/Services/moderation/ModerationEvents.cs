@@ -14,6 +14,8 @@ public class ModerationEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        if (subscribed) return;
+        base.Subscribe();
         var regexService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
         regexService.OnMessageFiltered += _service.HandleMessage;
     }

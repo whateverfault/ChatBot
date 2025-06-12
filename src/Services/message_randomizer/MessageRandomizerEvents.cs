@@ -14,6 +14,8 @@ public class MessageRandomizerEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        if (subscribed) return;
+        base.Subscribe();
         var chatLogsService = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
         chatLogsService.OnLogsAppended += _service.HandleChatLog;
     }

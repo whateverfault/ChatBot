@@ -15,6 +15,8 @@ public class LoggerEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
+        if (subscribed) return;
+        base.Subscribe();
         _bot.OnLog += _service.LogTwitchMessage;
         _bot.OnMessageReceived += LogReceivedMessage;
     }

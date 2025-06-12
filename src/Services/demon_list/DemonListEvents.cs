@@ -1,8 +1,9 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
 
-namespace ChatBot.Services.text_generator;
+namespace ChatBot.Services.demon_list;
 
-public class TextGeneratorEvents : ServiceEvents {
+public class DemonListEvents : ServiceEvents {
+
     public override void Init(Service service, Bot bot) {}
 }

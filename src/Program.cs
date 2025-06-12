@@ -2,6 +2,8 @@
 using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
+using ChatBot.Services.demon_list;
+using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
@@ -10,6 +12,7 @@ using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
+using ChatBot.utils.GD.AREDL;
 
 namespace ChatBot;
 
@@ -22,7 +25,11 @@ internal static class Program {
     private static async Task Main() {
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
+
         
+        var userInfo = await AredlUtils.FindUserProfile("foxtailo");
+        var userRecords = await AredlUtils.GetUserRecord(userInfo?.hardest?.id!, userInfo?.user?.id!);
+            
         var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot, []);
@@ -36,7 +43,8 @@ internal static class Program {
                                   (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs),
                                   (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
                                   (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
-                                  (PresetsService)ServiceManager.GetService(ServiceName.Presets)
+                                  (PresetsService)ServiceManager.GetService(ServiceName.Presets),
+                                  (DemonListService)ServiceManager.GetService(ServiceName.DemonList)
                                  );
         _cli = new Cli(cliData);
         _cli.RenderNodes();

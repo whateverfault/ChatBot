@@ -10,26 +10,27 @@ using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
+using TwitchLib.Communication.Events;
 using TwitchLib.Communication.Models;
 using LogLevel = ChatBot.Services.logger.LogLevel;
 
 namespace ChatBot.bot;
 
+public delegate void NoArgs();
+
 public class ChatBot : Bot {
     private static readonly LoggerService _messageLogger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private readonly ILogger<TwitchClient> _logger = null!;
     private readonly ChatBotOptions _options = new();
-    private ITwitchClient _client = null!;
+    private ITwitchClient? _client;
     private bool _initialized;
     private ErrorCode LogInIssues => IsValidSave();
 
 
-    public override string Name { get; } = null!;
+    public override string Name => "Bot";
     public override ChatBotOptions Options => _options;
     public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
-    public override event EventHandler<OnJoinedChannelArgs>? OnJoinedChannel;
-    public override event EventHandler<OnConnectedArgs>? OnConnected;
     public override event EventHandler<OnLogArgs>? OnLog;
     
     
@@ -45,26 +46,24 @@ public class ChatBot : Bot {
             _client = new TwitchClient(customClient, logger: _logger);
             _client.Initialize(credentials, _options.Channel);
             _client.RemoveChatCommandIdentifier('!');
-            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.
-                                             CommandIdentifier);
+            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier);
             _initialized = true;
         } catch (Exception) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
         }
     }
-
+    
     public override void Init(Bot bot){}
     
     public override void Start() {
         if (ErrorHandler.LogErrorAndPrint(LogInIssues)) {
             return;
         }
-        Init();
 
-        _client.OnChatCommandReceived += OnChatCommandReceived;
+        Init();
+        
+        _client!.OnChatCommandReceived += OnChatCommandReceived;
         _client.OnMessageReceived += OnMessageReceived;
-        _client.OnJoinedChannel += OnJoinedChannel;
-        _client.OnConnected += OnConnected;
         _client.OnLog += OnLog;
         
         _client.Connect();

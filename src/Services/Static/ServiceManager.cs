@@ -1,6 +1,7 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
+using ChatBot.Services.demon_list;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
@@ -77,6 +78,13 @@ public static class ServiceManager {
                                                                                                        new LevelRequestsEvents()
                                                                                                    )
                                                                                                },
+                                                                                               {
+                                                                                                   ServiceName.DemonList,
+                                                                                                   (
+                                                                                                       new DemonListService(),
+                                                                                                       new DemonListEvents()
+                                                                                                   )
+                                                                                               }
                                                                                            };
 
 
