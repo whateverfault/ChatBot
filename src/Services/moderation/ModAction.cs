@@ -97,7 +97,7 @@ public class ModAction {
         State = State.Disabled;
     }
 
-    public async Task Activate(ITwitchClient client, ChatBotOptions botOptions, ChatMessage message, bool bypass = false) {
+    public async Task Activate(ITwitchClient? client, ChatBotOptions botOptions, ChatMessage message, bool bypass = false) {
         if (State == State.Disabled && !bypass) return;
         if (RestrictionHandler.Handle(Restriction, message) && !bypass) return;
         
@@ -113,12 +113,12 @@ public class ModAction {
         }
     }
 
-    public async Task ActivateWarn(ITwitchClient client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers, bool bypass = false) {
+    public async Task ActivateWarn(ITwitchClient? client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers, bool bypass = false) {
         if (State == State.Disabled && !bypass) return;
         if (RestrictionHandler.Handle(Restriction, message) && !bypass) return;
         
         if (Type == ModerationActionType.Warn) {
-            client.SendReply(message.Channel, message.Id, ModeratorComment);
+            client?.SendReply(message.Channel, message.Id, ModeratorComment);
             await HelixUtils.DeleteMessageHelix(options, message);
             return;
         }
@@ -141,7 +141,7 @@ public class ModAction {
         }
         
         user.GiveWarn();
-        client.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
+        client?.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
             await HelixUtils.DeleteMessageHelix(options, message);
             return;

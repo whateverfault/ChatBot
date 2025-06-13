@@ -79,7 +79,7 @@ public class ChatBot : Bot {
         _options.SetState(State.Disabled);
     }
     
-    public override ErrorCode TryGetClient(out ITwitchClient client) {
+    public override ErrorCode TryGetClient(out ITwitchClient? client) {
         client = GetClient();
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
     }

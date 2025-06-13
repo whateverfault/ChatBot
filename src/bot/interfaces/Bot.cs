@@ -20,7 +20,7 @@ public abstract class Bot : Service {
 
     public abstract void Disable();
 
-    public abstract ErrorCode TryGetClient(out ITwitchClient client);
+    public abstract ErrorCode TryGetClient(out ITwitchClient? client);
 
-    public abstract ITwitchClient GetClient();
+    public abstract ITwitchClient? GetClient();
 }

@@ -18,7 +18,7 @@ public class ChatLogsService : Service {
     public void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
-        //TODO unhardcode this line
+        //TODO unhardcode this feature
         if (Constants.excludeUsersIds.Contains(message.UserId)) return;
         
         var msg = new Message(message.Message, message.Username);

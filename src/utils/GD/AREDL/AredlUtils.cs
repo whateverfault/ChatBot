@@ -202,7 +202,7 @@ public partial class AredlUtils {
                 
             var result = JsonConvert.DeserializeObject<LeaderboardResponse>(content);
             logger?.Log(LogLevel.Info, "Successfully fetched user profile data");
-            if (result?.data.Count > 0) {
+            if (result?.data?.Count > 0) {
                 return result.data[0];
             }
             
@@ -215,42 +215,20 @@ public partial class AredlUtils {
         }
     }
     
-    public static async Task<List<SubmissionInfo?>?> ListRecords(string levelId, LoggerService? logger = null) {
+    public static async Task<RecordInfo?> GetRecord(string levelId, string userId, LoggerService? logger = null) {
         try {
-            var requestMessage = new HttpRequestMessage
-                                 {
-                                     Method = HttpMethod.Get,
-                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/levels/{levelId}/records"),
-                                 };
-
-            var response = await _httpClient.SendAsync(requestMessage);
-            var content = await response.Content.ReadAsStringAsync();
-            
-            if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
-                return null;
-            }
-                
-            var result = JsonConvert.DeserializeObject<List<SubmissionInfo?>>(content);
-            logger?.Log(LogLevel.Info, "Successfully fetched level records data");
-            return result;
-        }
-        catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
-            return null;
-        }
-    }
-    
-    public static async Task<SubmissionInfo?> GetRecord(string levelId, string userId, LoggerService? logger = null) {
-        try {
-            var levelRecords = await ListRecords(levelId, logger);
-            if (levelRecords?.Count < 1) {
+            var levelRecords = await ListUserRecords(userId, logger);
+            if (levelRecords?.records.Count+levelRecords?.verified.Count < 1) {
                 logger?.Log(LogLevel.Error, $"Error while fetching user record data.");
                 return null;
             }
-
-            foreach (var record in levelRecords!) {
-                if (record?.submittedBy?.id != userId) continue;
+            
+            foreach (var record in levelRecords?.verified!) {
+                if (record.level.id != levelId) continue;
+                return record;
+            }
+            foreach (var record in levelRecords.records) {
+                if (record.level.id != levelId) continue;
                 return record;
             }
             return null;
@@ -279,7 +257,7 @@ public partial class AredlUtils {
                 
             var result = JsonConvert.DeserializeObject<LeaderboardResponse?>(content);
             logger?.Log(LogLevel.Info, "Successfully fetched platformer profile data");
-            if (result?.data.Count > 0) {
+            if (result?.data?.Count > 0) {
                 return result.data[0];
             }
             
@@ -292,12 +270,36 @@ public partial class AredlUtils {
         }
     }
     
-    public static async Task<List<SubmissionInfo?>?> ListPlatformerRecords(string levelId, LoggerService? logger = null) {
+    public static async Task<RecordInfo?> GetPlatformerRecord(string levelId, string userId, LoggerService? logger = null) {
+        try {
+            var levelRecords = await ListUserPlatformerRecords(userId, logger);
+            if (levelRecords?.records.Count+levelRecords?.verified.Count < 1) {
+                logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data.");
+                return null;
+            }
+
+            foreach (var record in levelRecords?.verified!) {
+                if (record.level.id != levelId) continue;
+                return record;
+            }
+            foreach (var record in levelRecords?.records!) {
+                if (record.level.id != levelId) continue;
+                return record;
+            }
+            return null;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e.Message}");
+            return null;
+        }
+    }
+
+    public static async Task<ListUserRecordsResponse?> ListUserRecords(string userId, LoggerService? logger = null) {
         try {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Get,
-                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/arepl/levels/{levelId}/records"),
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/profile/{userId}"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -308,7 +310,7 @@ public partial class AredlUtils {
                 return null;
             }
                 
-            var result = JsonConvert.DeserializeObject<List<SubmissionInfo?>>(content);
+            var result = JsonConvert.DeserializeObject<ListUserRecordsResponse>(content);
             logger?.Log(LogLevel.Info, "Successfully fetched level records data");
             return result;
         }
@@ -318,22 +320,161 @@ public partial class AredlUtils {
         }
     }
     
-    public static async Task<SubmissionInfo?> GetPlatformerRecord(string levelId, string userId, LoggerService? logger = null) {
+    public static async Task<ListUserRecordsResponse?> ListUserPlatformerRecords(string userId, LoggerService? logger = null) {
         try {
-            var levelRecords = await ListPlatformerRecords(levelId, logger);
-            if (levelRecords?.Count < 1) {
-                logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data.");
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/arepl/profile/{userId}"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<ListUserRecordsResponse>(content);
+            logger?.Log(LogLevel.Info, "Successfully fetched level records data");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            return null;
+        }
+    }
+
+    public static async Task<LevelDetails?> GetLevelDetails(string id, LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/levels/{id}"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<LevelDetails>(content);
+            logger?.Log(LogLevel.Info, "Successfully fetched level records data");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<LevelDetails?> GetPlatformerLevelDetails(string id, LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/arepl/levels/{id}"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<LevelDetails>(content);
+            logger?.Log(LogLevel.Info, "Successfully fetched level records data");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<GetClanResponse?> ListClans(LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/leaderboard/clans"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<GetClanResponse>(content);
+            if (result?.data.Count < 1) {
+                logger?.Log(LogLevel.Error, $"Error while fetching clan info. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+            logger?.Log(LogLevel.Info, "Successfully listing clans info");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while listing clans info: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<ClanInfo?> GetClan(string tag, LoggerService? logger = null) {
+        try {
+            var clans = await ListClans(logger);
+            if (clans == null) {
+                logger?.Log(LogLevel.Error, "Error while fetching clan info");
                 return null;
             }
 
-            foreach (var record in levelRecords!) {
-                if (record?.submittedBy?.id != userId) continue;
-                return record;
+            var filtered = clans.data
+                             .AsParallel()
+                             .Where(clanData => clanData != null && clanData.clan.tag.Equals(tag, StringComparison.CurrentCultureIgnoreCase));
+            var filteredList = filtered.ToList();
+            if (filteredList.Count < 1) {
+                logger?.Log(LogLevel.Error, "Such clan does not exist");
+                return null;
             }
-            return null;
+            logger?.Log(LogLevel.Info, "Successfully listing clans info");
+            return filteredList[0];
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<ClanRecordsResponse?> GetClanRecords(string id, LoggerService? logger = null) {
+        try {
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Get,
+                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/clan/{id}"),
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode) {
+                logger?.Log(LogLevel.Error, $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+                
+            var result = JsonConvert.DeserializeObject<ClanRecordsResponse>(content);
+            logger?.Log(LogLevel.Info, "Successfully listing clans info");
+            return result;
+        }
+        catch(Exception e){
+            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e.Message}");
             return null;
         }
     }

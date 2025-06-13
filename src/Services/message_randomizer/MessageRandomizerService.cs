@@ -13,7 +13,7 @@ namespace ChatBot.Services.message_randomizer;
 public class MessageRandomizerService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private Bot _bot = null!;
-    private ITwitchClient Client => _bot.GetClient();
+    private ITwitchClient? Client => _bot.GetClient();
 
     public override string Name => ServiceName.MessageRandomizer;
     public override MessageRandomizerOptions Options { get; } = new();
@@ -24,7 +24,7 @@ public class MessageRandomizerService : Service {
         HandleCounter(Client, message.Channel);
     }
 
-    public void HandleCounter(ITwitchClient client, string channel) {
+    public void HandleCounter(ITwitchClient? client, string channel) {
         if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return;
@@ -43,7 +43,7 @@ public class MessageRandomizerService : Service {
         if (ErrorHandler.LogErrorAndPrint(err)) {
             return;
         }
-        client.SendMessage(channel, message!.Msg);
+        client?.SendMessage(channel, message!.Msg);
     }
 
     private ErrorCode Generate(out Message? message) {
@@ -70,11 +70,11 @@ public class MessageRandomizerService : Service {
         return ErrorCode.None;
     }
 
-    public void GenerateAndSend(ITwitchClient client, string channel) {
+    public void GenerateAndSend(ITwitchClient? client, string channel) {
         var err = Generate(out var message);
         if (ErrorHandler.LogError(err)) return;
         
-        client.SendMessage(channel, message!.Msg);
+        client?.SendMessage(channel, message!.Msg);
     }
 
     public ErrorCode GetLastGeneratedMessage(out Message? message) {

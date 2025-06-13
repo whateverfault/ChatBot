@@ -61,7 +61,7 @@ public class TextGeneratorService : Service {
             return;
         }
         
-        Client.SendMessage(_bot.Options.Channel!, message);
+        Client?.SendMessage(_bot.Options.Channel!, message);
     }
     
     private string WeightedRandomChoice(Dictionary<string, int> modelOptions)

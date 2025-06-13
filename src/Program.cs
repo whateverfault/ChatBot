@@ -25,11 +25,7 @@ internal static class Program {
     private static async Task Main() {
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
-
         
-        var userInfo = await AredlUtils.FindProfile("foxtailo");
-        var userRecords = await AredlUtils.GetRecord(userInfo?.hardest?.id!, userInfo?.user?.id!);
-            
         var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot, []);

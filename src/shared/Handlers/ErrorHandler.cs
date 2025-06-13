@@ -71,10 +71,10 @@ public class ErrorHandler {
                                                             ];
 
 
-    private readonly ITwitchClient _client;
+    private readonly ITwitchClient? _client;
 
 
-    public ErrorHandler(ITwitchClient client) {
+    public ErrorHandler(ITwitchClient? client) {
         _client = client;
     }
 
@@ -83,7 +83,7 @@ public class ErrorHandler {
             return false;
         }
         _logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
-        _client.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
+        _client?.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
         return true;
     }
 
@@ -96,12 +96,12 @@ public class ErrorHandler {
         return true;
     }
     
-    public static bool ReplyWithError(ErrorCode code, ChatMessage message, ITwitchClient client) {
+    public static bool ReplyWithError(ErrorCode code, ChatMessage message, ITwitchClient? client) {
         if (code == ErrorCode.None) {
             return false;
         }
         LogError(code);
-        client.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
+        client?.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)code]);
         return true;
     }
 

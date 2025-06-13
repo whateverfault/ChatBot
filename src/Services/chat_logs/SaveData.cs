@@ -10,11 +10,12 @@ public class SaveData {
     public List<Message> Logs { get; private set; }
 
 
+    public SaveData() {}
+    
     [JsonConstructor]
     public SaveData(
         [JsonProperty(PropertyName = "service_state")] State serviceState,
-        [JsonProperty(PropertyName = "logs")] List<Message> logs
-        ) {
+        [JsonProperty(PropertyName = "logs")] List<Message> logs) {
         ServiceState = serviceState;
         Logs = logs;
     }

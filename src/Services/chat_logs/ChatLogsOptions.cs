@@ -31,10 +31,7 @@ public class ChatLogsOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 State.Disabled,
-                                 []
-                                 );
+        _saveData = new SaveData();
         Save();
     }
 

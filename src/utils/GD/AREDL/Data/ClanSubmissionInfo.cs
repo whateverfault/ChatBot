@@ -2,22 +2,25 @@
 
 namespace ChatBot.utils.GD.AREDL.Data;
 
-public class SubmissionInfo {
+public class ClanSubmissionInfo {
     public string? id;
-    public UserInfo? submittedBy;
+    public string? submittedBy;
     public bool? mobile;
     public string? videoUrl;
+    public RecordLevelInfo? level;
 
     
     [JsonConstructor]
-    public SubmissionInfo(
+    public ClanSubmissionInfo(
         [JsonProperty(PropertyName = "id")] string? id,
-        [JsonProperty(PropertyName = "submitted_by")] UserInfo? submittedBy,
+        [JsonProperty(PropertyName = "submitted_by")] string? submittedBy,
         [JsonProperty(PropertyName = "mobile")] bool? mobile,
-        [JsonProperty(PropertyName = "video_url")] string? videoUrl) {
+        [JsonProperty(PropertyName = "video_url")] string? videoUrl, 
+        [JsonProperty(PropertyName = "level")] RecordLevelInfo? level) {
         this.submittedBy = submittedBy;
         this.id = id;
         this.mobile = mobile;
         this.videoUrl = videoUrl;
+        this.level = level;
     }
 }

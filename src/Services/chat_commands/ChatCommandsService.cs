@@ -62,8 +62,8 @@ public class ChatCommandsService : Service {
     }
     
     public void ChangeCommandIdentifier(char newId, char oldId) {
-        Client.RemoveChatCommandIdentifier(oldId);
-        Client.AddChatCommandIdentifier(newId);
+        Client?.RemoveChatCommandIdentifier(oldId);
+        Client?.AddChatCommandIdentifier(newId);
     }
 
     private List<string> ProcessArgs(List<string?> args) {
@@ -169,7 +169,7 @@ public class ChatCommandsService : Service {
                         random == 0 ? 
                             $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew" : 
                             $"{argSb} никогда GAGAGA GAGAGA GAGAGA";
-                    Client.SendReply(message.Channel, message.Id, randomizedMessage);
+                    Client?.SendReply(message.Channel, message.Id, randomizedMessage);
                     break;
                 }
                 case "ban": {
@@ -191,7 +191,7 @@ public class ChatCommandsService : Service {
                         argSb.Append($"{arg} ");
                     }
                 
-                    Client.SendReply(message.Channel, message.Id, $"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
+                    Client?.SendReply(message.Channel, message.Id, $"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
                     break;
                 }
                 case "echo": {
@@ -211,7 +211,7 @@ public class ChatCommandsService : Service {
                             "Я GANDON" :
                             argSb.ToString();
                 
-                    Client.SendMessage(chatMessage.Channel, message);
+                    Client?.SendMessage(chatMessage.Channel, message);
                     break;
                 }
                 case "rizz": {
@@ -230,7 +230,7 @@ public class ChatCommandsService : Service {
                             "КШЯЯ" :
                             argSb.ToString();
                 
-                    Client.SendMessage(chatMessage.Channel, $"{message} RIZZ RIZZ RIZZ");
+                    Client?.SendMessage(chatMessage.Channel, $"{message} RIZZ RIZZ RIZZ");
                     break;
                 }
                 case "followage": {
@@ -254,7 +254,7 @@ public class ChatCommandsService : Service {
                                     $"Вы не фолловнуты на {chatMessage.Channel} Sadding";
                         }
 
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, message);
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, message);
                         return;
                     }
                     var years =
@@ -273,7 +273,7 @@ public class ChatCommandsService : Service {
                         commandArgs.Count > 0 ? 
                             $"{username} фолловнут на {chatMessage.Channel} {years} {months} {days}" :
                             $"Вы фолловнуты на {chatMessage.Channel} {years} {months} {days}";
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, message);
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, message);
                     break;
                 }
                 case "potato": {
@@ -298,7 +298,7 @@ public class ChatCommandsService : Service {
                         ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, Client);
                         return;
                     }
-                    Client.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан - https://www.twitch.tv/{_bot.Options.Channel}/clip/{clipId}");
+                    Client?.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан - https://www.twitch.tv/{_bot.Options.Channel}/clip/{clipId}");
                     break;
                 }
                 #endregion
@@ -314,7 +314,7 @@ public class ChatCommandsService : Service {
                             "Shiza":
                             "ZACHTO";
                     if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
                         return;
                     }
                     
@@ -335,7 +335,7 @@ public class ChatCommandsService : Service {
                         Options.VerboseState == State.Enabled ?
                             "Shiza":
                             "ZACHTO";
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи теперь {verboseStateStr} {comment}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Дополнительные логи теперь {verboseStateStr} {comment}");
                     break;
                 }
                 case "req": {
@@ -346,7 +346,7 @@ public class ChatCommandsService : Service {
                     var reqsState = Options.LevelRequestsService.GetServiceState();
                     var comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
                     if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr} {comment}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr} {comment}");
                         return;
                     }
 
@@ -366,7 +366,7 @@ public class ChatCommandsService : Service {
                             "включены" : 
                             "отключены";
                     comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {reqsStateStr} {comment}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {reqsStateStr} {comment}");
                     break;
                 }
 
@@ -374,7 +374,7 @@ public class ChatCommandsService : Service {
                     var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
                     
                     if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || commandArgs.Count < 1) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
                         return;
                     }
                     
@@ -386,11 +386,11 @@ public class ChatCommandsService : Service {
                     
                     var result = await HelixUtils.UpdateChannelInfo(_bot.Options, titleSb.ToString(), channelInfo!.GameId);
                     if (!result) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить название");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить название");
                         return;
                     }
                     channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима изменено на {channelInfo!.Title}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима изменено на {channelInfo!.Title}");
                     break;
                 }
                 
@@ -398,7 +398,7 @@ public class ChatCommandsService : Service {
                     var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
                     
                     if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
                         return;
                     }
 
@@ -415,18 +415,18 @@ public class ChatCommandsService : Service {
                     var gameId = await HelixUtils.FindGameId(_bot.Options, gameSb.ToString());
                     var result = await HelixUtils.UpdateChannelInfo(_bot.Options, channelInfo!.Title, gameId!);
                     if (!result || gameId == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить категорию");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить категорию");
                         return;
                     }
                     channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
                     break;
                 }
                 
                 case "delay": {
                     var channelInfo = await HelixUtils.GetChannelInfo(_bot.Options);
                     
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo.Delay)}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo.Delay)}");
                     break;
                 }
                 
@@ -440,7 +440,7 @@ public class ChatCommandsService : Service {
                     }
                 
                     if (Options.MessageRandomizerService.Options.MessageState == MessageState.Guessed) {
-                        Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Уже отгадано.");
+                        Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Уже отгадано.");
                         _logger.Log(LogLevel.Error, $"{args.Command.ChatMessage.Username} tried to guess already guessed message");
                         return;
                     }
@@ -458,11 +458,11 @@ public class ChatCommandsService : Service {
                     }
 
                     if (commandArgs[0] != message!.Username) {
-                        Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Неправильно.");
+                        Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, "Неправильно.");
                         _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed wrong.");
                     } else {
-                        Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
-                                         $"Правильно, это было сообщение от {message.Username}.");
+                        Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id,
+                                          $"Правильно, это было сообщение от {message.Username}.");
                         _logger.Log(LogLevel.Info, $"'{args.Command.ChatMessage.Username}' guessed right.");
                         Options.MessageRandomizerService.Options.SetMessageState(MessageState.Guessed);
                     }
@@ -481,7 +481,7 @@ public class ChatCommandsService : Service {
                         return;
                     }
 
-                    Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Это было сообщение от '{message!.Username}'");
+                    Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, $"Это было сообщение от '{message!.Username}'");
                     break;
                 }
                 case "repeat": {
@@ -496,7 +496,7 @@ public class ChatCommandsService : Service {
                         _logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
                         return;
                     }
-                    Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message!.Msg);
+                    Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message!.Msg);
                     _logger.Log(LogLevel.Info, $"Repeated last message for {args.Command.ChatMessage.Username}.");
                     break;
                 }
@@ -526,12 +526,16 @@ public class ChatCommandsService : Service {
                     }
                     
                     var index = int.Parse(string.IsNullOrWhiteSpace(commandArgs[0])? "-1" : commandArgs[0]);
-                    var levelName =  await Options.DemonListService.GetLevelNameByPlacement(index);
-                    if (levelName == null) {
+                    var levelInfo =  await Options.DemonListService.GetLevelByPlacement(index);
+                    if (levelInfo == null) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Позиция не найдена.");
                         return;
                     }
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelName}");
+                    var verificationLink = await Options.DemonListService.GetLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {verificationLink}");
                     break;
                 }
                 case "place": {
@@ -567,7 +571,11 @@ public class ChatCommandsService : Service {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
                         return;
                     }
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name}");
+                    var verificationLink = await Options.DemonListService.GetLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name} {verificationLink}");
                     break;
                 }
 
@@ -582,12 +590,16 @@ public class ChatCommandsService : Service {
                     }
                     
                     var index = int.Parse(string.IsNullOrWhiteSpace(commandArgs[0])? "-1" : commandArgs[0]);
-                    var levelName =  await Options.DemonListService.GetPlatformerLevelNameByPlacement(index);
-                    if (levelName == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Позиция не найдена.");
+                    var levelInfo =  await Options.DemonListService.GetPlatformerLevelByPlacement(index);
+                    if (levelInfo == null) {
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Позиция не найдена.");
                         return;
                     }
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelName}");
+                    var verificationLink = await Options.DemonListService.GetPlatformerLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {verificationLink}");
                     break;
                 }
                 case "pplace": {
@@ -618,12 +630,16 @@ public class ChatCommandsService : Service {
                         creator = commandArgs[levelNameEndIndex+2];
                     }
                     
-                    var levelInfo =  await Options.DemonListService.GetPlatformerLevelInfoByName(levelName.ToString().Trim(), creator);
+                    var levelInfo = await Options.DemonListService.GetPlatformerLevelInfoByName(levelName.ToString().Trim(), creator);
                     if (levelInfo == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
                         return;
                     }
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name}");
+                    var verificationLink = await Options.DemonListService.GetPlatformerLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name} {verificationLink}");
                     break;
                 }
                 
@@ -636,30 +652,35 @@ public class ChatCommandsService : Service {
                         errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
                         return;
                     }
-                                     
+                    
                     if (commandArgs.Count < 1) {
                         errorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage);
                         return;
                     }
                  
-                    var username = commandArgs[0];
-                    var profile = await Options.DemonListService.GetProfile(username);
+                    var argSb = new StringBuilder();
+                    foreach (var arg in commandArgs) {
+                        argSb.Append($"{arg} ");
+                    }
+                    var username = argSb.ToString();
+                    
+                    var profile = await Options.DemonListService.GetProfile(username.Trim());
                     if (profile == null) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Пользователь не найден.");
                         return;
                     }
                     var submissionInfo = await Options.DemonListService.GetHardest(profile);
                     if (submissionInfo == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
                         return;
                     }
                     var levelInfo = await Options.DemonListService.GetLevelInfoByName(profile.hardest?.name!);
                     if (levelInfo == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
                         return;
                     }
                     
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {submissionInfo.videoUrl}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {submissionInfo.videoUrl}");
                     break;
                                  }
                 case "phardest": {
@@ -677,8 +698,13 @@ public class ChatCommandsService : Service {
                         return;
                     }
 
-                    var username = commandArgs[0];
-                    var profile = await Options.DemonListService.GetPlatformerProfile(username);
+                    var argSb = new StringBuilder();
+                    foreach (var arg in commandArgs) {
+                        argSb.Append($"{arg} ");
+                    }
+                    var username = argSb.ToString();
+                    
+                    var profile = await Options.DemonListService.GetPlatformerProfile(username.Trim());
                     if (profile == null) {
                         Client.SendReply(chatMessage.Channel, chatMessage.Id, "Пользователь не найден.");
                         return;
@@ -690,24 +716,127 @@ public class ChatCommandsService : Service {
                     }
                     var levelInfo = await Options.DemonListService.GetPlatformerLevelInfoByName(profile.hardest?.name!);
                     if (levelInfo == null) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Хардест не найден.");
                         return;
                     }
                     
-                    Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест Платформер {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {hardest.videoUrl}");
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Хардест Платформер {profile.user?.globalName} - #{levelInfo.position} {profile.hardest?.name} | {hardest.videoUrl}");
+                    break;
+                }
+                case "rulet":
+                case "roulette": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                        return;
+                    }
+                    if (Options.DemonListService.GetServiceState() == State.Disabled) {
+                        errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
+                        return;
+                    }
+
+                    var levelInfo = await Options.DemonListService.GetRandomLevel();
+                    if (levelInfo == null) {
+                        errorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage);
+                        return;
+                    }
+                    var verificationLink = await Options.DemonListService.GetLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo?.name} {verificationLink}");
+                    break;
+                }
+                case "prulet":
+                case "proulette": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                        return;
+                    }
+                    if (Options.DemonListService.GetServiceState() == State.Disabled) {
+                        errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
+                        return;
+                    }
+
+                    var levelInfo = await Options.DemonListService.GetRandomPlatformerLevel();
+                    if (levelInfo == null) {
+                        errorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage);
+                        return;
+                    }
+                    var verificationLink = await Options.DemonListService.GetPlatformerLevelVerificationLink(levelInfo.id);
+                    if (verificationLink != null) {
+                        verificationLink = $"| {verificationLink}";
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo?.name} {verificationLink}");
+                    break;
+                }
+                case "clan-hardest": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                        return;
+                    }
+                    if (Options.DemonListService.GetServiceState() == State.Disabled) {
+                        errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
+                        return;
+                    }
+
+                    if (commandArgs.Count < 1) {
+                        errorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage);
+                        return;
+                    }
+                    
+                    var clanInfo = await Options.DemonListService.GetClanInfo(commandArgs[0]);
+                    if (clanInfo == null) {
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Клана не существует.");
+                        return;
+                    }
+                    var hardest = await Options.DemonListService.GetLevelDetails(clanInfo.hardest.id);
+                    var verificationLink = string.Empty;
+                    if (hardest?.verifications.Count > 0) {
+                        verificationLink = $"| {hardest?.verifications[0].videoUrl}";
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{hardest?.position} {clanInfo?.hardest.name} {verificationLink}");
+                    break;
+                }
+                case "clan-rulet":
+                case "clan-roulette": {
+                    if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                        await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                        return;
+                    }
+                    if (Options.DemonListService.GetServiceState() == State.Disabled) {
+                        errorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage);
+                        return;
+                    }
+
+                    if (commandArgs.Count < 1) {
+                        errorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage);
+                        return;
+                    }
+                    
+                    var clanInfo = await Options.DemonListService.GetClanInfo(commandArgs[0]);
+                    if (clanInfo == null) {
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Клана не существует.");
+                        return;
+                    }
+                    var levelInfo = await Options.DemonListService.GetRandomClanSubmission(clanInfo.clan.id)!;
+                    if (levelInfo == null) {
+                        errorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage);
+                        return;
+                    }
+                    Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
                     break;
                 }
                 #endregion
                 default: {
                     if (Options.VerboseState == State.Enabled) {
-                        Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Неизвестная комманда: {Options.CommandIdentifier}{args.Command.CommandText}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Неизвестная комманда: {Options.CommandIdentifier}{args.Command.CommandText}");
                     }
                     break;
                 }
             }
         } catch (Exception e) {
             if (Options.VerboseState == State.Enabled) {
-                Client.SendReply(chatMessage.Channel, chatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{args.Command.CommandText}.");
+                Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{args.Command.CommandText}.");
             }
             _logger.Log(LogLevel.Error, $"Error while handling the command: {e.Message}");
         }
@@ -715,7 +844,7 @@ public class ChatCommandsService : Service {
 
     private void SendUsage(OnChatCommandReceivedArgs args) {
         var usage = $"{Options.CommandIdentifier}<комманда> \"аргумент1\" \"аргумент2\" ... | {Options.CommandIdentifier}cmds для списка комманд";
-        Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, usage);
+        Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, usage);
     }
 
     private void SendEveryonesCmds(OnChatCommandReceivedArgs args, List<string> commandArgs) {
@@ -827,6 +956,6 @@ public class ChatCommandsService : Service {
             }
         }
         
-        Client.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message.ToString());
+        Client?.SendReply(args.Command.ChatMessage.Channel, args.Command.ChatMessage.Id, message.ToString());
     }
 }

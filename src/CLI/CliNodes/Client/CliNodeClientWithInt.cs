@@ -6,7 +6,7 @@ namespace ChatBot.CLI.CliNodes.Client;
 public class CliNodeClientWithInt : CliNode {
     private readonly ClientHandler _clientHandler;
     private readonly IntGetter _getter;
-    private ITwitchClient _client = null!;
+    private ITwitchClient? _client = null!;
     private string _channel = null!;
     
     protected override string Text { get; }

@@ -5,5 +5,5 @@ namespace ChatBot.utils.GD.AREDL.Responses;
 
 public class LeaderboardResponse {
     [JsonProperty(PropertyName = "data")]
-    public List<UserProfile?> data;
+    public List<UserProfile?>? data;
 }
