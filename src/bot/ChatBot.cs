@@ -84,7 +84,7 @@ public class ChatBot : Bot {
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
     }
 
-    public override ITwitchClient GetClient() {
+    public override ITwitchClient? GetClient() {
         return _client;
     }
 

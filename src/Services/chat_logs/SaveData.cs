@@ -7,7 +7,7 @@ public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
     [JsonProperty(PropertyName = "logs")]
-    public List<Message> Logs { get; private set; }
+    public List<Message> Logs { get; private set; } = null!;
 
 
     public SaveData() {}

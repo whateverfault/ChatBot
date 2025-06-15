@@ -11,7 +11,7 @@ namespace ChatBot.Services.text_generator;
 public class TextGeneratorService : Service {
     private readonly Random _random = new();
     private bot.ChatBot _bot = null!;
-    private ITwitchClient Client => _bot.GetClient();
+    private ITwitchClient? Client => _bot.GetClient();
 
     public override string Name => ServiceName.TextGenerator;
     public override TextGeneratorOptions Options { get; } = new();

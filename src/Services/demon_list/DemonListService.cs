@@ -3,7 +3,6 @@ using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.utils.GD.AREDL;
 using ChatBot.utils.GD.AREDL.Data;
-using ChatBot.utils.GD.AREDL.Responses;
 
 namespace ChatBot.Services.demon_list;
 
@@ -70,19 +69,32 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<UserProfile?> GetPlatformerProfile(string username) {
+    public async Task<RecordInfo?> GetEasiest(UserProfile? profile) {
         try {
-            var profile = await AredlUtils.FindPlatformerProfile(username, _logger);
-            return profile;
-        } catch (Exception) {
-            return null;
-        }
-    }
-
-    public async Task<RecordInfo?> GetPlatformerHardest(UserProfile? profile) {
-        try {
-            var hardest = await AredlUtils.GetPlatformerRecord(profile?.hardest?.id!, profile?.user?.id!, _logger);
-            return hardest;
+            var completed = await AredlUtils.ListUserRecords(profile?.user?.id!, _logger);
+            RecordInfo? easiest = null;
+            if (completed?.records.Count > 0) {
+                easiest = completed.records[^1];
+                var i = 2;
+                while (easiest!.level.legacy && completed?.records.Count > i) {
+                    easiest = completed?.records[^i++];
+                }
+                if (easiest.level.legacy) {
+                    easiest = null;
+                }
+            }
+            if (completed?.verified.Count > 0 && (easiest?.level.position < completed.verified[^1].level.position && !completed.verified[^1].level.legacy)) {
+                easiest = completed.verified[^1];
+                var i = 2;
+                while (easiest!.level.legacy && completed.verified.Count > i) {
+                    easiest = completed.verified[^i++];
+                }
+                
+                if (easiest.level.legacy) {
+                    easiest = null;
+                }
+            }
+            return easiest;
         } catch (Exception) {
             return null;
         }
@@ -130,21 +142,41 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<LevelInfo?> GetRandomLevel() {
+    public async Task<LevelInfo?> GetRandomLevel(int from = -1, int to = -1) {
         try {
+            if (from < 0) {
+                from = 0;
+            }
+            
             var levelList = await AredlUtils.ListLevels(_logger);
-            var randomIndex = Random.Shared.Next(0, levelList!.data!.Count);
-            return levelList.data[randomIndex];
+            if (to < from || to > levelList!.data!.Count) {
+                to = levelList!.data!.Count;
+            }
+            if (from > to) {
+                from = 0;
+            }
+            var randomIndex = Random.Shared.Next(from, to);
+            return levelList.data?[randomIndex];
         } catch (Exception) {
             return null;
         }
     }
     
-    public async Task<LevelInfo?> GetRandomPlatformerLevel() {
+    public async Task<LevelInfo?> GetRandomPlatformerLevel(int from = -1, int to = -1) {
         try {
+            if (from < 0) {
+                from = 0;
+            }
+            
             var levelList = await AredlUtils.ListPlatformerLevels(_logger);
-            var randomIndex = Random.Shared.Next(0, levelList!.data!.Count);
-            return levelList.data[randomIndex];
+            if (to < from || to > levelList!.data!.Count) {
+                to = levelList!.data!.Count;
+            }
+            if (from > to) {
+                from = 0;
+            }
+            var randomIndex = Random.Shared.Next(from, to);
+            return levelList?.data?[randomIndex];
         } catch (Exception) {
             return null;
         }

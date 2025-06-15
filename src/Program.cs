@@ -3,7 +3,6 @@ using ChatBot.CLI;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
-using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
@@ -20,9 +19,13 @@ internal static class Program {
     private static Cli _cli = null!;
 
     private static bool _forcedToRender;
-
-
+    
+    
     private static async Task Main() {
+        /*TODO:
+          - !easiest/lowest экстрим по топам, юзерам, клану
+         */ 
+        
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
         
