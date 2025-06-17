@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using ChatBot.bot;
+﻿using ChatBot.bot;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
@@ -8,6 +7,7 @@ using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TwitchLib.Client.Models;
 

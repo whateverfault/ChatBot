@@ -1,4 +1,5 @@
-﻿using ChatBot.Services.chat_commands;
+﻿using ChatBot.Services.ai;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
 using ChatBot.Services.level_requests;
@@ -23,6 +24,7 @@ public class CliData {
     public LevelRequestsService LevelRequests { get; }
     public PresetsService Presets { get; }
     public DemonListService DemonList { get; }
+    public AiService Ai { get; }
     
 
     public CliData(
@@ -36,7 +38,8 @@ public class CliData {
         TextGeneratorService textGenerator,
         LevelRequestsService levelRequests,
         PresetsService presets,
-        DemonListService demonList) {
+        DemonListService demonList, 
+        AiService ai) {
         Bot = bot;
         MessageRandomizer = messageRandomizer;
         ChatCommands = chatCommands;
@@ -45,8 +48,9 @@ public class CliData {
         Logger = logger;
         ChatLogs = chatLogs;
         TextGenerator = textGenerator;
-        this.LevelRequests = levelRequests;
+        LevelRequests = levelRequests;
         Presets = presets;
         DemonList = demonList;
+        Ai = ai;
     }
 }

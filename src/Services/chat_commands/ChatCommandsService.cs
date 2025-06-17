@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ChatBot.bot.interfaces;
+using ChatBot.Services.ai;
 using ChatBot.Services.demon_list;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
@@ -12,7 +13,6 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 using ChatBot.utils.GD.AREDL;
-using ChatBot.utils.GD.AREDL.Data;
 using ChatBot.utils.Helix;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
@@ -42,7 +42,8 @@ public class ChatCommandsService : Service {
                             (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
                             (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
                             (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
-                            (DemonListService)ServiceManager.GetService(ServiceName.DemonList)
+                            (DemonListService)ServiceManager.GetService(ServiceName.DemonList),
+                            (AiService)ServiceManager.GetService(ServiceName.AI)
                            );
     }
 
@@ -282,6 +283,30 @@ public class ChatCommandsService : Service {
                             return;
                         }
                         Client?.SendReply(_bot.Options.Channel!, chatMessage.Id, $"Клип создан - https://www.twitch.tv/{_bot.Options.Channel}/clip/{clipId}");
+                        break;
+                    }
+                    case "ai": {
+                        if (!RestrictionHandler.Handle(Options.RequiredRole, chatMessage)) {
+                            await Options.ModerationService.WarnUser(chatMessage, Options.ModActionIndex);
+                            return;
+                        }
+
+                        if (commandArgs.Count < 1) {
+                            errorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage);
+                            return;
+                        }
+                        
+                        var prompt = new StringBuilder();
+                        foreach (var word in commandArgs) {
+                            prompt.Append($"{word} ");
+                        }
+
+                        var response = await Options.AiService.GenerateText(prompt.ToString().Trim());
+                        if (string.IsNullOrEmpty(response)) {
+                            errorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage);
+                            return;
+                        }
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, response);
                         break;
                     }
                     #endregion
@@ -672,7 +697,7 @@ public class ChatCommandsService : Service {
                             return;
                         }
                         
-                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{hardest.level.position} {profile?.hardest?.name} | {hardest.videoUrl}");
+                        Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{hardest.level.position} {profile.hardest?.name} | {hardest.videoUrl}");
                         break;
                     }
                     case "lowest":
@@ -699,14 +724,14 @@ public class ChatCommandsService : Service {
                             while (level!.legacy) {
                                 level = levels.data?[^i++];
                             }
-                            var details = await Options.DemonListService.GetLevelDetails(level?.id!);
+                            var details = await Options.DemonListService.GetLevelDetails(level.id);
                             if (details == null || details.verifications.Count < 1) {
                                 if (Options.VerboseState == State.Enabled) {
                                     Client?.SendReply(chatMessage.Channel, chatMessage.Id, "Не найдено.");
                                 }
                                 return;
                             }
-                            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{level?.position} {level?.name} | {details.verifications[0].videoUrl}");
+                            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{level.position} {level.name} | {details.verifications[0].videoUrl}");
                             return;
                         }
 
@@ -897,6 +922,7 @@ public class ChatCommandsService : Service {
                              Page.PageTerminator,
                              $"1. {cmdId}rizz [message] - RIZZ",
                              $"2. {cmdId}potato - сгенерировать новое сообщение",
+                             $"3. {cmdId}ai - задать вопрос ии",
                              Page.PageTerminator,
                              $"1. {cmdId}guess <username> - угадать ник написавшего",
                              $"2. {cmdId}whose - вывести ник написавшего",
@@ -928,6 +954,7 @@ public class ChatCommandsService : Service {
                              Page.PageTerminator,
                              $"1. {cmdId}rizz [message] - RIZZ",
                              $"2. {cmdId}potato - сгенерировать новое сообщение",
+                             $"3. {cmdId}ai - задать вопрос ии",
                              Page.PageTerminator,
                              $"1. {cmdId}req [on/off] - включить/выключить реквесты",
                              $"2. {cmdId}title [new_title] - посмотреть/изменить название стрима",

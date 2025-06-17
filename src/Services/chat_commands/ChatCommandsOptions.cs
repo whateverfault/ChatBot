@@ -1,4 +1,5 @@
-﻿using ChatBot.Services.demon_list;
+﻿using ChatBot.Services.ai;
+using ChatBot.Services.demon_list;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
@@ -11,7 +12,6 @@ using ChatBot.utils;
 namespace ChatBot.Services.chat_commands;
 
 public class ChatCommandsOptions : Options {
-
     public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
     private SaveData? _saveData;
 
@@ -28,6 +28,7 @@ public class ChatCommandsOptions : Options {
     public TextGeneratorService TextGeneratorService { get; private set; } = null!;
     public LevelRequestsService LevelRequestsService { get; private set; } = null!;
     public DemonListService DemonListService { get; private set; } = null!;
+    public AiService AiService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -76,13 +77,14 @@ public class ChatCommandsOptions : Options {
         ModerationService moderation,
         TextGeneratorService textGenerator,
         LevelRequestsService levelReqs,
-        DemonListService demonList
-        ) {
+        DemonListService demonList,
+        AiService ai) {
         MessageRandomizerService = messageRandomizer;
         ModerationService = moderation;
         TextGeneratorService = textGenerator;
         LevelRequestsService = levelReqs;
         DemonListService = demonList;
+        AiService = ai;
     }
 
     public Restriction GetRequiredRole() {

@@ -1,4 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
+using ChatBot.Services.ai;
+using ChatBot.Services.ai.Ollama;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
@@ -14,80 +16,96 @@ using ChatBot.Services.text_generator;
 namespace ChatBot.Services.Static;
 
 public static class ServiceManager {
-    private static readonly Dictionary<string, (Service, ServiceEvents)> _services = new() {
-                                                                                               {
-                                                                                                   ServiceName.Presets,
-                                                                                                   (
-                                                                                                       new PresetsService(),
-                                                                                                       new PresetsEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.MessageRandomizer,
-                                                                                                   (
-                                                                                                       new MessageRandomizerService(),
-                                                                                                       new MessageRandomizerEvents()
-                                                                                                   ) 
-                                                                                               }, 
-                                                                                               {
-                                                                                                   ServiceName.ChatCommands,
-                                                                                                   (
-                                                                                                       new ChatCommandsService(),
-                                                                                                       new ChatCommandsEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.MessageFilter,
-                                                                                                   (
-                                                                                                       new MessageFilterService(),
-                                                                                                       new MessageFilterEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.Moderation,
-                                                                                                   (
-                                                                                                       new ModerationService(),
-                                                                                                       new ModerationEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.Logger,
-                                                                                                   (
-                                                                                                       new LoggerService(),
-                                                                                                       new LoggerEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.TextGenerator,
-                                                                                                   (
-                                                                                                       new TextGeneratorService(),
-                                                                                                       new TextGeneratorEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.ChatLogs,
-                                                                                                   (
-                                                                                                       new ChatLogsService(),
-                                                                                                       new ChatLogsEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.LevelRequests,
-                                                                                                   (
-                                                                                                       new LevelRequestsService(),
-                                                                                                       new LevelRequestsEvents()
-                                                                                                   )
-                                                                                               },
-                                                                                               {
-                                                                                                   ServiceName.DemonList,
-                                                                                                   (
-                                                                                                       new DemonListService(),
-                                                                                                       new DemonListEvents()
-                                                                                                   )
-                                                                                               }
-                                                                                           };
+    private static readonly Dictionary<string, (Service, ServiceEvents)> _services;
 
 
+    static ServiceManager() {
+        try {
+            _services = new() {
+                                  {
+                                      ServiceName.Presets,
+                                      (
+                                          new PresetsService(),
+                                          new PresetsEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.Logger,
+                                      (
+                                          new LoggerService(),
+                                          new LoggerEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.MessageRandomizer,
+                                      (
+                                          new MessageRandomizerService(),
+                                          new MessageRandomizerEvents()
+                                      ) 
+                                  }, 
+                                  {
+                                      ServiceName.ChatCommands,
+                                      (
+                                          new ChatCommandsService(),
+                                          new ChatCommandsEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.MessageFilter,
+                                      (
+                                          new MessageFilterService(),
+                                          new MessageFilterEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.Moderation,
+                                      (
+                                          new ModerationService(),
+                                          new ModerationEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.TextGenerator,
+                                      (
+                                          new TextGeneratorService(),
+                                          new TextGeneratorEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.ChatLogs,
+                                      (
+                                          new ChatLogsService(),
+                                          new ChatLogsEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.LevelRequests,
+                                      (
+                                          new LevelRequestsService(),
+                                          new LevelRequestsEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.AI,
+                                      (
+                                          new AiService(),
+                                          new AiEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.DemonList,
+                                      (
+                                          new DemonListService(),
+                                          new DemonListEvents()
+                                      )
+                                  },
+                              };
+        } catch (Exception e) {
+            Console.WriteLine($"Failed to initialize services: {e}");
+            throw;
+        }
+    }
+    
     public static void InitServices(Bot bot, string[] exclude) {
         foreach (var (_, (service, events)) in _services) {
             if (exclude.Contains(service.Name)) continue;

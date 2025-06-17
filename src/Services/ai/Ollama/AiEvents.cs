@@ -1,8 +1,8 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
 
-namespace ChatBot.Services.demon_list;
+namespace ChatBot.Services.ai.Ollama;
 
-public class DemonListEvents : ServiceEvents {
+public class AiEvents : ServiceEvents {
     public override void Init(Service service, Bot bot) {}
 }

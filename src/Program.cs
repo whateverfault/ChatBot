@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ChatBot.CLI;
+using ChatBot.Services.ai;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
@@ -11,7 +12,6 @@ using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
-using ChatBot.utils.GD.AREDL;
 
 namespace ChatBot;
 
@@ -21,14 +21,18 @@ internal static class Program {
     private static bool _forcedToRender;
     
     
-    private static async Task Main() {
-        /*TODO:
-          - !easiest/lowest экстрим по топам, юзерам, клану
-         */ 
+    private static async Task Main(string[] args) {
+        var autoInit = false;
         
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
-        
+
+        if (args.Length > 0) {
+            if (args[0] == "--auto-init") {
+                autoInit = true;
+            }
+        }
+
         var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot, []);
@@ -43,9 +47,14 @@ internal static class Program {
                                   (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
                                   (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
                                   (PresetsService)ServiceManager.GetService(ServiceName.Presets),
-                                  (DemonListService)ServiceManager.GetService(ServiceName.DemonList)
+                                  (DemonListService)ServiceManager.GetService(ServiceName.DemonList),
+                                  (AiService)ServiceManager.GetService(ServiceName.AI)
                                  );
         _cli = new Cli(cliData);
+        if (autoInit) {
+            bot.Options.Load();
+            bot.Start();
+        }
         _cli.RenderNodes();
 
         var renderTask = Task.Run(Render);

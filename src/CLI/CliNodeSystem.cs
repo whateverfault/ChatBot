@@ -1,6 +1,7 @@
 ﻿using ChatBot.CLI.CliNodes;
 using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
+using ChatBot.Services.interfaces;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
@@ -301,7 +302,7 @@ public class CliNodeSystem {
                                                    );
 
         var levelReqsDir = new CliNodeStaticDirectory(
-                                                      "Level Requests",
+                                                      ServiceName.LevelRequests,
                                                       _state,
                                                       true,
                                                       [
@@ -329,7 +330,7 @@ public class CliNodeSystem {
                                                      );
 
         var demonListDir = new CliNodeStaticDirectory(
-                                                      "Demon List",
+                                                      ServiceName.DemonList,
                                                       _state,
                                                       true,
                                                       [
@@ -342,6 +343,33 @@ public class CliNodeSystem {
                                                                       ),
                                                       ]
                                                       );
+
+        var aiDir = new CliNodeStaticDirectory(
+                                               ServiceName.AI,
+                                               _state,
+                                               true,
+                                               [
+                                                   new CliNodeString(
+                                                                     "Model",
+                                                                     _state.Data.Ai.GetModel,
+                                                                     CliNodePermission.Default,
+                                                                     _state.Data.Ai.SetModel
+                                                                     ),
+                                                   new CliNodeString(
+                                                                     "Base Prompt",
+                                                                     _state.Data.Ai.GetBasePrompt,
+                                                                     CliNodePermission.Default,
+                                                                     _state.Data.Ai.SetBasePrompt
+                                                                    ),
+                                                   new CliNodeEnum(
+                                                                   "Service State",
+                                                                   _state.Data.Ai.GetServiceStateAsInt,
+                                                                   typeof(State),
+                                                                   CliNodePermission.Default,
+                                                                   _state.Data.Ai.ServiceStateNext
+                                                                  ),
+                                               ]
+                                               );
         
         var presetsDir = new CliNodeStaticDirectory(
                                                     "Presets",
@@ -376,6 +404,7 @@ public class CliNodeSystem {
                                                       chatLogsDir,
                                                       randomMsgsDir,
                                                       textGeneratorDir,
+                                                      aiDir,
                                                       demonListDir,
                                                       messageFilterDir,
                                                       moderationDir,
