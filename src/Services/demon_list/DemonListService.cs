@@ -83,15 +83,16 @@ public class DemonListService : Service {
                     easiest = null;
                 }
             }
-            if (completed?.verified.Count > 0 && (easiest?.level.position < completed.verified[^1].level.position && !completed.verified[^1].level.legacy)) {
-                easiest = completed.verified[^1];
-                var i = 2;
-                while (easiest!.level.legacy && completed.verified.Count > i) {
-                    easiest = completed.verified[^i++];
+            if (completed?.verified.Count > 0) { 
+                var easiestVerification = completed?.verified[0];
+                foreach (var verification in completed?.verified!) {
+                    if (easiestVerification?.level.position < verification.level.position) {
+                        if (verification.level.legacy) continue;
+                        easiestVerification = verification;
+                    }
                 }
-                
-                if (easiest.level.legacy) {
-                    easiest = null;
+                if (easiest?.level.position < easiestVerification?.level.position || easiest == null) {
+                    easiest = easiestVerification;
                 }
             }
             return easiest;
