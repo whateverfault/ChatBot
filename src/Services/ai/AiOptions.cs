@@ -13,6 +13,9 @@ public class AiOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public string Model => _saveData!.Model;
     public string BasePrompt => _saveData!.BasePrompt;
+    public string HfToken => _saveData!.HfToken;
+    public string HfApiUrl => "https://router.huggingface.co/nebius/v1/chat/completions";
+    public AiMode AiMode => _saveData!.AiMode;
 
     
     public override bool TryLoad() {
@@ -51,6 +54,16 @@ public class AiOptions : Options {
     
     public void SetModel(string model) {
         _saveData!.Model = model;
+        Save();
+    }
+
+    public void SetHfToken(string token) {
+        _saveData!.HfToken = token;
+        Save();
+    }
+    
+    public void SetAiMode(AiMode mode) {
+        _saveData!.AiMode = mode;
         Save();
     }
 }

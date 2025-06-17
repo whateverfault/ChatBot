@@ -1,6 +1,7 @@
 ﻿using ChatBot.CLI.CliNodes;
 using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
+using ChatBot.Services.ai;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
@@ -350,17 +351,37 @@ public class CliNodeSystem {
                                                true,
                                                [
                                                    new CliNodeString(
-                                                                     "Model",
-                                                                     _state.Data.Ai.GetModel,
-                                                                     CliNodePermission.Default,
-                                                                     _state.Data.Ai.SetModel
-                                                                     ),
-                                                   new CliNodeString(
                                                                      "Base Prompt",
                                                                      _state.Data.Ai.GetBasePrompt,
                                                                      CliNodePermission.Default,
                                                                      _state.Data.Ai.SetBasePrompt
                                                                     ),
+                                                   new CliNodeString(
+                                                                     "Model",
+                                                                     _state.Data.Ai.GetModel,
+                                                                     CliNodePermission.Default,
+                                                                     _state.Data.Ai.SetModel
+                                                                    ),
+                                                   new CliNodeEnum(
+                                                                   "AI Mode",
+                                                                   _state.Data.Ai.GetAiModeAsInt,
+                                                                   typeof(AiMode),
+                                                                   CliNodePermission.Default,
+                                                                   _state.Data.Ai.AiModeNext
+                                                                   ),
+                                                   new CliNodeStaticDirectory(
+                                                                              "HF",
+                                                                              _state,
+                                                                              true,
+                                                                              [
+                                                                                  new CliNodeString(
+                                                                                       "Api Token",
+                                                                                       _state.Data.Ai.GetHfToken,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetHfToken
+                                                                                      ),
+                                                                              ]
+                                                                             ),
                                                    new CliNodeEnum(
                                                                    "Service State",
                                                                    _state.Data.Ai.GetServiceStateAsInt,
