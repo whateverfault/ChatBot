@@ -4,7 +4,6 @@ using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.CLI.CliNodes.Directories.ChatCommands;
 using ChatBot.CLI.CliNodes.Directories.Moderation;
 using ChatBot.Services.ai;
-using ChatBot.Services.chat_commands;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
@@ -181,12 +180,6 @@ public class CliNodeSystem {
                                                                  CliNodePermission.Default,
                                                                  cmd.SetCooldown
                                                                  ),
-                                                  new CliNodeIndex(
-                                                                 "Moderation Action Index",
-                                                                 cmd.GetModerationActionIndex,
-                                                                 CliNodePermission.Default,
-                                                                 cmd.SetModerationActionIndex
-                                                                ),
                                                   new CliNodeEnum(
                                                                   "Permission",
                                                                   cmd.GetRestrictionAsInt,
@@ -216,18 +209,6 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.SetCommandIdentifier
                                                                           ), 
-                                                          new CliNodeIndex(
-                                                                         "Moderation Action Index",
-                                                                         _state.Data.ChatCommands.GetModActionIndex,
-                                                                         CliNodePermission.Default,
-                                                                         _state.Data.ChatCommands.SetModActionIndex
-                                                                         ),
-                                                          new CliNodeInt(
-                                                                           "Cooldown",
-                                                                           _state.Data.ChatCommands.GetCooldown,
-                                                                           CliNodePermission.Default,
-                                                                           _state.Data.ChatCommands.SetCooldown
-                                                                          ),
                                                           defaultCmds,
                                                           new CliNodeDynamicChatCmdsDirectory(
                                                                                               "Custom Commands",

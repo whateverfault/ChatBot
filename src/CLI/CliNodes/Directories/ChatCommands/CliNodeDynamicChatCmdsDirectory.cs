@@ -90,12 +90,6 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                                                  CliNodePermission.Default,
                                                                  cmd.SetCooldown
                                                                  ),
-                                                  new CliNodeIndex(
-                                                                 "Moderation Action Index",
-                                                                 cmd.GetCooldown,
-                                                                 CliNodePermission.Default,
-                                                                 cmd.SetModerationActionIndex
-                                                                ),
                                                   new CliNodeEnum(
                                                                   "Permission",
                                                                   cmd.GetRestrictionAsInt,

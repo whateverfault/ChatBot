@@ -23,12 +23,6 @@ public class ChatCommandsService : Service {
 
     public async void HandleCommand(object? sender, OnChatCommandReceivedArgs args) {
         try {
-            var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (curTime-_time < Options.Cooldown) {
-                return;
-            }
-            _time = curTime;
-            
             var cmdName = args.Command.CommandText;
             var parsed = ProcessArgs(args.Command.ArgumentsAsList);
             var chatMessage = args.Command.ChatMessage;
@@ -38,8 +32,12 @@ public class ChatCommandsService : Service {
                 if (cmdName != cmd.Name) continue;
                 if (cmd.State == State.Disabled) continue;
                 
+                var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                if (curTime-_time < cmd.Cooldown) continue;
+                
                 var cmdArgs = new ChatCmdArgs(args, parsed, _bot, cmd);
                 await cmd.Action?.Invoke(cmdArgs)!;
+                _time = curTime;
                 return;
             }
             
@@ -48,8 +46,12 @@ public class ChatCommandsService : Service {
                 if (cmdName != cmd.Name) continue;
                 if (cmd.State == State.Disabled) continue;
                 
+                var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                if (curTime-_time < cmd.Cooldown) continue;
+                
                 var cmdArgs = new ChatCmdArgs(args, parsed, _bot, cmd);
                 await cmd.Action?.Invoke(cmdArgs)!;
+                _time = curTime;
                 return;
             }
             
@@ -72,36 +74,6 @@ public class ChatCommandsService : Service {
             processedArgs.Add(arg);
         }
         return processedArgs;
-    }
-
-    public int GetRequiredRoleAsInt() {
-        return (int)Options.GetRequiredRole();
-    }
-    
-    public void RequiredRoleNext() {
-        Options.SetRequiredRole((Restriction)(((int)Options.RequiredRole+1)%Enum.GetValues(typeof(Restriction)).Length));
-    }
-
-    public int GetModActionIndex() {
-        return Options.GetModActionIndex();
-    }
-
-    public bool SetModActionIndex(int index) {
-        var modAction = Options.ModerationService.GetModActions();
-        if (index < 0 || index >= modAction.Count) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidInput);
-            return false;
-        }
-        Options.SetModActionIndex(index);
-        return true;
-    }
-
-    public int GetCooldown() {
-        return Options.Cooldown;
-    }
-
-    public void SetCooldown(int cooldown) {
-        Options.SetCooldown(cooldown);
     }
 
     public int GetVerboseStateAsInt() {

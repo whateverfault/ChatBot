@@ -30,7 +30,6 @@ public class CliNodeChatCmdAdd : CliNode {
                                       Restriction.Everyone,
                                       State.Enabled,
                                       1,
-                                      2,
                                       0);
         _add.Invoke(chatCmd);
     }

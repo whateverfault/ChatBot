@@ -17,8 +17,6 @@ public sealed class CustomChatCommand : ChatCommand {
     public override int Cooldown { get; protected set; }
     [JsonProperty(PropertyName = "last_used")]
     public override long LastUsed { get; protected set; }
-    [JsonProperty(PropertyName = "mod_action_index")]
-    public override int ModerationActionIndex { get; protected set; }
     [JsonIgnore]
     public override CmdActionHandler? Action { get; protected set; }
     [JsonProperty(PropertyName = "restriction")]
@@ -35,7 +33,6 @@ public sealed class CustomChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "restriction")] Restriction restriction,
         [JsonProperty(PropertyName = "state")] State state, 
         [JsonProperty(PropertyName = "cooldown")] int cooldown, 
-        [JsonProperty(PropertyName = "mod_action_index")] int moderationActionIndex, 
         [JsonProperty(PropertyName = "last_used")] long lastUsed) {
         Name = name;
         Args = args;
@@ -45,7 +42,6 @@ public sealed class CustomChatCommand : ChatCommand {
         Restriction = restriction;
         State = state;
         Cooldown = cooldown;
-        ModerationActionIndex = moderationActionIndex;
         LastUsed = lastUsed;
     }
 

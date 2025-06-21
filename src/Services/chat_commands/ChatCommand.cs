@@ -1,9 +1,5 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.Services.moderation;
-using ChatBot.Services.Static;
-using ChatBot.shared.Handlers;
+﻿using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using Newtonsoft.Json;
 
 namespace ChatBot.Services.chat_commands;
 
@@ -15,8 +11,6 @@ public abstract class ChatCommand {
     public abstract string Description { get; protected set; }
     public abstract int Cooldown { get; protected set; }
     public abstract long LastUsed { get; protected set; }
-    public abstract int ModerationActionIndex { get; protected set; }
-    [JsonIgnore]
     public abstract CmdActionHandler? Action { get; protected set; }
     public abstract Restriction Restriction { get; protected set; }
     public abstract State State { get; protected set; }
@@ -48,17 +42,6 @@ public abstract class ChatCommand {
 
     public virtual void SetCooldown(int cooldown) {
         Cooldown = cooldown;
-    }
-
-    public virtual int GetModerationActionIndex() {
-        return ModerationActionIndex;
-    }
-    
-    public virtual bool SetModerationActionIndex(int index) {
-        var moderationService = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
-        if (!moderationService.GetModAction(index, out _)) return false;
-        ModerationActionIndex = index;
-        return true;
     }
     
     public virtual void SetDescription(string desc) {

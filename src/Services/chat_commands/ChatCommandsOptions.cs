@@ -15,8 +15,6 @@ public class ChatCommandsOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public Restriction RequiredRole => _saveData!.RequiredRole;
-    public int ModActionIndex => _saveData!.ModActionIndex;
-    public int Cooldown => _saveData!.Cooldown;
     public State VerboseState => _saveData!.VerboseState;
     public List<CustomChatCommand> CustomCmds => _saveData!.CustomCmds;
     public List<DefaultChatCommand> DefaultCmds => _saveData!.DefaultCmds;
@@ -75,20 +73,6 @@ public class ChatCommandsOptions : Options {
 
     public void SetRequiredRole(Restriction requiredRole) {
         _saveData!.RequiredRole = requiredRole;
-        Save();
-    }
-
-    public int GetModActionIndex() {
-        return ModActionIndex;
-    }
-
-    public void SetModActionIndex(int index) {
-        _saveData!.ModActionIndex = index;
-        Save();
-    }
-
-    public void SetCooldown(int cooldown) {
-        _saveData!.Cooldown = cooldown;
         Save();
     }
 
