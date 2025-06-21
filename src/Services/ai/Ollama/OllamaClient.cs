@@ -27,7 +27,8 @@ public class OllamaClient {
             var response = await _httpClient.PostAsync($"{_baseUrl}/api/generate", content);
 
             if (!response.IsSuccessStatusCode) {
-                throw new HttpRequestException($"Ollama API request failed with status code: {response.StatusCode}");
+                logger?.Log(LogLevel.Error, $"Ollama API request failed with status code: {response.StatusCode}");
+                return null;
             }
 
             if (streamCallback != null) {

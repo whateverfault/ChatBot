@@ -18,7 +18,7 @@ public class AiService : Service {
     private OllamaClient _ollamaClient = null!;
     private HfClient _hfClient = null!;
     
-    public override string Name => ServiceName.AI;
+    public override string Name => ServiceName.Ai;
     public override AiOptions Options { get; } = new();
 
 
@@ -74,10 +74,11 @@ public class AiService : Service {
 
     public void SetModel(string prompt) {
         Options.SetModel(prompt);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
     }
     
     public void SetHfToken(string token) {
-        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
         Options.SetHfToken(token);
     }
 
@@ -99,6 +100,6 @@ public class AiService : Service {
             Options.SetDefaults();
             return;
         }
-        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
     }
 }

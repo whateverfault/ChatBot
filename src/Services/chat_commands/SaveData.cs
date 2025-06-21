@@ -17,6 +17,12 @@ public class SaveData {
     public int Cooldown { get; set; }
     [JsonProperty(PropertyName = "verbose_state")]
     public State VerboseState { get; set; }
+    
+    [JsonProperty(PropertyName = "custom_commands")]
+    public List<CustomChatCommand> CustomCmds { get; set; } = [];
+    
+    [JsonProperty(PropertyName = "default_commands")]
+    public List<DefaultChatCommand> DefaultCmds { get; set; } = [];
 
 
     public SaveData() {}
@@ -28,12 +34,16 @@ public class SaveData {
         [JsonProperty(PropertyName ="required_role")] Restriction requiredRole,
         [JsonProperty(PropertyName ="pattern_index")] int modActionIndex,
         [JsonProperty(PropertyName ="cooldown")] int cooldown,
-        [JsonProperty(PropertyName = "verbose_state")] State verboseState) {
+        [JsonProperty(PropertyName = "verbose_state")] State verboseState,
+        [JsonProperty(PropertyName = "custom_commands")] List<CustomChatCommand> customCmds,
+        [JsonProperty(PropertyName = "default_commands")] List<DefaultChatCommand> defaultCmds) {
         ServiceState = serviceState;
         CommandIdentifier = commandIdentifier;
         RequiredRole = requiredRole;
         ModActionIndex = modActionIndex;
         Cooldown = cooldown;
         VerboseState = verboseState;
+        CustomCmds = customCmds;
+        DefaultCmds = defaultCmds;
     }
 }

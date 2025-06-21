@@ -14,9 +14,9 @@ public class LevelRequestsEvents : ServiceEvents {
     }
 
     public override void Subscribe() {
-        base.Subscribe();
         if (subscribed) return;
-        var messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        messageFilter.OnMessageFiltered += _service.HandleMessage;
+        base.Subscribe();
+        var regexService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        regexService.OnMessageFiltered += _service.HandleMessage;
     }
 }

@@ -6,7 +6,7 @@ public static class Page {
     public static string PageTerminator { get; } = "--";
     
     
-    public static int[] CalculatePages(string[] blocks) {
+    public static int[] CalculatePages(List<string> blocks) {
         var pages = new List<int>();
         var charCounter = 0;
         var pageTerminatorsCount = 0;

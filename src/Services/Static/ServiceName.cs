@@ -11,5 +11,5 @@ public static class ServiceName {
     public const string LevelRequests = "Level Requests";
     public const string Presets = "Presets";
     public const string DemonList = "Demon List";
-    public const string AI = "Ai";
+    public const string Ai = "Ai";
 }

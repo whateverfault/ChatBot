@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
-using TwitchLib.Client.Events;
 
 namespace ChatBot.Services.logger;
 
@@ -18,10 +17,5 @@ public class LoggerEvents : ServiceEvents {
         if (subscribed) return;
         base.Subscribe();
         _bot.OnLog += _service.LogTwitchMessage;
-        _bot.OnMessageReceived += LogReceivedMessage;
-    }
-
-    private void LogReceivedMessage(object? sender, OnMessageReceivedArgs args) {
-        _service.Log(LogLevel.Info, $"{args.ChatMessage.Channel}\\{args.ChatMessage.Username}: {args.ChatMessage.Message}");
     }
 }

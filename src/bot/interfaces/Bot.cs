@@ -3,7 +3,6 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
-using TwitchLib.Communication.Events;
 
 namespace ChatBot.bot.interfaces;
 

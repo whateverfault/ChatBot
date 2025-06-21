@@ -11,7 +11,7 @@ public abstract class Service {
 
 
     public virtual ErrorCode Enable(ChatMessage message) {
-        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.DevBroad, message)) {
             return ErrorCode.PermDeny;
         }
         if (Options.ServiceState == State.Enabled) {
@@ -23,7 +23,7 @@ public abstract class Service {
     }
 
     public virtual ErrorCode Disable(ChatMessage message) {
-        if (!RestrictionHandler.Handle(Restriction.Dev, message)) {
+        if (!RestrictionHandler.Handle(Restriction.DevBroad, message)) {
             return ErrorCode.PermDeny;
         }
         if (Options.ServiceState == State.Disabled) {

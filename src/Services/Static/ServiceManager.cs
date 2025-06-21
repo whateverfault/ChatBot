@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.ai;
-using ChatBot.Services.ai.Ollama;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
@@ -37,6 +36,13 @@ public static class ServiceManager {
                                       )
                                   },
                                   {
+                                      ServiceName.MessageFilter,
+                                      (
+                                          new MessageFilterService(),
+                                          new MessageFilterEvents()
+                                      )
+                                  },
+                                  {
                                       ServiceName.MessageRandomizer,
                                       (
                                           new MessageRandomizerService(),
@@ -48,13 +54,6 @@ public static class ServiceManager {
                                       (
                                           new ChatCommandsService(),
                                           new ChatCommandsEvents()
-                                      )
-                                  },
-                                  {
-                                      ServiceName.MessageFilter,
-                                      (
-                                          new MessageFilterService(),
-                                          new MessageFilterEvents()
                                       )
                                   },
                                   {
@@ -86,7 +85,7 @@ public static class ServiceManager {
                                       )
                                   },
                                   {
-                                      ServiceName.AI,
+                                      ServiceName.Ai,
                                       (
                                           new AiService(),
                                           new AiEvents()
@@ -102,7 +101,7 @@ public static class ServiceManager {
                               };
         } catch (Exception e) {
             Console.WriteLine($"Failed to initialize services: {e}");
-            throw;
+            throw new Exception($"Failed to initialize services: {e}");
         }
     }
     

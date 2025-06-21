@@ -1,8 +1,10 @@
 ﻿using ChatBot.CLI.CliNodes;
 using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
+using ChatBot.CLI.CliNodes.Directories.ChatCommands;
+using ChatBot.CLI.CliNodes.Directories.Moderation;
 using ChatBot.Services.ai;
-using ChatBot.Services.interfaces;
+using ChatBot.Services.chat_commands;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
@@ -141,6 +143,68 @@ public class CliNodeSystem {
                                                           ]
                                                           );
 
+        var defaultCmds = new CliNodeStaticDirectory(
+                                                     "Default Commands",
+                                                     _state,
+                                                     true,
+                                                     []
+                                                     );
+        foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds) {
+            if (string.IsNullOrEmpty(cmd.Name)) continue;
+            defaultCmds.AddNode(
+                                new CliNodeStaticDirectory(
+                                              cmd.Name,
+                                              _state,
+                                              true,
+                                              [
+                                                  new CliNodeString(
+                                                                    "Name",
+                                                                    cmd.GetName,
+                                                                    CliNodePermission.Default,
+                                                                    cmd.SetName
+                                                                    ),
+                                                  new CliNodeString(
+                                                                    "Arguments",
+                                                                    cmd.GetArgs,
+                                                                    CliNodePermission.Default,
+                                                                    cmd.SetArgs
+                                                                   ),
+                                                  new CliNodeString(
+                                                                    "Description",
+                                                                    cmd.GetDescription,
+                                                                    CliNodePermission.Default,
+                                                                    cmd.SetDescription
+                                                                   ),
+                                                  new CliNodeInt(
+                                                                 "Cooldown",
+                                                                 cmd.GetCooldown,
+                                                                 CliNodePermission.Default,
+                                                                 cmd.SetCooldown
+                                                                 ),
+                                                  new CliNodeIndex(
+                                                                 "Moderation Action Index",
+                                                                 cmd.GetModerationActionIndex,
+                                                                 CliNodePermission.Default,
+                                                                 cmd.SetModerationActionIndex
+                                                                ),
+                                                  new CliNodeEnum(
+                                                                  "Permission",
+                                                                  cmd.GetRestrictionAsInt,
+                                                                  typeof(Restriction),
+                                                                  CliNodePermission.Default,
+                                                                  cmd.RestrictionNext
+                                                                  ),
+                                                  new CliNodeEnum(
+                                                                  "State",
+                                                                  cmd.GetStateAsInt,
+                                                                  typeof(State),
+                                                                  CliNodePermission.Default,
+                                                                  cmd.StateNext
+                                                                 ),
+                                              ])
+                                );
+        }
+        
         var chatCmdsDir = new CliNodeStaticDirectory(
                                                      ServiceName.ChatCommands,
                                                       _state, 
@@ -152,13 +216,6 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.SetCommandIdentifier
                                                                           ), 
-                                                          new CliNodeEnum(
-                                                                          "Required Role",
-                                                                          _state.Data.ChatCommands.GetRequiredRoleAsInt,
-                                                                          typeof(Restriction),
-                                                                          CliNodePermission.Default,
-                                                                          _state.Data.ChatCommands.RequiredRoleNext
-                                                                          ),
                                                           new CliNodeIndex(
                                                                          "Moderation Action Index",
                                                                          _state.Data.ChatCommands.GetModActionIndex,
@@ -171,6 +228,15 @@ public class CliNodeSystem {
                                                                            CliNodePermission.Default,
                                                                            _state.Data.ChatCommands.SetCooldown
                                                                           ),
+                                                          defaultCmds,
+                                                          new CliNodeDynamicChatCmdsDirectory(
+                                                                                              "Custom Commands",
+                                                                                              "Add Custom Command",
+                                                                                              "Remove Custom Command",
+                                                                                              _state.Data.ChatCommands.Options.AddChatCmd,
+                                                                                              _state.Data.ChatCommands.Options.RemoveChatCmd,
+                                                                                              _state
+                                                                                              ),
                                                           new CliNodeEnum(
                                                                           "Verbose State",
                                                                           _state.Data.ChatCommands.GetVerboseStateAsInt,
@@ -346,7 +412,7 @@ public class CliNodeSystem {
                                                       );
 
         var aiDir = new CliNodeStaticDirectory(
-                                               ServiceName.AI,
+                                               ServiceName.Ai,
                                                _state,
                                                true,
                                                [

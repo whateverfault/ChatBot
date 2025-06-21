@@ -4,7 +4,7 @@ using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.CLI.CliNodes.Directories;
+namespace ChatBot.CLI.CliNodes.Directories.Moderation;
 
 public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
     private readonly MessageFilterService _messageFilter;

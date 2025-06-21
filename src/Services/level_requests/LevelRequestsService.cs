@@ -1,5 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.Services.interfaces;
+using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
@@ -10,6 +11,8 @@ using TwitchLib.Client.Models;
 namespace ChatBot.Services.level_requests;
 
 public class LevelRequestsService : Service {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    
     public override string Name => ServiceName.LevelRequests;
     public override LevelRequestsOptions Options { get; } = new();
 
@@ -26,7 +29,7 @@ public class LevelRequestsService : Service {
         
             await Options.ModerationService.WarnUser(message, Options.PatternIndex);
         } catch (Exception e) {
-            throw new Exception(e.ToString());
+            _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e.Message}");
         }
     }
 

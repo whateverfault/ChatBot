@@ -1,7 +1,7 @@
 ﻿using ChatBot.Services.moderation;
 using ChatBot.shared.Handlers;
 
-namespace ChatBot.CLI.CliNodes.Directories;
+namespace ChatBot.CLI.CliNodes.Directories.Moderation;
 
 public delegate void AddModActionHandler(ModAction action);
 

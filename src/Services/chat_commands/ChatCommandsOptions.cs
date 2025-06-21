@@ -1,9 +1,4 @@
-﻿using ChatBot.Services.ai;
-using ChatBot.Services.demon_list;
-using ChatBot.Services.level_requests;
-using ChatBot.Services.message_randomizer;
-using ChatBot.Services.moderation;
-using ChatBot.Services.text_generator;
+﻿using ChatBot.Services.moderation;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -23,12 +18,9 @@ public class ChatCommandsOptions : Options {
     public int ModActionIndex => _saveData!.ModActionIndex;
     public int Cooldown => _saveData!.Cooldown;
     public State VerboseState => _saveData!.VerboseState;
-    public MessageRandomizerService MessageRandomizerService { get; private set; } = null!;
+    public List<CustomChatCommand> CustomCmds => _saveData!.CustomCmds;
+    public List<DefaultChatCommand> DefaultCmds => _saveData!.DefaultCmds;
     public ModerationService ModerationService { get; private set; } = null!;
-    public TextGeneratorService TextGeneratorService { get; private set; } = null!;
-    public LevelRequestsService LevelRequestsService { get; private set; } = null!;
-    public DemonListService DemonListService { get; private set; } = null!;
-    public AiService AiService { get; private set; } = null!;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -50,6 +42,7 @@ public class ChatCommandsOptions : Options {
 
     public override void SetDefaults() {
         _saveData = new SaveData();
+        CommandsList.SetDefaults();
         Save();
     }
 
@@ -72,19 +65,8 @@ public class ChatCommandsOptions : Options {
         Save();
     }
     
-    public void SetServices(
-        MessageRandomizerService messageRandomizer,
-        ModerationService moderation,
-        TextGeneratorService textGenerator,
-        LevelRequestsService levelReqs,
-        DemonListService demonList,
-        AiService ai) {
-        MessageRandomizerService = messageRandomizer;
+    public void SetServices(ModerationService moderation) {
         ModerationService = moderation;
-        TextGeneratorService = textGenerator;
-        LevelRequestsService = levelReqs;
-        DemonListService = demonList;
-        AiService = ai;
     }
 
     public Restriction GetRequiredRole() {
@@ -117,5 +99,27 @@ public class ChatCommandsOptions : Options {
     public void SetVerboseState(State state) {
         _saveData!.VerboseState = state;
         Save();
+    }
+
+    public List<CustomChatCommand> GetCustomCmds() {
+        return CustomCmds;
+    }
+
+    public void AddChatCmd(ChatCommand chatCmd) {
+        if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
+        
+        var cmd = (CustomChatCommand)chatCmd;
+        CustomCmds.Add(cmd);
+        Save();
+    }
+
+    public void RemoveChatCmd(int index) {
+        if (index < 0 || index >= CustomCmds.Count) return;
+        CustomCmds.RemoveAt(index);
+        Save();
+    }
+
+    public void SetDefaultCmds(List<DefaultChatCommand> cmds) {
+        _saveData!.DefaultCmds = cmds;
     }
 }

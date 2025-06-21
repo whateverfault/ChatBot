@@ -48,7 +48,7 @@ internal static class Program {
                                   (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
                                   (PresetsService)ServiceManager.GetService(ServiceName.Presets),
                                   (DemonListService)ServiceManager.GetService(ServiceName.DemonList),
-                                  (AiService)ServiceManager.GetService(ServiceName.AI)
+                                  (AiService)ServiceManager.GetService(ServiceName.Ai)
                                  );
         _cli = new Cli(cliData);
         if (autoInit) {
