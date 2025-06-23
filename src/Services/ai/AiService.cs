@@ -4,6 +4,7 @@ using ChatBot.Services.ai.Ollama;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
 using ChatBot.Services.Static;
+using ChatBot.shared.interfaces;
 
 namespace ChatBot.Services.ai;
 
@@ -42,8 +43,8 @@ public class AiService : Service {
     private async Task<string?> GenerateTextLocal(string prompt) {
         try {
             return await _ollamaClient.GenerateText(
-                                                    model: Options.Model,
-                                                    prompt: $"{Options.BasePrompt} {prompt}"
+                                                    model: Options.LocalModel,
+                                                    prompt: $"{Options.LocalPrompt} {prompt}"
                                                     );
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"An Error Occured While Local AI Text Generation: {e.Message}");
@@ -53,37 +54,75 @@ public class AiService : Service {
 
     private async Task<string?> GenerateTextHf(string prompt) {
         try {
-            return await _hfClient.GenerateText($"{Options.BasePrompt} {prompt}");
+            var generated = await _hfClient.GenerateText($"{Options.LocalPrompt} {prompt}");
+            if (Options.LocalAiFallback == State.Enabled && string.IsNullOrEmpty(generated)) {
+                _logger.Log(LogLevel.Warning, "Activated Local AI Fallback");
+                generated = await GenerateTextLocal(prompt);
+            }
+            return generated;
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"An Error Occured While HF AI Text Generation: {e.Message}");
             return null;
         }
     }
     
-    public string GetBasePrompt() {
-        return Options.BasePrompt;
+    public string GetLocalPrompt() {
+        return Options.LocalPrompt;
     }
 
-    public void SetBasePrompt(string prompt) {
-        Options.SetBasePrompt(prompt);
+    public void SetLocalPrompt(string prompt) {
+        Options.SetLocalPrompt(prompt);
+    }
+    
+    public string GetHfPrompt() {
+        return Options.HfPrompt;
+    }
+
+    public void SetHfPrompt(string prompt) {
+        Options.SetHfPrompt(prompt);
     }
     
     public string GetModel() {
-        return Options.Model;
+        return Options.LocalModel;
     }
 
     public void SetModel(string prompt) {
         Options.SetModel(prompt);
-        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
+    }
+    
+    public string GetHfModel() {
+        return Options.HfModel;
+    }
+
+    public void SetHfModel(string prompt) {
+        Options.SetHfModel(prompt);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.HfModel, _logger);
+    }
+    
+    public string GetHfProvider() {
+        return Options.HfProvider;
+    }
+
+    public void SetHfProvider(string model) {
+        Options.SetHfProvider(model);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.HfModel, _logger);
     }
     
     public void SetHfToken(string token) {
-        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.HfModel, _logger);
         Options.SetHfToken(token);
     }
 
     public string GetHfToken() {
         return Options.HfToken;
+    }
+
+    public int GetLocalAiFallbackAsInt() {
+        return (int)Options.LocalAiFallback;
+    }
+    
+    public void LocalAiFallbackNext() {
+        Options.SetLocalAiFallback((State)(((int)Options.LocalAiFallback+1)%Enum.GetValues(typeof(State)).Length));
     }
     
     public int GetAiModeAsInt() {
@@ -100,6 +139,6 @@ public class AiService : Service {
             Options.SetDefaults();
             return;
         }
-        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.Model, _logger);
+        _hfClient = new HfClient(Options.HfToken, Options.HfApiUrl, Options.HfModel, _logger);
     }
 }

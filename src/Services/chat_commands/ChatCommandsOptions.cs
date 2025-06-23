@@ -14,7 +14,6 @@ public class ChatCommandsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
-    public Restriction RequiredRole => _saveData!.RequiredRole;
     public State VerboseState => _saveData!.VerboseState;
     public List<CustomChatCommand> CustomCmds => _saveData!.CustomCmds;
     public List<DefaultChatCommand> DefaultCmds => _saveData!.DefaultCmds;
@@ -67,15 +66,6 @@ public class ChatCommandsOptions : Options {
         ModerationService = moderation;
     }
 
-    public Restriction GetRequiredRole() {
-        return RequiredRole;
-    }
-
-    public void SetRequiredRole(Restriction requiredRole) {
-        _saveData!.RequiredRole = requiredRole;
-        Save();
-    }
-
     public State GetVerboseState() {
         return VerboseState;
     }
@@ -83,10 +73,6 @@ public class ChatCommandsOptions : Options {
     public void SetVerboseState(State state) {
         _saveData!.VerboseState = state;
         Save();
-    }
-
-    public List<CustomChatCommand> GetCustomCmds() {
-        return CustomCmds;
     }
 
     public void AddChatCmd(ChatCommand chatCmd) {

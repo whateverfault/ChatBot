@@ -349,8 +349,9 @@ public static class CommandsList {
         }
 
         var response = await ai.GenerateText(prompt.ToString().Trim());
+        
         if (string.IsNullOrEmpty(response)) {
-            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         client?.SendReply(chatMessage.Channel, chatMessage.Id, response);

@@ -9,8 +9,6 @@ public class SaveData {
     public State ServiceState{ get; set; }
     [JsonProperty(PropertyName ="command_identifier")]
     public char CommandIdentifier { get; set; }
-    [JsonProperty(PropertyName ="required_role")]
-    public Restriction RequiredRole { get; set; }
 
     [JsonProperty(PropertyName = "verbose_state")]
     public State VerboseState { get; set; }
@@ -28,13 +26,11 @@ public class SaveData {
     public SaveData(
         [JsonProperty(PropertyName ="service_state")] State serviceState,
         [JsonProperty(PropertyName ="command_identifier")] char commandIdentifier,
-        [JsonProperty(PropertyName ="required_role")] Restriction requiredRole,
         [JsonProperty(PropertyName = "verbose_state")] State verboseState,
         [JsonProperty(PropertyName = "custom_commands")] List<CustomChatCommand> customCmds,
         [JsonProperty(PropertyName = "default_commands")] List<DefaultChatCommand> defaultCmds) {
         ServiceState = serviceState;
         CommandIdentifier = commandIdentifier;
-        RequiredRole = requiredRole;
         VerboseState = verboseState;
         CustomCmds = customCmds;
         DefaultCmds = defaultCmds;

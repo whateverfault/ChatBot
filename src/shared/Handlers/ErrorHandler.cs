@@ -23,6 +23,7 @@ public enum ErrorCode {
     NotEnoughData,
     SmthWentWrong,
     ClipCreationFailed,
+    RequestFailed,
     None,
 }
 
@@ -47,6 +48,7 @@ public class ErrorHandler {
                                                                   "Too Few Data.",
                                                                   "Something Went Wrong.",
                                                                   "Failed to create a clip",
+                                                                  "Request Failed.",
                                                               ];
 
 
@@ -67,7 +69,8 @@ public class ErrorHandler {
                                                                 "Пусто.",
                                                                 "Слишком мало данных.",
                                                                 "Что-то пошло не так.",
-                                                                "Не удалось создать клип",
+                                                                "Не удалось создать клип.",
+                                                                "Запрос не удался.",
                                                             ];
 
 

@@ -397,18 +397,6 @@ public class CliNodeSystem {
                                                _state,
                                                true,
                                                [
-                                                   new CliNodeString(
-                                                                     "Base Prompt",
-                                                                     _state.Data.Ai.GetBasePrompt,
-                                                                     CliNodePermission.Default,
-                                                                     _state.Data.Ai.SetBasePrompt
-                                                                    ),
-                                                   new CliNodeString(
-                                                                     "Model",
-                                                                     _state.Data.Ai.GetModel,
-                                                                     CliNodePermission.Default,
-                                                                     _state.Data.Ai.SetModel
-                                                                    ),
                                                    new CliNodeEnum(
                                                                    "AI Mode",
                                                                    _state.Data.Ai.GetAiModeAsInt,
@@ -417,16 +405,67 @@ public class CliNodeSystem {
                                                                    _state.Data.Ai.AiModeNext
                                                                    ),
                                                    new CliNodeStaticDirectory(
-                                                                              "HF",
+                                                                              "Local AI",
                                                                               _state,
                                                                               true,
                                                                               [
                                                                                   new CliNodeString(
-                                                                                       "Api Token",
-                                                                                       _state.Data.Ai.GetHfToken,
+                                                                                       "Model",
+                                                                                       _state.Data.Ai.GetModel,
                                                                                        CliNodePermission.Default,
-                                                                                       _state.Data.Ai.SetHfToken
+                                                                                       _state.Data.Ai.SetModel
                                                                                       ),
+                                                                                  new CliNodeString(
+                                                                                       "Prompt",
+                                                                                       _state.Data.Ai.GetLocalPrompt,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetLocalPrompt
+                                                                                      ),
+                                                                              ]
+                                                                             ),
+                                                   new CliNodeStaticDirectory(
+                                                                              "HF Endpoint",
+                                                                              _state,
+                                                                              true,
+                                                                              [
+                                                                                  new CliNodeString(
+                                                                                       "Model",
+                                                                                       _state.Data.Ai.GetHfModel,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetHfModel
+                                                                                      ),
+                                                                                  new CliNodeString(
+                                                                                       "Provider",
+                                                                                       _state.Data.Ai.GetHfProvider,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetHfProvider
+                                                                                      ),
+                                                                                  new CliNodeString(
+                                                                                       "Prompt",
+                                                                                       _state.Data.Ai.GetHfPrompt,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetHfPrompt
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Local AI fallback",
+                                                                                       _state.Data.Ai.GetLocalAiFallbackAsInt,
+                                                                                       typeof(State),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.LocalAiFallbackNext
+                                                                                      ),
+                                                                                  new CliNodeStaticDirectory(
+                                                                                       "Secret",
+                                                                                       _state,
+                                                                                       true,
+                                                                                       [
+                                                                                           new CliNodeString(
+                                                                                                "Api Token",
+                                                                                                _state.Data.Ai.GetHfToken,
+                                                                                                CliNodePermission.Default,
+                                                                                                _state.Data.Ai.SetHfToken
+                                                                                               ),
+                                                                                           ]
+                                                                                       ),
                                                                               ]
                                                                              ),
                                                    new CliNodeEnum(

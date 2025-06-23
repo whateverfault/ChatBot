@@ -11,13 +11,25 @@ public class SaveData {
     public string Model { get; set; } = null!;
 
     [JsonProperty(PropertyName = "base_prompt")]
-    public string BasePrompt { get; set; } = null!;
+    public string LocalPrompt { get; set; } = null!;
 
     [JsonProperty(PropertyName = "hf_token")]
     public string HfToken { get; set; } = null!;
 
     [JsonProperty(PropertyName = "ai_mode")]
     public AiMode AiMode { get; set; }
+
+    [JsonProperty(PropertyName = "hf_provider")]
+    public string HfProvider { get; set; }
+
+    [JsonProperty(PropertyName = "hf_model")]
+    public string HfModel { get; set; }
+    
+    [JsonProperty(PropertyName = "hf_prompt")]
+    public string HfPrompt { get; set; }
+
+    [JsonProperty(PropertyName = "local_ai_fallback")]
+    public State LocalAiFallback { get; set; }
 
 
     public SaveData() {}
@@ -26,13 +38,21 @@ public class SaveData {
     public SaveData(
         [JsonProperty(PropertyName = "service_state")] State serviceState,
         [JsonProperty(PropertyName = "model")] string model,
-        [JsonProperty(PropertyName = "base_prompt")] string basePrompt,
+        [JsonProperty(PropertyName = "base_prompt")] string localPrompt,
         [JsonProperty(PropertyName = "hf_token")] string hfToken,
-        [JsonProperty(PropertyName = "ai_mode")] AiMode aiMode) {
+        [JsonProperty(PropertyName = "ai_mode")] AiMode aiMode,
+        [JsonProperty(PropertyName = "hf_provider")] string hfProvider,
+        [JsonProperty(PropertyName = "hf_model")] string hfModel,
+        [JsonProperty(PropertyName = "hf_prompt")] string hfPrompt,
+        [JsonProperty(PropertyName = "local_ai_fallback")] State fallback) {
         ServiceState = serviceState;
         Model = model;
-        BasePrompt = basePrompt;
+        LocalPrompt = localPrompt;
         HfToken = hfToken;
         AiMode = aiMode;
+        HfProvider = hfProvider;
+        HfModel = hfModel;
+        HfPrompt = hfPrompt;
+        LocalAiFallback = fallback;
     }
 }
