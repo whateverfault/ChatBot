@@ -293,7 +293,44 @@ public static class CommandsList {
         _chatCmds.Options.SetDefaultCmds(DefaultsCommands);
     }
 
-    private static Task When(ChatCmdArgs cmdArgs) {
+    private static Task Cmds(ChatCmdArgs cmdArgs) {
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var cmdId = cmdArgs.Args.Command.CommandIdentifier;
+        var index = 1;
+        var cmds = new List<string>();
+
+        for (var i = 0; i < _chatCmds.Options.DefaultCmds.Count; i++, index++) {
+            if (!RestrictionHandler.Handle(_chatCmds.Options.DefaultCmds[i].Restriction, chatMessage)) continue;
+            
+            if (string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Name)) {
+                if (cmds[^1].Equals(Page.pageTerminator)) continue;
+                cmds.Add(Page.pageTerminator);
+                index = 0;
+                continue;
+            }
+            
+            cmds.Add(string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Args)?
+                         $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} - {_chatCmds.Options.DefaultCmds[i].Description} " 
+                         : $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} {_chatCmds.Options.DefaultCmds[i].Args} - {_chatCmds.Options.DefaultCmds[i].Description} "
+                     );
+        }
+
+        SendPagedReply(cmds, cmdArgs);
+        return Task.CompletedTask;
+    }
+    
+    private static Task Help(ChatCmdArgs cmdArgs) {
+        var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var cmdId = cmdArgs.Args.Command.CommandIdentifier;
+        
+        var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, usage);
+        
+        return Task.CompletedTask;
+    }
+
+        private static Task When(ChatCmdArgs cmdArgs) {
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         
@@ -455,43 +492,7 @@ public static class CommandsList {
         }
         client?.SendReply(cmdArgs.Bot.Options.Channel!, chatMessage.Id, $"Клип создан - https://www.twitch.tv/{cmdArgs.Bot.Options.Channel}/clip/{clipId}");
     }
-
-    private static Task Cmds(ChatCmdArgs cmdArgs) {
-        var chatMessage = cmdArgs.Args.Command.ChatMessage;
-        var cmdId = cmdArgs.Args.Command.CommandIdentifier;
-        var index = 1;
-        var cmds = new List<string>();
-
-        for (var i = 0; i < _chatCmds.Options.DefaultCmds.Count; i++, index++) {
-            if (!RestrictionHandler.Handle(_chatCmds.Options.DefaultCmds[i].Restriction, chatMessage)) continue;
-
-            if (string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Name)) {
-                cmds.Add(Page.pageTerminator);
-                index = 0;
-                continue;
-            }
-            
-            cmds.Add(string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Args)?
-                         $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} - {_chatCmds.Options.DefaultCmds[i].Description} " 
-                         : $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} {_chatCmds.Options.DefaultCmds[i].Args} - {_chatCmds.Options.DefaultCmds[i].Description} "
-                     );
-        }
-
-        SendPagedReply(cmds, cmdArgs);
-        return Task.CompletedTask;
-    }
     
-    private static Task Help(ChatCmdArgs cmdArgs) {
-        var client = cmdArgs.Bot.GetClient();
-        var chatMessage = cmdArgs.Args.Command.ChatMessage;
-        var cmdId = cmdArgs.Args.Command.CommandIdentifier;
-        
-        var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, usage);
-        
-        return Task.CompletedTask;
-    }
-
     private static Task Rizz(ChatCmdArgs cmdArgs) {
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
@@ -905,7 +906,7 @@ public static class CommandsList {
             var levels = await AredlUtils.ListLevels();
             if (levels == null || levels.data?.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
-                    client?.SendReply(chatMessage.Channel, chatMessage.Id, "Что-то пошло не так.");
+                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 }
                 return;
             }
@@ -913,11 +914,12 @@ public static class CommandsList {
             var details = await demonList.GetLevelDetails(level?.id!);
             if (details == null || details.verifications.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
-                    client?.SendReply(chatMessage.Channel, chatMessage.Id, "Что-то пошло не так.");
+                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 }
                 return;
             }
             client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{level?.position} {level?.name} | {details.verifications[0].videoUrl}");
+            return;
         }
         
         var argSb = new StringBuilder();
