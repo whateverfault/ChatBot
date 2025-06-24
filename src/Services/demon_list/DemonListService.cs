@@ -18,7 +18,15 @@ public class DemonListService : Service {
             var level = await AredlUtils.GetLevelByPlacement(placement, _logger);
             return level;
         } catch (Exception) {
-            _logger.Log(LogLevel.Error, "Could not Get Level Name By Placement");
+            return null;
+        }
+    }
+    
+    public async Task<List<LevelInfo>?> GetLevelsInfoByName(string levelName) {
+        try {
+            var level = await AredlUtils.GetLevelsByName(levelName, _logger);
+            return level;
+        } catch (Exception) {
             return null;
         }
     }
@@ -37,7 +45,15 @@ public class DemonListService : Service {
             var level = await AredlUtils.GetPlatformerLevelByPlacement(placement, _logger);
             return level;
         } catch (Exception) {
-            _logger.Log(LogLevel.Error, "Could not Get Level Name By Placement");
+            return null;
+        }
+    }
+    
+    public async Task<List<LevelInfo>?> GetPlatformerLevelsInfoByName(string levelName) {
+        try {
+            var level = await AredlUtils.GetPlatformerLevelsByName(levelName, _logger);
+            return level;
+        } catch (Exception) {
             return null;
         }
     }
@@ -49,7 +65,7 @@ public class DemonListService : Service {
         } catch (Exception) {
             return null;
         }
-    }    
+    }
     
     public async Task<UserProfile?> GetProfile(string username) {
         try {
@@ -76,24 +92,24 @@ public class DemonListService : Service {
             if (completed?.records.Count > 0) {
                 easiest = completed.records[^1];
                 var i = 2;
-                while (easiest!.level.legacy && completed?.records.Count > i) {
-                    easiest = completed?.records[^i++];
+                while (easiest.level.legacy && completed.records.Count > i) {
+                    easiest = completed.records[^i++];
                 }
                 if (easiest.level.legacy) {
                     easiest = null;
                 }
             }
-            if (completed?.verified.Count > 0) { 
-                var easiestVerification = completed?.verified[0];
-                foreach (var verification in completed?.verified!) {
-                    if (easiestVerification?.level.position < verification.level.position) {
-                        if (verification.level.legacy) continue;
-                        easiestVerification = verification;
-                    }
-                }
-                if (easiest?.level.position < easiestVerification?.level.position || easiest == null) {
-                    easiest = easiestVerification;
-                }
+            if (!(completed?.verified.Count > 0)) return easiest;
+            
+            var easiestVerification = completed.verified[0];
+            foreach (var verification in completed.verified) {
+                if (!(easiestVerification?.level.position < verification.level.position)) continue;
+                if (verification.level.legacy) continue;
+                easiestVerification = verification;
+            }
+            
+            if (easiest?.level.position < easiestVerification?.level.position || easiest == null) {
+                easiest = easiestVerification;
             }
             return easiest;
         } catch (Exception) {
@@ -145,8 +161,8 @@ public class DemonListService : Service {
     
     public async Task<LevelInfo?> GetRandomLevel(int from = -1, int to = -1) {
         try {
-            if (from < 0) {
-                from = 0;
+            if (from < 1) {
+                from = 1;
             }
             
             var levelList = await AredlUtils.ListLevels(_logger);
@@ -154,9 +170,9 @@ public class DemonListService : Service {
                 to = levelList!.data!.Count;
             }
             if (from > to) {
-                from = 0;
+                from = 1;
             }
-            var randomIndex = Random.Shared.Next(from, to);
+            var randomIndex = Random.Shared.Next(from-1, to);
             return levelList.data?[randomIndex];
         } catch (Exception) {
             return null;
@@ -177,7 +193,7 @@ public class DemonListService : Service {
                 from = 0;
             }
             var randomIndex = Random.Shared.Next(from, to);
-            return levelList?.data?[randomIndex];
+            return levelList.data?[randomIndex];
         } catch (Exception) {
             return null;
         }

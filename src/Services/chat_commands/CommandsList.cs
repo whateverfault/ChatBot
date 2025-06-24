@@ -201,17 +201,18 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "place",
-                                                      "<level_name> [by creator_name]",
+                                                      "<level_name> [by creator_name] [--page page_count]",
                                                       "позиция уровня по AREDL.",
                                                       Place,
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      "rulet",
+                                                      "roulette",
                                                       "<from> <to>",
                                                       "зарандомить экстрим.",
                                                       Roulette,
-                                                      Restriction.Vip
+                                                      Restriction.Vip,
+                                                      aliases: ["rulet"]
                                                      ),
                                new DefaultChatCommand(
                                                       string.Empty,
@@ -232,7 +233,8 @@ public static class CommandsList {
                                                       "[username]",
                                                       "легчайший экстрим пользователя по AREDL.",
                                                       Easiest,
-                                                      Restriction.Vip
+                                                      Restriction.Vip,
+                                                      aliases: ["lowest"]
                                                      ),
                                new DefaultChatCommand(
                                                       string.Empty,
@@ -250,7 +252,7 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "pplace",
-                                                      "<level> [by creator_name]",
+                                                      "<level> [by creator_name] [--page page_count]",
                                                       "позиция уровня по Pemon List.",
                                                       Pplace,
                                                       Restriction.Vip
@@ -277,11 +279,12 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      "clan-rulet",
+                                                      "clan-roulette",
                                                       "<clan_tag>",
                                                       "случайный пройденный кланом уровень.",
                                                       ClanRoulette,
-                                                      Restriction.Vip
+                                                      Restriction.Vip,
+                                                      aliases: ["clan-rulet"]
                                                      ),
                            ];
     }
@@ -463,7 +466,7 @@ public static class CommandsList {
             if (!RestrictionHandler.Handle(_chatCmds.Options.DefaultCmds[i].Restriction, chatMessage)) continue;
 
             if (string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Name)) {
-                cmds.Add(Page.PageTerminator);
+                cmds.Add(Page.pageTerminator);
                 index = 0;
                 continue;
             }
@@ -724,7 +727,12 @@ public static class CommandsList {
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {verificationLink}");
+        var tier = 
+            levelInfo.nlwTier == null? 
+                "(List tier)":
+                $"({levelInfo.nlwTier} tier)";
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {tier} {verificationLink}");
     }
 
     private static async Task Place(ChatCmdArgs cmdArgs) {
@@ -737,34 +745,56 @@ public static class CommandsList {
             return;
         }
 
-        string creator = null!;
         if (cmdArgs.Parsed.Count < 1) {
             ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
         var levelName = new StringBuilder();
-        var levelNameEndIndex = 0;
-        for (var i = 0; i < cmdArgs.Parsed.Count; i++) {
-            if (cmdArgs.Parsed[i] is "by" or "от") break;
-            levelName.Append($"{cmdArgs.Parsed[i]} ");
-            levelNameEndIndex = i;
+        foreach (var arg in cmdArgs.Parsed) {
+            if (arg is "by" or "от" or "--page") break;
+            levelName.Append($"{arg} ");
         }
-                    
-        if (levelNameEndIndex+2 < cmdArgs.Parsed.Count) {
-            creator = cmdArgs.Parsed[levelNameEndIndex+2];
+
+        var index = cmdArgs.Parsed.IndexOf("by");
+        if (index != -1 && index+1 < cmdArgs.Parsed.Count) {
+            var creator = cmdArgs.Parsed[index+1];
+            levelName.Append($" ({creator})");
         }
-                    
-        var levelInfo =  await demonList.GetLevelInfoByName(levelName.ToString().Trim(), creator);
-        if (levelInfo == null) {
+
+        var levelsInfo =  await demonList.GetLevelsInfoByName(levelName.ToString().Trim());
+
+        if (levelsInfo == null) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
             return;
         }
+        
+        var page = 0;
+        index = cmdArgs.Parsed.IndexOf("--page");
+        if (index != -1 && cmdArgs.Parsed.Count > index+1) {
+            page = int.Parse(cmdArgs.Parsed[index+1])-1;
+        }
+
+        if (page < 0) page = 0;
+        if (page >= levelsInfo.Count) page = levelsInfo.Count-1;
+        
+        var levelInfo = levelsInfo[page];
         var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name} {verificationLink}");
+        
+        var tier = 
+            levelInfo.nlwTier == null? 
+                string.Empty:
+                $"({levelInfo.nlwTier} tier)";
+
+        var pages = 
+            levelsInfo.Count <= 1 ? 
+                string.Empty : 
+                $"Страница {page+1} из {levelsInfo.Count} |";
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier} {verificationLink}");
     }
 
     private static async Task Ptop(ChatCmdArgs cmdArgs) {
@@ -789,7 +819,13 @@ public static class CommandsList {
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {verificationLink}");
+        
+        var tier = 
+            levelInfo.nlwTier == null? 
+                "(List tier)":
+                $"({levelInfo.nlwTier} tier)";
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{index} {levelInfo.name} {tier} {verificationLink}");
     }
     
     private static async Task Pplace(ChatCmdArgs cmdArgs) {
@@ -801,35 +837,57 @@ public static class CommandsList {
             ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
-                    
-        string creator = null!;
+
         if (cmdArgs.Parsed.Count < 1) {
             ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
         var levelName = new StringBuilder();
-        var levelNameEndIndex = 0;
-        for (var i = 0; i < cmdArgs.Parsed.Count; i++) {
-            if (cmdArgs.Parsed[i] is "by" or "от") break;
-            levelName.Append($"{cmdArgs.Parsed[i]} ");
-            levelNameEndIndex = i;
+        foreach (var arg in cmdArgs.Parsed) {
+            if (arg is "by" or "от" or "--page") break;
+            levelName.Append($"{arg} ");
         }
-                    
-        if (levelNameEndIndex+2 < cmdArgs.Parsed.Count) {
-            creator = cmdArgs.Parsed[levelNameEndIndex+2];
+
+        var index = cmdArgs.Parsed.IndexOf("by");
+        if (index != -1 && index+1 < cmdArgs.Parsed.Count) {
+            var creator = cmdArgs.Parsed[index+1];
+            levelName.Append($" ({creator})");
         }
-                    
-        var levelInfo =  await demonList.GetPlatformerLevelInfoByName(levelName.ToString().Trim(), creator);
-        if (levelInfo == null) {
+
+        var levelsInfo =  await demonList.GetPlatformerLevelsInfoByName(levelName.ToString().Trim());
+
+        if (levelsInfo == null) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
             return;
         }
-        var verificationLink = await demonList.GetPlatformerLevelVerificationLink(levelInfo.id);
+        
+        var page = 0;
+        index = cmdArgs.Parsed.IndexOf("--page");
+        if (index != -1 && cmdArgs.Parsed.Count > index+1) {
+            page = int.Parse(cmdArgs.Parsed[index+1])-1;
+        }
+
+        if (page < 0) page = 0;
+        if (page >= levelsInfo.Count) page = levelsInfo.Count-1;
+        
+        var levelInfo = levelsInfo[page];
+        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.position} {levelInfo.name} {verificationLink}");
+        
+        var tier = 
+            levelInfo.nlwTier == null? 
+                "(List tier)":
+                $"({levelInfo.nlwTier} tier)";
+        
+        var pages = 
+            levelsInfo.Count <= 1 ? 
+                string.Empty : 
+                $"Страница {page+1} из {levelsInfo.Count} |";
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier} {verificationLink}");
     }
 
     private static async Task Hardest(ChatCmdArgs cmdArgs) {
@@ -1071,10 +1129,10 @@ public static class CommandsList {
         var message = new StringBuilder();
         var pageTerminatorsCount = 0;
         
-        message.Append($"Page {page} of {pages[^1]} | ");
+        message.Append($"Страница {page} из {pages[^1]} | ");
         
         for (var i = 0; i < reply.Count; i++) {
-            if (reply[i] == Page.PageTerminator) {
+            if (reply[i] == Page.pageTerminator) {
                 pageTerminatorsCount++;
                 continue;
             }

@@ -11,9 +11,11 @@ public sealed class DefaultChatCommand : ChatCommand {
     public override string Args { get; protected set; }
     [JsonProperty(PropertyName = "description")]
     public override string Description { get; protected set; }
+    [JsonProperty(PropertyName = "aliases")]
+    public override List<string>? Aliases { get; protected set; }
     [JsonProperty(PropertyName = "cooldown")]
     public override int Cooldown { get; protected set; }
-    [JsonProperty(PropertyName = "last_used")]
+    [JsonIgnore]
     public override long LastUsed { get; protected set; }
     [JsonIgnore]
     public override CmdActionHandler? Action { get; protected set; }
@@ -32,6 +34,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         Restriction restriction,
         int cooldown = 1, 
         long lastUsed = 0,
+        List<string>? aliases = null,
         State state = State.Enabled) {
         Name = name;
         Args = args;
@@ -40,6 +43,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         Restriction = restriction;
         Cooldown = cooldown;
         LastUsed = lastUsed;
+        Aliases = aliases;
         State = state;
     }
     
@@ -48,10 +52,10 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "name")] string name,
         [JsonProperty(PropertyName = "args")] string args,
         [JsonProperty(PropertyName = "description")] string description,
+        [JsonProperty(PropertyName = "last_used")] List<string>? aliases,
         [JsonProperty(PropertyName = "restriction")] Restriction restriction, 
-        [JsonProperty(PropertyName = "cooldown")] int cooldown = 1, 
-        [JsonProperty(PropertyName = "last_used")] long lastUsed = 0,
-        [JsonProperty(PropertyName = "state")] State state = State.Enabled) {
+        [JsonProperty(PropertyName = "cooldown")] int cooldown, 
+        [JsonProperty(PropertyName = "state")] State state) {
         Name = name;
         Args = args;
         Description = description;
@@ -63,7 +67,8 @@ public sealed class DefaultChatCommand : ChatCommand {
         }
         Restriction = restriction;
         Cooldown = cooldown;
-        LastUsed = lastUsed;
+        LastUsed = 0;
+        Aliases = aliases;
         State = state;
     }
 }

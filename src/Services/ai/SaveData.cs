@@ -20,13 +20,13 @@ public class SaveData {
     public AiMode AiMode { get; set; }
 
     [JsonProperty(PropertyName = "hf_provider")]
-    public string HfProvider { get; set; }
+    public string HfProvider { get; set; } = null!;
 
     [JsonProperty(PropertyName = "hf_model")]
-    public string HfModel { get; set; }
-    
+    public string HfModel { get; set; } = null!;
+
     [JsonProperty(PropertyName = "hf_prompt")]
-    public string HfPrompt { get; set; }
+    public string HfPrompt { get; set; } = null!;
 
     [JsonProperty(PropertyName = "local_ai_fallback")]
     public State LocalAiFallback { get; set; }

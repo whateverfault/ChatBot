@@ -29,7 +29,7 @@ public class ChatCommandsService : Service {
         
             foreach (var cmd in Options.DefaultCmds) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
-                if (cmdName != cmd.Name) continue;
+                if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
                 var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -43,7 +43,7 @@ public class ChatCommandsService : Service {
             
             foreach (var cmd in Options.CustomCmds) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
-                if (cmdName != cmd.Name) continue;
+                if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
                 var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

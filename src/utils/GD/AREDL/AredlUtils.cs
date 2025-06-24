@@ -37,6 +37,22 @@ public partial class AredlUtils {
         }
     }
     
+    public static async Task<List<LevelInfo>?> GetLevelsByName(string name, LoggerService? logger = null) {
+        try {
+            var levels = await ListLevels(logger);
+            var result = levels?.data?.AsParallel()
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+            
+            if (result != null) return result.ToList();
+            logger?.Log(LogLevel.Error, "Such level does not exist");
+            return null;
+
+        } catch (Exception e) {
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
+            return null;
+        }
+    }
+    
     public static async Task<LevelInfo?> GetLevelByName(string name, string? creator = null, LoggerService? logger = null) {
         try {
             var levels = await ListLevels(logger);
@@ -120,6 +136,22 @@ public partial class AredlUtils {
         }
         catch(Exception e){
             logger?.Log(LogLevel.Error, $"Error while fetching list levels data: {e.Message}");
+            return null;
+        }
+    }
+    
+    public static async Task<List<LevelInfo>?> GetPlatformerLevelsByName(string name, LoggerService? logger = null) {
+        try {
+            var levels = await ListPlatformerLevels(logger);
+
+            var result = levels?.data?.AsParallel()
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+            
+            if (result != null) return result.ToList();
+            logger?.Log(LogLevel.Error, "Such level does not exist");
+            return null;
+        } catch (Exception e) {
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
@@ -282,11 +314,8 @@ public partial class AredlUtils {
                 if (record.level.id != levelId) continue;
                 return record;
             }
-            foreach (var record in levelRecords?.records!) {
-                if (record.level.id != levelId) continue;
-                return record;
-            }
-            return null;
+            return levelRecords.records
+                            .FirstOrDefault(record => record.level.id == levelId);
         }
         catch(Exception e){
             logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e.Message}");

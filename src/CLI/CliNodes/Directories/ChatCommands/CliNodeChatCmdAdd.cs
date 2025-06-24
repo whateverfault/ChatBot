@@ -26,6 +26,7 @@ public class CliNodeChatCmdAdd : CliNode {
                                       name,
                                       "--",
                                       "--",
+                                      [],
                                       output,
                                       Restriction.Everyone,
                                       State.Enabled,

@@ -9,6 +9,7 @@ public abstract class ChatCommand {
     public abstract string Name { get; protected set; }
     public abstract string Args { get; protected set; }
     public abstract string Description { get; protected set; }
+    public abstract List<string>? Aliases { get; protected set; }
     public abstract int Cooldown { get; protected set; }
     public abstract long LastUsed { get; protected set; }
     public abstract CmdActionHandler? Action { get; protected set; }
@@ -36,6 +37,18 @@ public abstract class ChatCommand {
         return Description;
     }
 
+    public virtual List<string>? GetAliases() {
+        return Aliases;
+    }
+
+    public virtual void AddAlias(string alias) {
+        Aliases?.Add(alias);
+    }
+    
+    public virtual void RemoveAlias(int index) {
+        Aliases?.RemoveAt(index);
+    }
+    
     public virtual int GetCooldown() {
         return Cooldown;
     }
