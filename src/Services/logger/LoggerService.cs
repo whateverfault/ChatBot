@@ -31,12 +31,4 @@ public class LoggerService : Service {
         Options.AddTwitchLog(log);
         OnTwitchLog?.Invoke(log);
     }
-    
-    public List<Log> GetLogs() {
-        return Options.Logs;
-    }
-
-    public List<Log> GetTwitchLogs() {
-        return Options.TwitchLogs;
-    }
 }

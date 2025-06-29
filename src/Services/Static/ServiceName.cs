@@ -12,4 +12,5 @@ public static class ServiceName {
     public const string Presets = "Presets";
     public const string DemonList = "Demon List";
     public const string Ai = "Ai";
+    public const string Translator = "Translator";
 }

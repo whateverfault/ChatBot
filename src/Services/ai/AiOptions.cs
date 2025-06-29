@@ -1,4 +1,5 @@
-﻿using ChatBot.shared;
+﻿using ChatBot.Services.ai.AiClients.interfaces;
+using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
@@ -11,15 +12,9 @@ public class AiOptions : Options {
     protected override string Name => "ai";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
-    public string LocalModel => _saveData!.Model;
-    public string LocalPrompt => _saveData!.LocalPrompt;
-    public string HfModel => _saveData!.HfModel;
-    public string HfProvider => _saveData!.HfProvider;
-    public string HfPrompt => _saveData!.HfPrompt;
-    public string HfToken => _saveData!.HfToken;
-    public string HfApiUrl => $"https://router.huggingface.co/{HfProvider}/v1/chat/completions";
-    public State LocalAiFallback => _saveData!.LocalAiFallback;
-    public AiMode AiMode => _saveData!.AiMode;
+    public List<AiData> AiData => _saveData!.AiData;
+    public string GoogleProjectId => _saveData!.GoogleProjectId;
+    public AiKind AiKind => _saveData!.AiKind;
 
 
     public override bool TryLoad() {
@@ -38,7 +33,42 @@ public class AiOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData();
+        _saveData = new SaveData(
+                                 [
+                                     new AiData(
+                                                "Empty",
+                                                "Empty",
+                                                "Empty",
+                                                "http://localhost:11434/api/generate",
+                                                "Empty",
+                                                new AiFallback(State.Disabled, AiKind.Ollama)
+                                                ),
+                                     new AiData(
+                                                "Empty",
+                                                "Empty",
+                                                "Empty",
+                                                "https://router.huggingface.co/Empty/v1/chat/completions",
+                                                "Empty",
+                                                new AiFallback(State.Disabled, AiKind.Ollama)
+                                               ),
+                                     new AiData(
+                                                "Empty",
+                                                "deepseek-chat",
+                                                "Empty",
+                                                "https://api.deepseek.com/chat/completions",
+                                                "Empty",
+                                                new AiFallback(State.Disabled, AiKind.Ollama)
+                                               ),
+                                     new AiData(
+                                                "Empty",
+                                                "publishers/google/models/gemini-pro",
+                                                "Empty",
+                                                "https://aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/{model}:generateContent\"",
+                                                "Empty",
+                                                new AiFallback(State.Disabled, AiKind.Ollama)
+                                               ),
+                                 ]
+                                 );
         Save();
     }
     
@@ -51,43 +81,13 @@ public class AiOptions : Options {
         return ServiceState;
     }
     
-    public void SetLocalPrompt(string prompt) {
-        _saveData!.LocalPrompt = prompt;
-        Save();
-    }
-    
-    public void SetHfPrompt(string prompt) {
-        _saveData!.HfPrompt = prompt;
-        Save();
-    }
-    
-    public void SetModel(string model) {
-        _saveData!.Model = model;
+    public void SetAiKind(AiKind kind) {
+        _saveData!.AiKind = kind;
         Save();
     }
 
-    public void SetHfModel(string model) {
-        _saveData!.HfModel = model;
-        Save();
-    }
-    
-    public void SetHfProvider(string provider) {
-        _saveData!.HfProvider = provider;
-        Save();
-    }
-    
-    public void SetHfToken(string token) {
-        _saveData!.HfToken = token;
-        Save();
-    }
-    
-    public void SetLocalAiFallback(State fallback) {
-        _saveData!.LocalAiFallback = fallback;
-        Save();
-    }
-    
-    public void SetAiMode(AiMode mode) {
-        _saveData!.AiMode = mode;
+    public void SetGoogleProjectId(string projectId) {
+        _saveData!.GoogleProjectId = projectId;
         Save();
     }
 }

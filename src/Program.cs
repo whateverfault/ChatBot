@@ -12,6 +12,7 @@ using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
+using ChatBot.Services.translator;
 
 namespace ChatBot;
 
@@ -23,13 +24,21 @@ internal static class Program {
     
     private static async Task Main(string[] args) {
         var autoInit = false;
+        var resetDefaultCmds = false;
         
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
 
         if (args.Length > 0) {
-            if (args[0] == "--auto-init") {
-                autoInit = true;
+            switch (args[0]) {
+                case "--auto-init": {
+                    autoInit = true;
+                    break;
+                }
+                case "--res-def-cmds": {
+                    resetDefaultCmds = true;
+                    break;
+                }
             }
         }
 
@@ -48,12 +57,16 @@ internal static class Program {
                                   (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
                                   (PresetsService)ServiceManager.GetService(ServiceName.Presets),
                                   (DemonListService)ServiceManager.GetService(ServiceName.DemonList),
-                                  (AiService)ServiceManager.GetService(ServiceName.Ai)
+                                  (AiService)ServiceManager.GetService(ServiceName.Ai),
+                                  (TranslatorService)ServiceManager.GetService(ServiceName.Translator)
                                  );
         _cli = new Cli(cliData);
         if (autoInit) {
             bot.Options.Load();
             bot.Start();
+        }
+        if (resetDefaultCmds) {
+            CommandsList.SetDefaults();
         }
         _cli.RenderNodes();
 
@@ -69,14 +82,15 @@ internal static class Program {
     
     private static Task Render() {
         while (true) {
-            if (!_forcedToRender && !Console.KeyAvailable) {
-                continue;
+            switch (_forcedToRender) {
+                case false when !Console.KeyAvailable:
+                    continue;
+                case false:
+                    int.TryParse(Console.ReadLine() ?? "0", out var index);
+                    _cli.ActivateNode(index);
+                    break;
             }
 
-            if (!_forcedToRender) {
-                int.TryParse(Console.ReadLine(), out var index);
-                _cli.ActivateNode(index);
-            }
             Console.Clear();
             _cli.RenderNodes();
             _forcedToRender = false;

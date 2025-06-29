@@ -4,6 +4,7 @@ using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.CLI.CliNodes.Directories.ChatCommands;
 using ChatBot.CLI.CliNodes.Directories.Moderation;
 using ChatBot.Services.ai;
+using ChatBot.Services.level_requests;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
@@ -218,6 +219,19 @@ public class CliNodeSystem {
                                                                                               _state.Data.ChatCommands.Options.RemoveChatCmd,
                                                                                               _state
                                                                                               ),
+                                                          new CliNodeStaticDirectory(
+                                                                                     "Special",
+                                                                                     _state,
+                                                                                     true,
+                                                                                     [
+                                                                                        new CliNodeString(
+                                                                                             "Base Title",
+                                                                                             _state.Data.ChatCommands.GetBaseTitle,
+                                                                                             CliNodePermission.Default,
+                                                                                             _state.Data.ChatCommands.SetBaseTitle
+                                                                                             ),
+                                                                                     ]
+                                                                                     ),
                                                           new CliNodeEnum(
                                                                           "Verbose State",
                                                                           _state.Data.ChatCommands.GetVerboseStateAsInt,
@@ -361,6 +375,19 @@ public class CliNodeSystem {
                                                                        _state.Data.LevelRequests.SetPatternIndex
                                                                    ),
                                                       new CliNodeEnum(
+                                                                      "Requests State",
+                                                                      _state.Data.LevelRequests.GetReqStateAsInt,
+                                                                      typeof(ReqState),
+                                                                      CliNodePermission.Default,
+                                                                      _state.Data.LevelRequests.ReqStateNext
+                                                                      ),
+                                                      new CliNodeString(
+                                                                        "Reward Id",
+                                                                        _state.Data.LevelRequests.GetRewardId,
+                                                                        CliNodePermission.Default,
+                                                                        _state.Data.LevelRequests.SetRewardId
+                                                                       ),
+                                                      new CliNodeEnum(
                                                                       "Permission",
                                                                       _state.Data.LevelRequests.GetRestrictionAsInt,
                                                                       typeof(Restriction),
@@ -399,32 +426,32 @@ public class CliNodeSystem {
                                                [
                                                    new CliNodeEnum(
                                                                    "AI Mode",
-                                                                   _state.Data.Ai.GetAiModeAsInt,
-                                                                   typeof(AiMode),
+                                                                   _state.Data.Ai.GetAiKindAsInt,
+                                                                   typeof(AiKind),
                                                                    CliNodePermission.Default,
-                                                                   _state.Data.Ai.AiModeNext
+                                                                   _state.Data.Ai.AiKindNext
                                                                    ),
                                                    new CliNodeStaticDirectory(
-                                                                              "Local AI",
+                                                                              "Ollama",
                                                                               _state,
                                                                               true,
                                                                               [
                                                                                   new CliNodeString(
                                                                                        "Model",
-                                                                                       _state.Data.Ai.GetModel,
+                                                                                       _state.Data.Ai.GetOllamaModel,
                                                                                        CliNodePermission.Default,
-                                                                                       _state.Data.Ai.SetModel
+                                                                                       _state.Data.Ai.SetOllamaModel
                                                                                       ),
                                                                                   new CliNodeString(
                                                                                        "Prompt",
-                                                                                       _state.Data.Ai.GetLocalPrompt,
+                                                                                       _state.Data.Ai.GetOllamaPrompt,
                                                                                        CliNodePermission.Default,
-                                                                                       _state.Data.Ai.SetLocalPrompt
+                                                                                       _state.Data.Ai.SetOllamaPrompt
                                                                                       ),
                                                                               ]
                                                                              ),
                                                    new CliNodeStaticDirectory(
-                                                                              "HF Endpoint",
+                                                                              "HuggingFace",
                                                                               _state,
                                                                               true,
                                                                               [
@@ -447,11 +474,18 @@ public class CliNodeSystem {
                                                                                        _state.Data.Ai.SetHfPrompt
                                                                                       ),
                                                                                   new CliNodeEnum(
-                                                                                       "Local AI fallback",
-                                                                                       _state.Data.Ai.GetLocalAiFallbackAsInt,
+                                                                                       "Fallback State",
+                                                                                       _state.Data.Ai.GetHfFallbackStateAsInt,
                                                                                        typeof(State),
                                                                                        CliNodePermission.Default,
-                                                                                       _state.Data.Ai.LocalAiFallbackNext
+                                                                                       _state.Data.Ai.HfFallbackStateNext
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Fallback Ai",
+                                                                                       _state.Data.Ai.GetHfFallbackAiAsInt,
+                                                                                       typeof(AiKind),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.HfFallbackAiNext
                                                                                       ),
                                                                                   new CliNodeStaticDirectory(
                                                                                        "Secret",
@@ -468,6 +502,104 @@ public class CliNodeSystem {
                                                                                        ),
                                                                               ]
                                                                              ),
+                                                   new CliNodeStaticDirectory(
+                                                                              "Vertex AI",
+                                                                              _state,
+                                                                              true,
+                                                                              [
+                                                                                  new CliNodeString(
+                                                                                       "Model",
+                                                                                       _state.Data.Ai.GetVertexModel,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetVertexModel
+                                                                                      ),
+                                                                                  new CliNodeString(
+                                                                                       "Project Id",
+                                                                                       _state.Data.Ai.GetGoogleProjectId,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetGoogleProjectId
+                                                                                      ),
+                                                                                  new CliNodeString(
+                                                                                       "Prompt",
+                                                                                       _state.Data.Ai.GetVertexPrompt,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetVertexPrompt
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Fallback State",
+                                                                                       _state.Data.Ai.GetVertexFallbackStateAsInt,
+                                                                                       typeof(State),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.VertexFallbackStateNext
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Fallback Ai",
+                                                                                       _state.Data.Ai.GetVertexFallbackAiAsInt,
+                                                                                       typeof(AiKind),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.VertexFallbackAiNext
+                                                                                      ),
+                                                                                  new CliNodeStaticDirectory(
+                                                                                       "Secret",
+                                                                                       _state,
+                                                                                       true,
+                                                                                       [
+                                                                                           new CliNodeString(
+                                                                                                "Api Token",
+                                                                                                _state.Data.Ai.GetVertexToken,
+                                                                                                CliNodePermission.Default,
+                                                                                                _state.Data.Ai.SetVertexToken
+                                                                                               ),
+                                                                                           ]
+                                                                                       ),
+                                                                              ]
+                                                                             ),
+                                                                                                      new CliNodeStaticDirectory(
+                                                                              "DeepSeek",
+                                                                              _state,
+                                                                              true,
+                                                                              [
+                                                                                  new CliNodeString(
+                                                                                       "Model",
+                                                                                       _state.Data.Ai.GetDeepSeekModel,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetDeepSeekModel
+                                                                                      ),
+                                                                                  new CliNodeString(
+                                                                                       "Prompt",
+                                                                                       _state.Data.Ai.GetDeepSeekPrompt,
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.SetDeepSeekPrompt
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Fallback State",
+                                                                                       _state.Data.Ai.GetDeepSeekFallbackStateAsInt,
+                                                                                       typeof(State),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.DeepSeekFallbackStateNext
+                                                                                      ),
+                                                                                  new CliNodeEnum(
+                                                                                       "Fallback Ai",
+                                                                                       _state.Data.Ai.GetDeepSeekFallbackAiAsInt,
+                                                                                       typeof(AiKind),
+                                                                                       CliNodePermission.Default,
+                                                                                       _state.Data.Ai.DeepSeekFallbackAiNext
+                                                                                      ),
+                                                                                  new CliNodeStaticDirectory(
+                                                                                       "Secret",
+                                                                                       _state,
+                                                                                       true,
+                                                                                       [
+                                                                                           new CliNodeString(
+                                                                                                "Api Token",
+                                                                                                _state.Data.Ai.GetDeepSeekToken,
+                                                                                                CliNodePermission.Default,
+                                                                                                _state.Data.Ai.SetDeepSeekToken
+                                                                                               ),
+                                                                                           ]
+                                                                                       ),
+                                                                              ]
+                                                                             ),
                                                    new CliNodeEnum(
                                                                    "Service State",
                                                                    _state.Data.Ai.GetServiceStateAsInt,
@@ -477,6 +609,59 @@ public class CliNodeSystem {
                                                                   ),
                                                ]
                                                );
+
+        var translatorDir = new CliNodeStaticDirectory(
+                                                       ServiceName.Translator,
+                                                       _state,
+                                                       true,
+                                                       [
+                                                           new CliNodeStaticDirectory(
+                                                                                      "Google Translator",
+                                                                                      _state,
+                                                                                      true,
+                                                                                      [
+                                                                                          new CliNodeString(
+                                                                                               "Project Id",
+                                                                                               _state.Data.Translator.GetProjectId,
+                                                                                               CliNodePermission.Default,
+                                                                                               _state.Data.Translator.SetProjectId
+                                                                                               ),
+                                                                                          new CliNodeString(
+                                                                                               "Location",
+                                                                                               _state.Data.Translator.GetLocation,
+                                                                                               CliNodePermission.Default,
+                                                                                               _state.Data.Translator.SetLocation
+                                                                                              ),
+                                                                                          new CliNodeStaticDirectory(
+                                                                                               "Secret",
+                                                                                               _state,
+                                                                                               true,
+                                                                                               [
+                                                                                                   new CliNodeString(
+                                                                                                        "Api Token",
+                                                                                                        _state.Data.Translator.GetToken,
+                                                                                                        CliNodePermission.Default,
+                                                                                                        _state.Data.Translator.SetToken
+                                                                                                        ),
+                                                                                               ]
+                                                                                               ),
+                                                                                      ]
+                                                                                      ),
+                                                           new CliNodeString(
+                                                                             "TargetLanguage",
+                                                                             _state.Data.Translator.GetTargetLanguage,
+                                                                             CliNodePermission.Default,
+                                                                             _state.Data.Translator.SetTargetLanguage
+                                                                             ), 
+                                                           new CliNodeEnum(
+                                                                           "Service State",
+                                                                           _state.Data.Translator.GetServiceStateAsInt,
+                                                                           typeof(State),
+                                                                           CliNodePermission.Default,
+                                                                           _state.Data.Translator.ServiceStateNext
+                                                                           ),
+                                                       ]
+                                                       );
         
         var presetsDir = new CliNodeStaticDirectory(
                                                     "Presets",
@@ -512,6 +697,7 @@ public class CliNodeSystem {
                                                       randomMsgsDir,
                                                       textGeneratorDir,
                                                       aiDir,
+                                                      translatorDir,
                                                       demonListDir,
                                                       messageFilterDir,
                                                       moderationDir,

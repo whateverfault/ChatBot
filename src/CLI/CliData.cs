@@ -9,6 +9,7 @@ using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.text_generator;
+using ChatBot.Services.translator;
 
 namespace ChatBot.CLI;
 
@@ -25,6 +26,7 @@ public class CliData {
     public PresetsService Presets { get; }
     public DemonListService DemonList { get; }
     public AiService Ai { get; }
+    public TranslatorService Translator { get; }
     
 
     public CliData(
@@ -39,7 +41,8 @@ public class CliData {
         LevelRequestsService levelRequests,
         PresetsService presets,
         DemonListService demonList, 
-        AiService ai) {
+        AiService ai, 
+        TranslatorService translator) {
         Bot = bot;
         MessageRandomizer = messageRandomizer;
         ChatCommands = chatCommands;
@@ -52,5 +55,6 @@ public class CliData {
         Presets = presets;
         DemonList = demonList;
         Ai = ai;
+        Translator = translator;
     }
 }

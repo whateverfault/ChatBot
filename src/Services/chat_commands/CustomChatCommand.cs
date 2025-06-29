@@ -76,6 +76,7 @@ public sealed class CustomChatCommand : ChatCommand {
 
     public void SetOutput(string output) {
         Output = output;
+        chatCommandsService.Options.Save();
     }
     
     private Task CmdAction(ChatCmdArgs chatArgs) {

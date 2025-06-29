@@ -29,6 +29,12 @@ public class ChatCommandsService : Service {
         
             foreach (var cmd in Options.DefaultCmds) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+                if (Options.DefaultCmds
+                        .Any(defaultCmd =>
+                                 defaultCmd.Name == cmd.Name 
+                                 && defaultCmd.Restriction < cmd.Restriction 
+                                 && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))
+                            ) continue;
                 if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
@@ -43,6 +49,7 @@ public class ChatCommandsService : Service {
             
             foreach (var cmd in Options.CustomCmds) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+                if (Options.CustomCmds.Any(defaultCmd => defaultCmd.Name == cmd.Name && defaultCmd.Restriction < cmd.Restriction)) continue;
                 if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
@@ -70,7 +77,7 @@ public class ChatCommandsService : Service {
         var processedArgs = new List<string>();
         foreach (var arg in args) {
             if (string.IsNullOrEmpty(arg)) continue;
-            if (arg.Length is 1 or 2 && !char.IsLetterOrDigit(arg[0])) continue;
+            if (arg.Length is 1 or 2 && (char.IsControl(arg[0]) || string.IsNullOrEmpty(arg)) || arg[0] == 56128 || arg[0] == 56320) continue;
             processedArgs.Add(arg);
         }
         return processedArgs;
@@ -82,6 +89,14 @@ public class ChatCommandsService : Service {
 
     public void VerboseStateNext() {
         Options.SetVerboseState((State)(((int)Options.VerboseState+1)%Enum.GetValues(typeof(State)).Length));
+    }
+
+    public string GetBaseTitle() {
+        return Options.BaseTitle;
+    }
+
+    public void SetBaseTitle(string title) {
+        Options.SetBaseTitle(title);
     }
     
     public void SetCommandIdentifier(char identifier) {
@@ -101,11 +116,6 @@ public class ChatCommandsService : Service {
     public override void Init(Bot bot) {
         _bot = (bot.ChatBot)bot;
 
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
-        }
-
-        Options.SetServices((ModerationService)ServiceManager.GetService(ServiceName.Moderation));
+        base.Init(bot);
     }
-
 }

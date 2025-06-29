@@ -48,7 +48,7 @@ public class ModerationService : Service {
         }
     }
 
-    public async Task WarnUser(ChatMessage message, int patternIndex) {
+    public async Task WarnUser(ChatMessage message, int patternIndex, string? text = null) {
         if (Options.ServiceState == State.Disabled) return;
 
         if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) {
@@ -66,7 +66,12 @@ public class ModerationService : Service {
             return;
         }
         var modAction = Options.ModerationActions[patternIndex];
+        var temp = modAction.ModeratorComment;
+        if (text != null) {
+            modAction.SetComment(text);
+        }
         await modAction.ActivateWarn(client, (ChatBotOptions)_bot.Options, message, Options.WarnedUsers, true);
+        modAction.SetComment(temp);
     }
     
     public void AddModAction(ModAction action) {

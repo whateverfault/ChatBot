@@ -11,6 +11,7 @@ using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.text_generator;
+using ChatBot.Services.translator;
 
 namespace ChatBot.Services.Static;
 
@@ -96,6 +97,13 @@ public static class ServiceManager {
                                       (
                                           new DemonListService(),
                                           new DemonListEvents()
+                                      )
+                                  },
+                                  {
+                                      ServiceName.Translator,
+                                      (
+                                          new TranslatorService(),
+                                          new TranslatorEvents()
                                       )
                                   },
                               };

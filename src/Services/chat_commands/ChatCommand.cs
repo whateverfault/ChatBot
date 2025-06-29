@@ -1,4 +1,5 @@
-﻿using ChatBot.shared.Handlers;
+﻿using ChatBot.Services.Static;
+using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
 namespace ChatBot.Services.chat_commands;
@@ -6,6 +7,8 @@ namespace ChatBot.Services.chat_commands;
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
 
 public abstract class ChatCommand {
+    protected static ChatCommandsService chatCommandsService = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+    
     public abstract string Name { get; protected set; }
     public abstract string Args { get; protected set; }
     public abstract string Description { get; protected set; }
@@ -23,6 +26,7 @@ public abstract class ChatCommand {
 
     public virtual void SetName(string name) {
         Name = name;
+        chatCommandsService.Options.Save();
     }
     
     public virtual string GetArgs() {
@@ -31,6 +35,7 @@ public abstract class ChatCommand {
 
     public virtual void SetArgs(string args) {
         Args = args;
+        chatCommandsService.Options.Save();
     }
     
     public virtual string GetDescription() {
@@ -43,10 +48,12 @@ public abstract class ChatCommand {
 
     public virtual void AddAlias(string alias) {
         Aliases?.Add(alias);
+        chatCommandsService.Options.Save();
     }
     
     public virtual void RemoveAlias(int index) {
         Aliases?.RemoveAt(index);
+        chatCommandsService.Options.Save();
     }
     
     public virtual int GetCooldown() {
@@ -55,10 +62,12 @@ public abstract class ChatCommand {
 
     public virtual void SetCooldown(int cooldown) {
         Cooldown = cooldown;
+        chatCommandsService.Options.Save();
     }
     
     public virtual void SetDescription(string desc) {
         Description = desc;
+        chatCommandsService.Options.Save();
     }
     
     public virtual int GetRestrictionAsInt() {
@@ -67,6 +76,7 @@ public abstract class ChatCommand {
 
     public virtual void RestrictionNext() {
         Restriction = (Restriction)(((int)Restriction+1)%Enum.GetValues(typeof(Restriction)).Length);
+        chatCommandsService.Options.Save();
     }
     
     public virtual int GetStateAsInt() {
@@ -75,5 +85,6 @@ public abstract class ChatCommand {
 
     public virtual void StateNext() {
         State = (State)(((int)State+1)%Enum.GetValues(typeof(State)).Length);
+        chatCommandsService.Options.Save();
     }
 }

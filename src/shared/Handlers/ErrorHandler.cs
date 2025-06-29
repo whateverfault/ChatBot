@@ -24,6 +24,7 @@ public enum ErrorCode {
     SmthWentWrong,
     ClipCreationFailed,
     RequestFailed,
+    NothingFound,
     None,
 }
 
@@ -49,6 +50,7 @@ public class ErrorHandler {
                                                                   "Something Went Wrong.",
                                                                   "Failed to create a clip",
                                                                   "Request Failed.",
+                                                                  "Nothing found.",
                                                               ];
 
 
@@ -71,6 +73,7 @@ public class ErrorHandler {
                                                                 "Что-то пошло не так.",
                                                                 "Не удалось создать клип.",
                                                                 "Запрос не удался.",
+                                                                "Ничего не найдено.",
                                                             ];
 
 
