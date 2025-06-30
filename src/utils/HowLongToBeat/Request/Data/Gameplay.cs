@@ -1,8 +1,8 @@
 ﻿namespace ChatBot.utils.HowLongToBeat.Request.Data;
 
 public class Gameplay {
-    public string Perspective { get; set; }
-    public string Flow { get; set; }
-    public string Genre { get; set; }
-    public string Difficulty { get; set; }
+    public required string Perspective { get; set; }
+    public required string Flow { get; set; }
+    public required string Genre { get; set; }
+    public required string Difficulty { get; set; }
 }

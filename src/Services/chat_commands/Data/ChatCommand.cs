@@ -2,7 +2,7 @@
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.Services.chat_commands;
+namespace ChatBot.Services.chat_commands.Data;
 
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
 

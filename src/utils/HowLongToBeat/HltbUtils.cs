@@ -12,7 +12,7 @@ public static class HltbUtils {
     private static readonly HttpClient _httpClient = new(); 
     
     
-    public static async Task<FetchGameInfoResponse?> FetchGameInfo(GameFilter filter, LoggerService logger) {
+    public static async Task<FetchGameInfoResponse?> FetchGamesByName(GameFilter filter, LoggerService logger) {
         const string url = "https://howlongtobeat.com/api/seek/d4b2e330db04dbf3";
         
         var request = new SearchRequest

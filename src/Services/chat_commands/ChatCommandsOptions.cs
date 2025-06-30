@@ -1,4 +1,5 @@
-﻿using ChatBot.Services.moderation;
+﻿using ChatBot.Services.chat_commands.Data;
+using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
@@ -9,8 +10,6 @@ namespace ChatBot.Services.chat_commands;
 public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
 
 public class ChatCommandsOptions : Options {
-    public static ModerationService ModerationService => (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
-    
     private SaveData? _saveData;
     
     

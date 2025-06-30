@@ -2,12 +2,14 @@
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
+using ChatBot.Services.game_requests;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
+using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
 using ChatBot.Services.translator;
 
@@ -27,34 +29,23 @@ public class CliData {
     public DemonListService DemonList { get; }
     public AiService Ai { get; }
     public TranslatorService Translator { get; }
+    public GameRequestsService GameRequests { get; }
     
 
-    public CliData(
-        bot.ChatBot bot,
-        MessageRandomizerService messageRandomizer,
-        ChatCommandsService chatCommands,
-        MessageFilterService messageFilter,
-        ModerationService moderation,
-        LoggerService logger,
-        ChatLogsService chatLogs, 
-        TextGeneratorService textGenerator,
-        LevelRequestsService levelRequests,
-        PresetsService presets,
-        DemonListService demonList, 
-        AiService ai, 
-        TranslatorService translator) {
+    public CliData(bot.ChatBot bot) {
         Bot = bot;
-        MessageRandomizer = messageRandomizer;
-        ChatCommands = chatCommands;
-        MessageFilter = messageFilter;
-        Moderation = moderation;
-        Logger = logger;
-        ChatLogs = chatLogs;
-        TextGenerator = textGenerator;
-        LevelRequests = levelRequests;
-        Presets = presets;
-        DemonList = demonList;
-        Ai = ai;
-        Translator = translator;
+        MessageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
+        ChatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+        MessageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        Moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
+        Logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        ChatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        TextGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
+        LevelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
+        Presets = (PresetsService)ServiceManager.GetService(ServiceName.Presets);
+        DemonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList); 
+        Ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
+        Translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
+        GameRequests = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
     }
 }

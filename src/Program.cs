@@ -4,6 +4,7 @@ using ChatBot.Services.ai;
 using ChatBot.Services.chat_commands;
 using ChatBot.Services.chat_logs;
 using ChatBot.Services.demon_list;
+using ChatBot.Services.game_requests;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_filter;
@@ -29,8 +30,8 @@ internal static class Program {
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
 
-        if (args.Length > 0) {
-            switch (args[0]) {
+        foreach (var arg in args) {
+            switch (arg) {
                 case "--auto-init": {
                     autoInit = true;
                     break;
@@ -41,25 +42,11 @@ internal static class Program {
                 }
             }
         }
-
+        
         var bot = new bot.ChatBot();
 
         ServiceManager.InitServices(bot, []);
-        var cliData = new CliData(
-                                  bot,
-                                  (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer),
-                                  (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands),
-                                  (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter),
-                                  (ModerationService)ServiceManager.GetService(ServiceName.Moderation),
-                                  (LoggerService)ServiceManager.GetService(ServiceName.Logger),
-                                  (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs),
-                                  (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator),
-                                  (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests),
-                                  (PresetsService)ServiceManager.GetService(ServiceName.Presets),
-                                  (DemonListService)ServiceManager.GetService(ServiceName.DemonList),
-                                  (AiService)ServiceManager.GetService(ServiceName.Ai),
-                                  (TranslatorService)ServiceManager.GetService(ServiceName.Translator)
-                                 );
+        var cliData = new CliData(bot);
         _cli = new Cli(cliData);
         if (autoInit) {
             bot.Options.Load();

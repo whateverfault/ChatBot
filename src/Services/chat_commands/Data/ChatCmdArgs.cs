@@ -1,6 +1,6 @@
 ﻿using TwitchLib.Client.Events;
 
-namespace ChatBot.Services.chat_commands;
+namespace ChatBot.Services.chat_commands.Data;
 
 public class ChatCmdArgs {
     public OnChatCommandReceivedArgs Args { get; }

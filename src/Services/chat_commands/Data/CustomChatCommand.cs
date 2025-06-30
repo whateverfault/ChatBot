@@ -2,7 +2,7 @@
 using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.chat_commands;
+namespace ChatBot.Services.chat_commands.Data;
 
 public sealed class CustomChatCommand : ChatCommand {
     [JsonProperty(PropertyName = "name")]

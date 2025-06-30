@@ -9,16 +9,16 @@ public class FetchGameInfoResponse {
     [JsonProperty("count")]
     public int Count { get; set; }
     [JsonProperty("data")]
-    public List<GameInfo> GameInfo { get; set; }
+    public List<GameInfo> Games { get; set; }
     
 
     [JsonConstructor]
     public FetchGameInfoResponse(
         [JsonProperty("title")] string title,
         [JsonProperty("count")] int count,
-        [JsonProperty("data")] List<GameInfo> gameInfo) {
+        [JsonProperty("data")] List<GameInfo> games) {
         Title = title;
         Count = count;
-        GameInfo = gameInfo;
+        Games = games;
     }
 }

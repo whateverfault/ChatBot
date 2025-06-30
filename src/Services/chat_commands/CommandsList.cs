@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.ai;
+using ChatBot.Services.chat_commands.Data;
 using ChatBot.Services.demon_list;
+using ChatBot.Services.game_requests;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
@@ -333,12 +335,55 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "how-long-to-beat",
-                                                      "<game_name>",
+                                                      "<game_name> [--year release_year]",
                                                       "время, которое уйдет на прохождение игры.",
                                                       HowLongToBeat,
                                                       Restriction.Everyone,
                                                       aliases: ["hltb"]
                                                       ),
+                               new DefaultChatCommand(
+                                                      "games",
+                                                      "[page]",
+                                                      "список заказов игр.",
+                                                      Games,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "add-game",
+                                                      "<game_name> [--year release_year]",
+                                                      "добавить игру в очередь.",
+                                                      AddGame,
+                                                      Restriction.Broadcaster
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "complete",
+                                                      "<game_index>",
+                                                      "удалить игру из очереди.",
+                                                      CompleteGame,
+                                                      Restriction.Broadcaster
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "reset-games",
+                                                      string.Empty,
+                                                      "очистить очередь заказов игр.",
+                                                      ResetGames,
+                                                      Restriction.Broadcaster,
+                                                      aliases: ["nuke-games"]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "add-game-reqs-reward",
+                                                      string.Empty,
+                                                      "добавить награду для заказа игр.",
+                                                      AddGameRequestsReward,
+                                                      Restriction.DevBroad
+                                                      ),
+                               new DefaultChatCommand(
+                                                      "reset-game-reqs-rewards",
+                                                      string.Empty,
+                                                      "очистить список наград для заказа игр.",
+                                                      ResetGameRequestsRewards,
+                                                      Restriction.DevBroad
+                                                     ),
                            ];
     }
     
@@ -561,7 +606,7 @@ public static class CommandsList {
 
         if (chatMessage.CustomRewardId == null) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Используйте эту комманду внутри награды.");
-            logger.Log(LogLevel.Warning, "set-req-reward command must be used within the reward.");
+            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
             return Task.CompletedTask;
         }
         
@@ -1302,10 +1347,10 @@ public static class CommandsList {
         var gameFilter = new GameFilter(
                                         gameName.Trim(),
                                         "",
-                                        new RangeTime { Min = null, Max = null },
-                                        new RangeYear { Min = "", Max = "" }
+                                        new RangeTime(),
+                                        new RangeYear()
                                         );
-        var gameInfoResponse = await HltbUtils.FetchGameInfo(gameFilter, logger);
+        var gameInfoResponse = await HltbUtils.FetchGamesByName(gameFilter, logger);
         if (gameInfoResponse == null) {
             ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
@@ -1314,9 +1359,129 @@ public static class CommandsList {
             return;
         }
 
-        var gameInfo = gameInfoResponse.GameInfo[0];
+        var gameInfo = gameInfoResponse.Games[0];
         var timeInHours = (int)MathF.Round((float)gameInfo.CompMain/3600);
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Чтобы пройти {gameInfo.GameName} потребуется примерно {timeInHours} {Declensioner.Hours(timeInHours)}");
+    }
+
+    private static Task Games(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+
+        var gameRequests = gameRequestService.GetGameRequests();
+
+        if (gameRequests.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
+            return Task.CompletedTask;
+        }
+        
+        var reply = new List<string>();
+        for (var i = 0; i < gameRequests.Count; i++) {
+            var gameRequest = gameRequests[i];
+            var lenghtStr = $"~{gameRequest.GameLenght} {Declensioner.Hours(gameRequest.GameLenght)}";
+            var separator = "/";
+            
+            if (gameRequest.GameLenght <= 0) {
+                lenghtStr = $"<1 часа";
+            }
+            if (i >= gameRequests.Count-1) {
+                separator = string.Empty;
+            }
+            
+            reply.Add($"{i+1}. {gameRequest.GameName} ({gameRequest.ReleaseYear}) {lenghtStr}. {separator}");
+        }
+
+        SendPagedReply(reply, cmdArgs);
+        return Task.CompletedTask;
+    }
+
+    private static Task AddGameRequestsReward(ChatCmdArgs cmdArgs) {
+        var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (chatMessage.CustomRewardId == null) {
+            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Используйте эту комманду внутри награды.");
+            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
+            return Task.CompletedTask;
+        }
+        
+        gameRequest.Options.AddReward(chatMessage.CustomRewardId);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Награда добавлена в список.");
+        logger.Log(LogLevel.Info, $"Successfully added new Reward Id ({chatMessage.CustomRewardId}).");
+        return Task.CompletedTask;
+    }
+
+    private static Task ResetGameRequestsRewards(ChatCmdArgs cmdArgs) {
+        var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+        
+        gameRequest.Options.ResetRewards();
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Список наград очищен.");
+        logger.Log(LogLevel.Info, "Successfully cleared Reward's list");
+        return Task.CompletedTask;
+    }
+    
+    private static async Task AddGame(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        await gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
+    }
+    
+    private static Task CompleteGame(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        if (!int.TryParse(cmdArgs.Parsed[0], out var indexToRemove)) {
+            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        var gameRequests = gameRequestService.GetGameRequests();
+        
+        if (indexToRemove <= 0 || indexToRemove > gameRequests.Count) {
+            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        indexToRemove--;
+        var gameName = gameRequests[indexToRemove].GameName;
+        
+        gameRequestService.Options.RemoveRequest(indexToRemove);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} удалена из очереди.");
+        logger.Log(LogLevel.Info, $"Successfully removed {gameName} out of the queue.");
+        return Task.CompletedTask;
+    }
+    
+    private static Task ResetGames(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        gameRequestService.Options.ResetRequests();
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Список заказов очищен.");
+        logger.Log(LogLevel.Info, "Successfully cleared Game Request's list");
+        return Task.CompletedTask;
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {

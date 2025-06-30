@@ -10,26 +10,26 @@ public class GameInfo {
     [JsonProperty("game_alias")]
     public string GameAlias { get; set; }
     [JsonProperty("comp_main")]
-    public long CompMain { get; set; }
+    public int CompMain { get; set; }
     [JsonProperty("comp_plus")]
-    public long CompPlus { get; set; }
+    public int CompPlus { get; set; }
     [JsonProperty("review_score")]
     public int ReviewScore { get; set; }
     [JsonProperty("profile_platform")]
     public string Platforms { get; set; }
     [JsonProperty("release_world")]
-    public int ReleaseDate { get; set; }
+    public int ReleaseYear { get; set; }
     
     
     public GameInfo(
-        int gameId,
-        string gameName,
-        string gameAlias,
-        long compMain,
-        long compPlus,
-        int reviewScore,
-        string platforms,
-        int releaseDate) {
+        [JsonProperty("game_id")] int gameId,
+        [JsonProperty("game_name")] string gameName,
+        [JsonProperty("game_alias")] string gameAlias,
+        [JsonProperty("comp_main")] int compMain,
+        [JsonProperty("comp_plus")] int compPlus,
+        [JsonProperty("review_score")] int reviewScore,
+        [JsonProperty("profile_platform")] string platforms,
+        [JsonProperty("release_world")] int releaseYear) {
         GameId = gameId;
         GameName = gameName;
         GameAlias = gameAlias;
@@ -37,6 +37,6 @@ public class GameInfo {
         CompPlus = compPlus;
         ReviewScore = reviewScore;
         Platforms = platforms;
-        ReleaseDate = releaseDate;
+        ReleaseYear = releaseYear;
     }
 }
