@@ -11,8 +11,8 @@ public class LoggerOptions : Options {
     protected override string Name => "logger";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
-    public List<Log> Logs => _saveData!.Logs;
     public List<Log> TwitchLogs { get; } = [];
+    public List<Log> Logs => _saveData!.Logs;
 
 
     public override bool TryLoad() {
@@ -29,7 +29,6 @@ public class LoggerOptions : Options {
     }
 
     public override void Save() {
-        if (new FileInfo(OptionsPath).IsLocked()) return;
         JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
     }
 

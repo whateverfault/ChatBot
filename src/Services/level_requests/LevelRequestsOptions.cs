@@ -12,6 +12,8 @@ public class LevelRequestsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
     public int PatternIndex => _saveData!.PatternIndex;
+    public string RewardId => _saveData!.RewardId;
+    public ReqState ReqState => _saveData!.ReqState;
     public Restriction Restriction => _saveData!.Restriction;
     public ModerationService ModerationService { get; set; } = null!;
 
@@ -60,6 +62,16 @@ public class LevelRequestsOptions : Options {
 
     public void SetRestriction(Restriction restriction) {
         _saveData!.Restriction = restriction;
+        Save();
+    }
+
+    public void SetReqState(ReqState state) {
+        _saveData!.ReqState = state;
+        Save();
+    }
+
+    public void SetRewardId(string rewardId) {
+        _saveData!.RewardId = rewardId;
         Save();
     }
 }

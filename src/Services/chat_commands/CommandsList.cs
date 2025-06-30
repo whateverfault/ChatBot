@@ -1,17 +1,22 @@
 ﻿using System.Text;
 using ChatBot.bot.interfaces;
 using ChatBot.Services.ai;
+using ChatBot.Services.chat_commands.Data;
 using ChatBot.Services.demon_list;
+using ChatBot.Services.game_requests;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.Static;
 using ChatBot.Services.text_generator;
+using ChatBot.Services.translator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 using ChatBot.utils.GD.AREDL;
-using ChatBot.utils.Helix;
+using ChatBot.utils.HowLongToBeat;
+using ChatBot.utils.HowLongToBeat.Request.Data;
+using ChatBot.utils.Twitch.Helix;
 using MessageState = ChatBot.Services.message_randomizer.MessageState;
 
 namespace ChatBot.Services.chat_commands;
@@ -74,11 +79,11 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      "delay",
-                                                      string.Empty,
-                                                      "узнать задержку",
-                                                      Delay,
-                                                      Restriction.Vip
+                                                      "req",
+                                                      string.Empty, 
+                                                      "узнать включены ли реквесты",
+                                                      ReqEveryone,
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       string.Empty,
@@ -146,9 +151,16 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       "req",
                                                       "[on/off]",
-                                                      "включить/выключить/узнать включены ли реквесты",
+                                                      "включить/выключить реквесты",
                                                       Req,
                                                       Restriction.DevMod
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "set-req-reward",
+                                                      string.Empty, 
+                                                      "установить награду для реквестов.",
+                                                      SetReqReward,
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       "verbose",
@@ -193,25 +205,53 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      "translate",
+                                                      "<text> [-- target_language]",
+                                                      "перевести текст.",
+                                                      Translate,
+                                                      Restriction.Vip
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "detect-lang",
+                                                      "<text>",
+                                                      "узнать язык, на котором написан текст.",
+                                                      DetectLang,
+                                                      Restriction.Vip
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "lang",
+                                                      "[lang_code]",
+                                                      "установить дефолтный язык переводчика.",
+                                                      Lang,
+                                                      Restriction.Vip
+                                                     ),
+                               new DefaultChatCommand(
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
                                                       "top",
                                                       "<position>",
                                                       "уровень стоящий на данной позиции по AREDL.",
                                                       Top,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "place",
                                                       "<level_name> [by creator_name] [--page page_count]",
                                                       "позиция уровня по AREDL.",
                                                       Place,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "roulette",
                                                       "<from> <to>",
                                                       "зарандомить экстрим.",
                                                       Roulette,
-                                                      Restriction.Vip,
+                                                      Restriction.Everyone,
                                                       aliases: ["rulet"]
                                                      ),
                                new DefaultChatCommand(
@@ -226,14 +266,14 @@ public static class CommandsList {
                                                       "[username]",
                                                       "хардест пользователя по AREDL.",
                                                       Hardest,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "easiest",
                                                       "[username]",
                                                       "легчайший экстрим пользователя по AREDL.",
                                                       Easiest,
-                                                      Restriction.Vip,
+                                                      Restriction.Everyone,
                                                       aliases: ["lowest"]
                                                      ),
                                new DefaultChatCommand(
@@ -248,14 +288,14 @@ public static class CommandsList {
                                                       "<position>",
                                                       "уровень стоящий на данной позиции по Pemon List.",
                                                       Ptop,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "pplace",
                                                       "<level> [by creator_name] [--page page_count]",
                                                       "позиция уровня по Pemon List.",
                                                       Pplace,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       string.Empty,
@@ -269,22 +309,80 @@ public static class CommandsList {
                                                       "<clan_tag>",
                                                       "Информация о клане.",
                                                       Clan,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "clan-hardest",
                                                       "<clan_tag>",
                                                       "хардест клана.",
                                                       ClanHardest,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       "clan-roulette",
                                                       "<clan_tag>",
                                                       "случайный пройденный кланом уровень.",
                                                       ClanRoulette,
-                                                      Restriction.Vip,
+                                                      Restriction.Everyone,
                                                       aliases: ["clan-rulet"]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "how-long-to-beat",
+                                                      "<game_name> [--year release_year]",
+                                                      "время, которое уйдет на прохождение игры.",
+                                                      HowLongToBeat,
+                                                      Restriction.Everyone,
+                                                      aliases: ["hltb"]
+                                                      ),
+                               new DefaultChatCommand(
+                                                      "games",
+                                                      "[page]",
+                                                      "список заказов игр.",
+                                                      Games,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "add-game",
+                                                      "<game_name> [--year release_year]",
+                                                      "добавить игру в очередь.",
+                                                      AddGame,
+                                                      Restriction.Broadcaster
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "complete",
+                                                      "<game_index>",
+                                                      "удалить игру из очереди.",
+                                                      CompleteGame,
+                                                      Restriction.Broadcaster
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "reset-games",
+                                                      string.Empty,
+                                                      "очистить очередь заказов игр.",
+                                                      ResetGames,
+                                                      Restriction.Broadcaster,
+                                                      aliases: ["nuke-games"]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "add-game-reqs-reward",
+                                                      string.Empty,
+                                                      "добавить награду для заказа игр.",
+                                                      AddGameRequestsReward,
+                                                      Restriction.DevBroad
+                                                      ),
+                               new DefaultChatCommand(
+                                                      "reset-game-reqs-rewards",
+                                                      string.Empty,
+                                                      "очистить список наград для заказа игр.",
+                                                      ResetGameRequestsRewards,
+                                                      Restriction.DevBroad
                                                      ),
                            ];
     }
@@ -388,13 +486,40 @@ public static class CommandsList {
             prompt.Append($"{word} ");
         }
 
-        var response = await ai.GenerateText(prompt.ToString().Trim());
+        var response = await ai.GetResponse(prompt.ToString().Trim());
         
         if (string.IsNullOrEmpty(response)) {
             ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, response);
+
+        const int chunkSize = 450;
+        var remainingLenght = response.Length;
+        var position = 0;
+        var iteration = 0;
+        var messages = new List<string>();
+        var sb = new StringBuilder();
+        
+        do {
+            sb.Clear();
+            if (iteration++ > 0) sb.Append("...");
+            var start = position;
+            var end = Math.Clamp(position+chunkSize, 0, response.Length);
+            sb.Append(response[start..end]);
+            
+            remainingLenght -= sb.Length;
+            position += sb.Length;
+            
+            if (remainingLenght > 0) {
+                sb.Append("...");
+            }
+            
+            messages.Add(sb.ToString());
+        } while (remainingLenght > 0);
+
+        foreach (var message in messages) {
+            client?.SendReply(chatMessage.Channel, chatMessage.Id, message);
+        }
     }
 
     private static Task Verbose(ChatCmdArgs cmdArgs) {
@@ -436,43 +561,61 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
 
+    private static Task ReqEveryone(ChatCmdArgs cmdArgs) {
+        var levelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
+        var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        
+        var reqState = levelRequests.GetReqState();
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {levelRequests.GetReqStateStr(reqState)}"); 
+        return Task.CompletedTask;
+    }
+    
     private static Task Req(ChatCmdArgs cmdArgs) {
         var levelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
 
-        var reqsStateStr = 
-            levelRequests.GetServiceState() == State.Enabled?
-                "включены" :
-                "отключены";
-        var reqsState = levelRequests.GetServiceState();
-        var comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
+        if (levelRequests.GetServiceState() == State.Disabled) return Task.CompletedTask;
         
-        if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || cmdArgs.Parsed.Count < 1) {
-            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {reqsStateStr} {comment}");
-            return Task.CompletedTask;
+        var reqState = levelRequests.GetReqState();
+        switch (cmdArgs.Parsed.Count) {
+            case < 1:
+                client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {levelRequests.GetReqStateStr(reqState)}");
+                return Task.CompletedTask;
+            case > 0:
+                reqState = cmdArgs.Parsed[0] switch {
+                               "off"    => ReqState.Off,
+                               "points" => ReqState.Points,
+                               "on"     => ReqState.On,
+                               _        => reqState
+                           };
+                break;
         }
 
-        if (cmdArgs.Parsed.Count > 0) {
-            if (cmdArgs.Parsed[0] == "on") {
-                reqsState = State.Enabled;
-            }
-            if (cmdArgs.Parsed[0] == "off") {
-                reqsState = State.Disabled;
-            }
-        }
-
-        levelRequests.Options.SetState(reqsState);
-
-        reqsStateStr = 
-            levelRequests.GetServiceState() == State.Enabled? 
-                "включены" : 
-                "отключены";
-        comment = reqsState == State.Enabled ? "PIZDEC" : "RIZZ";
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {reqsStateStr} {comment}");
+        levelRequests.Options.SetReqState(reqState);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {levelRequests.GetReqStateStr(reqState)}");
         return Task.CompletedTask;
     }
 
+    private static Task SetReqReward(ChatCmdArgs cmdArgs) {
+        var levelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+
+        if (chatMessage.CustomRewardId == null) {
+            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Используйте эту комманду внутри награды.");
+            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
+            return Task.CompletedTask;
+        }
+        
+        levelRequests.SetRewardId(chatMessage.CustomRewardId);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Награда для реквестов успешно установлена.");
+        logger.Log(LogLevel.Info, $"Successfully assigned new Reward Id ({chatMessage.CustomRewardId}).");
+        return Task.CompletedTask;
+    }
+    
     private static Task Potato(ChatCmdArgs chatCmdArgs) {
         var textGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
         
@@ -513,6 +656,7 @@ public static class CommandsList {
     }
 
     private static async Task Title(ChatCmdArgs cmdArgs) {
+        var baseTitle = ((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).GetBaseTitle();
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
@@ -521,20 +665,20 @@ public static class CommandsList {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
             return;
         }
-                    
-        var titleSb = new StringBuilder();
 
+        var titleSb = new StringBuilder();
+        
+        titleSb.Append($"{baseTitle} ");
         foreach (var arg in cmdArgs.Parsed) {
             titleSb.Append($"{arg} ");
         }
-                    
+
         var result = await HelixUtils.UpdateChannelInfo(cmdArgs.Bot.Options, titleSb.ToString(), channelInfo!.GameId);
         if (!result) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить название");
             return;
         }
-        channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима изменено на {channelInfo!.Title}");
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима изменено на {titleSb}");
     }
     
     private static async Task Followage(ChatCmdArgs cmdArgs) {
@@ -612,14 +756,6 @@ public static class CommandsList {
         channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
     }
-
-    private static async Task Delay(ChatCmdArgs cmdArgs) {
-        var client = cmdArgs.Bot.GetClient();
-        var chatMessage = cmdArgs.Args.Command.ChatMessage;
-        var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
-                    
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая задержка - {channelInfo!.Delay} {Declensioner.Secs(channelInfo.Delay)}");
-    }
     
     private static Task Guess(ChatCmdArgs cmdArgs) {
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
@@ -690,6 +826,90 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
 
+    private static async Task Translate(ChatCmdArgs cmdArgs) {
+        var translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (translator.GetServiceState() == State.Disabled) {
+            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+        
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var textSb = new StringBuilder();
+        foreach (var arg in cmdArgs.Parsed) {
+            if (arg is null or "--") break;
+            textSb.Append($"{arg} ");
+        }
+
+        var targetLang = string.Empty;
+        var index = cmdArgs.Parsed.IndexOf("--");
+        if (index >= 0 && index < cmdArgs.Parsed.Count-1) {
+            targetLang = cmdArgs.Parsed[index+1];
+        }
+        
+        var translated = await translator.Translate(textSb.ToString(), targetLang);
+        if (translated == null) {
+            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, translated);
+    }
+
+    private static async Task DetectLang(ChatCmdArgs cmdArgs) {
+        var translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (translator.GetServiceState() == State.Disabled) {
+            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+        
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var textSb = new StringBuilder();
+        foreach (var arg in cmdArgs.Parsed) {
+            if (arg is null or "--") break;
+            textSb.Append($"{arg} ");
+        }
+        
+        var lang = await translator.DetectLanguage(textSb.ToString());
+        if (lang == null) {
+            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Самый близкий язык: {lang.LanguageCode} с вероятностью {(int)(lang.Confidence*100)}%");
+    }
+
+    private static Task Lang(ChatCmdArgs cmdArgs) {
+        var translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (translator.GetServiceState() == State.Disabled) {
+            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return Task.CompletedTask;
+        }
+        
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return Task.CompletedTask;
+        }
+        
+        translator.SetTargetLanguage(cmdArgs.Parsed[0]);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Язык установлен на '{cmdArgs.Parsed[0]}'");
+        return Task.CompletedTask;
+    }
+    
     private static Task Carrot(ChatCmdArgs cmdArgs) {
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
         var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
@@ -765,7 +985,7 @@ public static class CommandsList {
 
         var levelsInfo =  await demonList.GetLevelsInfoByName(levelName.ToString().Trim());
 
-        if (levelsInfo == null) {
+        if (levelsInfo == null || levelsInfo.Count == 0) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, "Уровень не найден.");
             return;
         }
@@ -1094,7 +1314,7 @@ public static class CommandsList {
             ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
-                    
+
         var clanInfo = await demonList.GetClanInfo(cmdArgs.Parsed[0]);
         if (clanInfo == null) {
             client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Клана не существует.");
@@ -1106,6 +1326,162 @@ public static class CommandsList {
             return;
         }
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
+    }
+
+    private static async Task HowLongToBeat(ChatCmdArgs cmdArgs) {
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+        
+        if (cmdArgs.Parsed.Count < 1) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var argSb = new StringBuilder();
+        foreach (var arg in cmdArgs.Parsed) {
+            argSb.Append($"{arg} ");
+        }
+        var gameName = argSb.ToString();
+        
+        var gameFilter = new GameFilter(
+                                        gameName.Trim(),
+                                        "",
+                                        new RangeTime(),
+                                        new RangeYear()
+                                        );
+        var gameInfoResponse = await HltbUtils.FetchGamesByName(gameFilter, logger);
+        if (gameInfoResponse == null) {
+            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        } if (gameInfoResponse.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.NothingFound, chatMessage, client);
+            return;
+        }
+
+        var gameInfo = gameInfoResponse.Games[0];
+        var timeInHours = (int)MathF.Round((float)gameInfo.CompMain/3600);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Чтобы пройти {gameInfo.GameName} потребуется примерно {timeInHours} {Declensioner.Hours(timeInHours)}");
+    }
+
+    private static Task Games(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+
+        var gameRequests = gameRequestService.GetGameRequests();
+
+        if (gameRequests.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
+            return Task.CompletedTask;
+        }
+        
+        var reply = new List<string>();
+        for (var i = 0; i < gameRequests.Count; i++) {
+            var gameRequest = gameRequests[i];
+            var lenghtStr = $"~{gameRequest.GameLenght} {Declensioner.Hours(gameRequest.GameLenght)}";
+            var separator = "/";
+            
+            if (gameRequest.GameLenght <= 0) {
+                lenghtStr = $"<1 часа";
+            }
+            if (i >= gameRequests.Count-1) {
+                separator = string.Empty;
+            }
+            
+            reply.Add($"{i+1}. {gameRequest.GameName} ({gameRequest.ReleaseYear}) {lenghtStr}. {separator}");
+        }
+
+        SendPagedReply(reply, cmdArgs);
+        return Task.CompletedTask;
+    }
+
+    private static Task AddGameRequestsReward(ChatCmdArgs cmdArgs) {
+        var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (chatMessage.CustomRewardId == null) {
+            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Используйте эту комманду внутри награды.");
+            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
+            return Task.CompletedTask;
+        }
+        
+        gameRequest.Options.AddReward(chatMessage.CustomRewardId);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Награда добавлена в список.");
+        logger.Log(LogLevel.Info, $"Successfully added new Reward Id ({chatMessage.CustomRewardId}).");
+        return Task.CompletedTask;
+    }
+
+    private static Task ResetGameRequestsRewards(ChatCmdArgs cmdArgs) {
+        var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+        
+        gameRequest.Options.ResetRewards();
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Список наград очищен.");
+        logger.Log(LogLevel.Info, "Successfully cleared Reward's list");
+        return Task.CompletedTask;
+    }
+    
+    private static async Task AddGame(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        await gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
+    }
+    
+    private static Task CompleteGame(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        if (!int.TryParse(cmdArgs.Parsed[0], out var indexToRemove)) {
+            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        var gameRequests = gameRequestService.GetGameRequests();
+        
+        if (indexToRemove <= 0 || indexToRemove > gameRequests.Count) {
+            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return Task.CompletedTask;
+        }
+
+        indexToRemove--;
+        var gameName = gameRequests[indexToRemove].GameName;
+        
+        gameRequestService.Options.RemoveRequest(indexToRemove);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} удалена из очереди.");
+        logger.Log(LogLevel.Info, $"Successfully removed {gameName} out of the queue.");
+        return Task.CompletedTask;
+    }
+    
+    private static Task ResetGames(ChatCmdArgs cmdArgs) {
+        var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        gameRequestService.Options.ResetRequests();
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Список заказов очищен.");
+        logger.Log(LogLevel.Info, "Successfully cleared Game Request's list");
+        return Task.CompletedTask;
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {

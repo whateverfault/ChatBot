@@ -2,7 +2,7 @@
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.utils.Helix;
+using ChatBot.utils.Twitch.Helix;
 using Newtonsoft.Json;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Interfaces;
@@ -141,7 +141,7 @@ public class ModAction {
         }
         
         user.GiveWarn();
-        client?.SendMessage(message.Channel, $"@{message.Username} {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
+        client?.SendMessage(message.Channel, $"@{message.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
             await HelixUtils.DeleteMessageHelix(options, message);
             return;

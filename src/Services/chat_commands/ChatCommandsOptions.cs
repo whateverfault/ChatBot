@@ -1,23 +1,27 @@
-﻿using ChatBot.Services.moderation;
+﻿using ChatBot.Services.chat_commands.Data;
+using ChatBot.Services.moderation;
+using ChatBot.Services.Static;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
 namespace ChatBot.Services.chat_commands;
+public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
 
 public class ChatCommandsOptions : Options {
-    public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
     private SaveData? _saveData;
-
+    
+    
     protected override string Name => "chat_commands";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public State VerboseState => _saveData!.VerboseState;
     public List<CustomChatCommand> CustomCmds => _saveData!.CustomCmds;
     public List<DefaultChatCommand> DefaultCmds => _saveData!.DefaultCmds;
-    public ModerationService ModerationService { get; private set; } = null!;
+    public string BaseTitle => _saveData!.BaseTitle;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -61,10 +65,6 @@ public class ChatCommandsOptions : Options {
         _saveData!.CommandIdentifier = identifier;
         Save();
     }
-    
-    public void SetServices(ModerationService moderation) {
-        ModerationService = moderation;
-    }
 
     public State GetVerboseState() {
         return VerboseState;
@@ -75,6 +75,11 @@ public class ChatCommandsOptions : Options {
         Save();
     }
 
+    public void SetBaseTitle(string title) {
+        _saveData!.BaseTitle = title;
+        Save();
+    }
+    
     public void AddChatCmd(ChatCommand chatCmd) {
         if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
         
