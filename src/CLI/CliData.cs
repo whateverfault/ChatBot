@@ -30,7 +30,7 @@ public class CliData {
     public AiService Ai { get; }
     public TranslatorService Translator { get; }
     public GameRequestsService GameRequests { get; }
-    
+
 
     public CliData(bot.ChatBot bot) {
         Bot = bot;
@@ -43,7 +43,7 @@ public class CliData {
         TextGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
         LevelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
         Presets = (PresetsService)ServiceManager.GetService(ServiceName.Presets);
-        DemonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList); 
+        DemonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
         Ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
         Translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
         GameRequests = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);

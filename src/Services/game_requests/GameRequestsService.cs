@@ -23,18 +23,22 @@ public class GameRequestsService : Service {
 
 
     public async void HandleMessage(object? sender, OnMessageReceivedArgs args) {
-        var chatMessage = args.ChatMessage;
+        try {
+            var chatMessage = args.ChatMessage;
 
-        if (string.IsNullOrEmpty(chatMessage.CustomRewardId) || !Options.GameRequestsRewards.Contains(chatMessage.CustomRewardId)) {
-            return;
-        }
-        if (Options.ServiceState == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
-            return;
-        }
+            if (string.IsNullOrEmpty(chatMessage.CustomRewardId) || !Options.GameRequestsRewards.Contains(chatMessage.CustomRewardId)) {
+                return;
+            }
+            if (Options.ServiceState == State.Disabled) {
+                ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
+                return;
+            }
 
-        var splitted = chatMessage.Message.Split(' ').ToList();
-        await AddGameRequest(splitted, chatMessage);
+            var splitted = chatMessage.Message.Split(' ').ToList();
+            await AddGameRequest(splitted, chatMessage);
+        } catch (Exception e) {
+            _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+        }
     }
 
     public async Task AddGameRequest(List<string> args, ChatMessage chatMessage) {

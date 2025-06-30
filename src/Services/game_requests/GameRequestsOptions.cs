@@ -8,7 +8,7 @@ namespace ChatBot.Services.game_requests;
 
 public class GameRequestsOptions : Options {
     private SaveData? _saveData;
-    
+
     protected override string Name => "game_requests";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
@@ -39,7 +39,7 @@ public class GameRequestsOptions : Options {
     }
 
     public override void SetState(State state) {
-        _saveData = new SaveData();
+        _saveData!.ServiceState = state;
         Save();
     }
 
