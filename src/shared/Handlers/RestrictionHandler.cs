@@ -3,10 +3,10 @@
 namespace ChatBot.shared.Handlers;
 
 public enum Restriction {
-    DevBroad,
-    DevMod,
     DevOnly,
+    DevBroad,
     Broadcaster,
+    DevMod,
     Mod,
     Vip,
     VipOnly,
@@ -16,7 +16,7 @@ public enum Restriction {
 public static class RestrictionHandler {
     public static bool Handle(Restriction restriction, ChatMessage message) {
         return restriction switch {
-                   Restriction.DevBroad         => message.IsBroadcaster || message.UserId == Constants.DevUserId,
+                   Restriction.DevBroad    => message.IsBroadcaster || message.UserId == Constants.DevUserId,
                    Restriction.DevMod      => message.IsBroadcaster || message.IsModerator || message.UserId == Constants.DevUserId,
                    Restriction.DevOnly     => message.UserId == Constants.DevUserId,
                    Restriction.Broadcaster => message.IsBroadcaster,
