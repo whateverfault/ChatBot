@@ -32,8 +32,8 @@ public class ChatCommandsService : Service {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
                 if (Options.DefaultCmds
                         .Any(defaultCmd =>
-                                 defaultCmd.Name == cmd.Name 
-                                 && defaultCmd.Restriction < cmd.Restriction 
+                                 defaultCmd.Name.Equals(cmd.Name)
+                                 && defaultCmd.Restriction < cmd.Restriction
                                  && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))
                             ) continue;
                 if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;

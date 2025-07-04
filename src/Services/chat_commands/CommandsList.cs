@@ -59,6 +59,13 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "title",
+                                                      string.Empty, 
+                                                      "посмотреть название стрима.",
+                                                      TitleEveryone,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "title",
                                                       "[title]",
                                                       "посмотреть/изменить название стрима.",
                                                       Title,
@@ -66,8 +73,15 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "game",
+                                                      string.Empty,
+                                                      "посмотреть категорию стрима.",
+                                                      GameEveryone,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "game",
                                                       "[game]",
-                                                      "посмотреть/изменить категорию стрима.",
+                                                      "изменить категорию стрима.",
                                                       Game,
                                                       Restriction.Vip
                                                      ),
@@ -398,21 +412,53 @@ public static class CommandsList {
         var cmds = new List<string>();
 
         for (var i = 0; i < _chatCmds.Options.DefaultCmds.Count; i++, index++) {
-            if (!RestrictionHandler.Handle(_chatCmds.Options.DefaultCmds[i].Restriction, chatMessage)) continue;
+            var cmd = _chatCmds.Options.DefaultCmds[i];
+            if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+            if (_chatCmds.Options.DefaultCmds
+                      .Any(defaultCmd =>
+                               defaultCmd.Name.Equals(cmd.Name)
+                               && defaultCmd.Restriction < cmd.Restriction
+                               && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))){
+                continue;
+            }
             
-            if (string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Name)) {
+            if (string.IsNullOrEmpty(cmd.Name)) {
                 if (cmds[^1].Equals(Page.pageTerminator)) continue;
                 cmds.Add(Page.pageTerminator);
                 index = 0;
                 continue;
             }
             
-            cmds.Add(string.IsNullOrEmpty(_chatCmds.Options.DefaultCmds[i].Args)?
-                         $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} - {_chatCmds.Options.DefaultCmds[i].Description} " 
-                         : $"{index}. {cmdId}{_chatCmds.Options.DefaultCmds[i].Name} {_chatCmds.Options.DefaultCmds[i].Args} - {_chatCmds.Options.DefaultCmds[i].Description} "
+            cmds.Add(string.IsNullOrEmpty(cmd.Args)?
+                         $"{index}. {cmdId}{cmd.Name} - {cmd.Description} " 
+                         : $"{index}. {cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} "
                      );
         }
 
+        for (var i = 0; i < _chatCmds.Options.CustomCmds.Count; i++, index++) {
+            var cmd = _chatCmds.Options.CustomCmds[i];
+            if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+            if (_chatCmds.Options.CustomCmds
+                      .Any(customCmd =>
+                               customCmd.Name.Equals(cmd.Name)
+                               && customCmd.Restriction < cmd.Restriction
+                               && RestrictionHandler.Handle(customCmd.Restriction, chatMessage))){
+                continue;
+            }
+            
+            if (string.IsNullOrEmpty(cmd.Name)) {
+                if (cmds[^1].Equals(Page.pageTerminator)) continue;
+                cmds.Add(Page.pageTerminator);
+                index = 0;
+                continue;
+            }
+            
+            cmds.Add(string.IsNullOrEmpty(cmd.Args)?
+                         $"{index}. {cmdId}{cmd.Name} - {cmd.Description} " 
+                         : $"{index}. {cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} "
+                    );
+        }
+        
         SendPagedReply(cmds, cmdArgs);
         return Task.CompletedTask;
     }
@@ -581,8 +627,7 @@ public static class CommandsList {
         var reqState = levelRequests.GetReqState();
         switch (cmdArgs.Parsed.Count) {
             case < 1:
-                client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты {levelRequests.GetReqStateStr(reqState)}");
-                return Task.CompletedTask;
+                return ReqEveryone(cmdArgs);
             case > 0:
                 reqState = cmdArgs.Parsed[0] switch {
                                "off"    => ReqState.Off,
@@ -655,17 +700,25 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
 
+    private static async Task TitleEveryone(ChatCmdArgs cmdArgs) {
+        var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
+    }
+    
     private static async Task Title(ChatCmdArgs cmdArgs) {
         var baseTitle = ((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).GetBaseTitle();
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
-        var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
                     
-        if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || cmdArgs.Parsed.Count < 1) {
-            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
+        if (cmdArgs.Parsed.Count < 1) {
+            await TitleEveryone(cmdArgs);
             return;
         }
 
+        var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
         var titleSb = new StringBuilder();
         
         titleSb.Append($"{baseTitle} ");
@@ -727,16 +780,24 @@ public static class CommandsList {
         client?.SendReply(chatMessage.Channel, chatMessage.Id, message);
     }
 
-    private static async Task Game(ChatCmdArgs cmdArgs) {
+    private static async Task GameEveryone(ChatCmdArgs cmdArgs) {
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
-                    
-        if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage)) {
-            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
+    }
+    
+    private static async Task Game(ChatCmdArgs cmdArgs) {
+        var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+
+        if (cmdArgs.Parsed.Count < 1) {
+            await GameEveryone(cmdArgs);
             return;
         }
-
+        
+        var channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
         var gameSb = new StringBuilder();
 
         for (var i = 0; i < cmdArgs.Parsed.Count; i++) {
