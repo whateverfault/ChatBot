@@ -28,12 +28,12 @@ public static class CommandsList {
     static CommandsList() {
         DefaultsCommands = [
                                new DefaultChatCommand(
-                                                      "cmds",
-                                                      "[page]",
-                                                      "список комманд.",
-                                                      Cmds,
-                                                      Restriction.Everyone
-                                                     ),
+                                                   "cmds",
+                                                   "[page]",
+                                                   "список комманд.",
+                                                   Cmds,
+                                                   Restriction.Everyone
+                                                  ),
                                new DefaultChatCommand(
                                                       "help",
                                                       string.Empty,
@@ -81,7 +81,7 @@ public static class CommandsList {
                                                       "[game]",
                                                       "изменить категорию стрима.",
                                                       Game,
-                                                      Restriction.Vip
+                                                      Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
                                                       "clip",
@@ -388,6 +388,20 @@ public static class CommandsList {
                                                       ResetGameRequestsRewards,
                                                       Restriction.DevBroad
                                                      ),
+                               new DefaultChatCommand(
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "create-reward",
+                                                      "<title;cost;> [is_input_required (true/false)]",
+                                                      "создать команду.",
+                                                      CreateReward,
+                                                      Restriction.DevBroad
+                                                     ),
                            ];
     }
     
@@ -401,7 +415,7 @@ public static class CommandsList {
         var index = 1;
         var cmds = new List<string>();
 
-        for (var i = 0; i < _chatCmds.Options.DefaultCmds.Count; i++, index++) {
+        for (var i = 0; i < _chatCmds.Options.DefaultCmds?.Count; i++, index++) {
             var cmd = _chatCmds.Options.DefaultCmds[i];
             if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
             if (_chatCmds.Options.DefaultCmds
@@ -425,7 +439,7 @@ public static class CommandsList {
                      );
         }
 
-        for (var i = 0; i < _chatCmds.Options.CustomCmds.Count; i++, index++) {
+        for (var i = 0; i < _chatCmds.Options.CustomCmds?.Count; i++, index++) {
             var cmd = _chatCmds.Options.CustomCmds[i];
             if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
             if (_chatCmds.Options.CustomCmds
@@ -458,7 +472,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var cmdId = cmdArgs.Args.Command.CommandIdentifier;
         
-        var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
+        var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds?[0].Name} для списка комманд";
         client?.SendReply(chatMessage.Channel, chatMessage.Id, usage);
         
         return Task.CompletedTask;
@@ -607,30 +621,45 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
     
-    private static Task Req(ChatCmdArgs cmdArgs) {
+    private static async Task Req(ChatCmdArgs cmdArgs) {
         var levelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
+        var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
 
-        if (levelRequests.GetServiceState() == State.Disabled) return Task.CompletedTask;
+        if (levelRequests.GetServiceState() == State.Disabled) return;
         
         var reqState = levelRequests.GetReqState();
         switch (cmdArgs.Parsed.Count) {
-            case < 1:
-                return ReqEveryone(cmdArgs);
+            case <= 0:
+                if (chatCommands.Options.VerboseState == State.Enabled) {
+                    client?.SendReply(chatMessage.Channel, chatMessage.Id, "Недостаточно аргументов для изменения состояния.");
+                }
+                await ReqEveryone(cmdArgs);
+                return;
             case > 0:
-                reqState = cmdArgs.Parsed[0] switch {
-                               "off"    => ReqState.Off,
-                               "points" => ReqState.Points,
-                               "on"     => ReqState.On,
-                               _        => reqState
-                           };
+                switch (cmdArgs.Parsed[0]) {
+                    case "off": {
+                        reqState = ReqState.Off;
+                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        break;
+                    }
+                    case "points": {
+                        reqState = ReqState.Points;
+                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), true);
+                        break;
+                    }
+                    case "on": {
+                        reqState = ReqState.On;
+                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        break;
+                    }
+                }
                 break;
         }
 
         levelRequests.Options.SetReqState(reqState);
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Реквесты теперь {levelRequests.GetReqStateStr(reqState)}");
-        return Task.CompletedTask;
     }
 
     private static Task SetReqReward(ChatCmdArgs cmdArgs) {
@@ -801,7 +830,7 @@ public static class CommandsList {
         var gameId = await HelixUtils.FindGameId(cmdArgs.Bot.Options, gameSb.ToString());
         var result = await HelixUtils.UpdateChannelInfo(cmdArgs.Bot.Options, channelInfo!.Title, gameId!);
         if (!result || gameId == null) {
-            client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Не удалось изменить категорию");
+            client?.SendReply(chatMessage.Channel, chatMessage.Id, "Не удалось изменить категорию");
             return;
         }
         channelInfo = await HelixUtils.GetChannelInfo(cmdArgs.Bot.Options);
@@ -1493,6 +1522,41 @@ public static class CommandsList {
         client?.SendReply(chatMessage.Channel, chatMessage.Id, "Список заказов очищен.");
         logger.Log(LogLevel.Info, "Successfully cleared Game Request's list");
         return Task.CompletedTask;
+    }
+
+    private static async Task CreateReward(ChatCmdArgs cmdArgs) {
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        var sb = new StringBuilder();
+        cmdArgs.Parsed.ForEach(arg => sb.Append($"{arg} "));
+        
+        var args = sb.ToString().Split(';', StringSplitOptions.TrimEntries);
+
+        if (args.Length < 2) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var title = args[0];
+        var cost = int.Parse(args[1]);
+        var requireInput = false;
+
+        if (args.Length > 2) {
+            if (string.Equals(args[2], "true", StringComparison.InvariantCultureIgnoreCase)) {
+                requireInput = true;
+            } else if (string.Equals(args[2], "false", StringComparison.InvariantCultureIgnoreCase)) {
+                requireInput = false;
+            }
+        }
+
+        var rewardId = await HelixUtils.CreateChannelReward(cmdArgs.Bot.Options, title, cost, userInputRequired: requireInput);
+        if (rewardId == null) {
+            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Награда успешно создана.");
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {

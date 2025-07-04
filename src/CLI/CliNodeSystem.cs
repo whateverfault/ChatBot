@@ -150,7 +150,7 @@ public class CliNodeSystem {
                                                      true,
                                                      []
                                                      );
-        foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds) {
+        foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds!) {
             if (string.IsNullOrEmpty(cmd.Name)) continue;
             defaultCmds.AddNode(
                                 new CliNodeStaticDirectory(

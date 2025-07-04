@@ -1,6 +1,4 @@
 ﻿using ChatBot.Services.chat_commands.Data;
-using ChatBot.Services.moderation;
-using ChatBot.Services.Static;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -11,6 +9,12 @@ public delegate void CommandIdentifierChangedHandler(char newId, char oldId);
 
 public class ChatCommandsOptions : Options {
     private SaveData? _saveData;
+
+    private List<DefaultChatCommand>? _defaultCmds = [];
+    private string DefaultCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_defaultCmds.json");
+    
+    private List<CustomChatCommand>? _customCmds = [];
+    private string CustomCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_customCmds.json");
     
     
     protected override string Name => "chat_commands";
@@ -19,19 +23,27 @@ public class ChatCommandsOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;
     public State VerboseState => _saveData!.VerboseState;
-    public List<CustomChatCommand> CustomCmds => _saveData!.CustomCmds;
-    public List<DefaultChatCommand> DefaultCmds => _saveData!.DefaultCmds;
+    public List<CustomChatCommand>? CustomCmds => _customCmds;
+    public List<DefaultChatCommand>? DefaultCmds => _defaultCmds;
     public string BaseTitle => _saveData!.BaseTitle;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
 
     public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
+        return JsonUtils.TryRead(OptionsPath, out _saveData)
+            && JsonUtils.TryRead(DefaultCmdsPath, out _defaultCmds)
+            && JsonUtils.TryRead(CustomCmdsPath, out _customCmds);
     }
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
+            SetDefaults();
+        } if (!JsonUtils.TryRead(DefaultCmdsPath, out _defaultCmds!)) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
+            SetDefaults();
+        } if (!JsonUtils.TryRead(CustomCmdsPath, out _customCmds!)) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
@@ -39,10 +51,14 @@ public class ChatCommandsOptions : Options {
 
     public override void Save() {
         JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        JsonUtils.WriteSafe(DefaultCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _defaultCmds);
+        JsonUtils.WriteSafe(CustomCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _customCmds);
     }
 
     public override void SetDefaults() {
         _saveData = new SaveData();
+        _defaultCmds = [];
+        _customCmds = [];
         CommandsList.SetDefaults();
         Save();
     }
@@ -84,17 +100,18 @@ public class ChatCommandsOptions : Options {
         if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
         
         var cmd = (CustomChatCommand)chatCmd;
-        CustomCmds.Add(cmd);
+        CustomCmds?.Add(cmd);
         Save();
     }
 
     public void RemoveChatCmd(int index) {
-        if (index < 0 || index >= CustomCmds.Count) return;
-        CustomCmds.RemoveAt(index);
+        if (index < 0 || index >= CustomCmds?.Count) return;
+        CustomCmds?.RemoveAt(index);
         Save();
     }
 
     public void SetDefaultCmds(List<DefaultChatCommand> cmds) {
-        _saveData!.DefaultCmds = cmds;
+        _defaultCmds = cmds;
+        Save();
     }
 }

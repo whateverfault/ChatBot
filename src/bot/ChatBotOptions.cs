@@ -57,18 +57,22 @@ public class ChatBotOptions : Options {
 
     public void SetUsername(string username) {
         _saveData!.Username = username;
+        Save();
     }
     
     public void SetChannel(string channel) {
         _saveData!.Channel = channel;
+        Save();
     }
     
     public void SetOAuth(string token) {
         _saveData!.OAuth = token;
+        Save();
     }
     
     public void SetBroadcasterOAuth(string token) {
         _saveData!.BroadcasterOAuth = token;
+        Save();
     }
     
     public string GetUsername() {
@@ -93,5 +97,6 @@ public class ChatBotOptions : Options {
     
     public void SetClientId(string clientId) {
         _saveData!.ClientId = clientId;
+        Save();
     }
 }

@@ -53,14 +53,18 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "args")] string args,
         [JsonProperty(PropertyName = "description")] string description,
         [JsonProperty(PropertyName = "last_used")] List<string>? aliases,
-        [JsonProperty(PropertyName = "restriction")] Restriction restriction, 
-        [JsonProperty(PropertyName = "cooldown")] int cooldown, 
+        [JsonProperty(PropertyName = "restriction")] Restriction restriction,
+        [JsonProperty(PropertyName = "cooldown")] int cooldown,
         [JsonProperty(PropertyName = "state")] State state) {
         Name = name;
         Args = args;
         Description = description;
         foreach (var cmd in CommandsList.DefaultsCommands) {
-            if (!cmd.Name.Equals(name)) continue;
+            if (!string.Equals(name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)) continue;
+            if (CommandsList.DefaultsCommands
+                         .Any(defaultCmd =>
+                                  string.Equals(defaultCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
+                                  && defaultCmd.Restriction < cmd.Restriction)) continue;
 
             Action = cmd.Action;
             break;

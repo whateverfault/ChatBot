@@ -407,6 +407,117 @@ public static class HelixUtils {
         return distances[lengthA, lengthB];
     }
     #endregion
+
+    #region channel points
+    
+    public static async Task<bool> SetChannelRewardState(ChatBotOptions options, string rewardId, bool state) { 
+        try {
+            var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
+            if (string.IsNullOrEmpty(broadcasterId)) {
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
+                return false;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.BroadcasterOAuth);
+
+            var requestBody = new 
+                              {
+                                  is_enabled = state
+                              };
+            var jsonContent = JsonConvert.SerializeObject(requestBody);
+
+            var requestMessage = new HttpRequestMessage 
+                                 {
+                                     Method = HttpMethod.Patch,
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}&id={rewardId}"),
+                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
+                                     Headers =
+                                     {
+                                         { "Client-ID", options.ClientId },
+                                         { "Authorization", $"Bearer {options.BroadcasterOAuth}" }
+                                     }
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode) {
+                _logger.Log(LogLevel.Info, $"Successfully changed state of a reward with ID: {rewardId}");
+                return true;
+            }
+        
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _logger.Log(LogLevel.Error, $"Failed to change state of a reward. Status: {response.StatusCode}. Response: {responseContent}");
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error changing state of a reward: {ex.Message}");
+        }
+        return false;
+    }
+
+    public static async Task<string?> CreateChannelReward(
+    ChatBotOptions options,
+    string title,
+    int cost,
+    string? prompt = null,
+    bool isEnabled = true,
+    string? backgroundColor = null,
+    bool userInputRequired = false,
+    bool skipQueue = false) 
+    {
+        try {
+            var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
+            if (string.IsNullOrEmpty(broadcasterId)) {
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
+                return null;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.BroadcasterOAuth);
+
+            var requestBody = new 
+                              {
+                                  title,
+                                  cost,
+                                  prompt,
+                                  is_enabled = isEnabled,
+                                  background_color = backgroundColor,
+                                  is_user_input_required = userInputRequired,
+                                  should_redemptions_skip_request_queue = skipQueue
+                              };
+
+            var jsonContent = JsonConvert.SerializeObject(requestBody);
+
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Post,
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}"),
+                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode) {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var rewardResponse = JsonConvert.DeserializeObject<RewardCreationResponse>(responseContent);
+            
+                _logger.Log(LogLevel.Info, $"Successfully created reward: {title} (Cost: {cost})");
+                return rewardResponse?.Data?.FirstOrDefault()?.Id;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.Log(LogLevel.Error, $"Failed to create reward. Status: {response.StatusCode}. Response: {errorContent}");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Error, $"Error creating reward: {ex.Message}");
+        }
+        return null;
+    }
+    
+    #endregion
     
     #region create clip
     public static async Task<string?> CreateClipHelix(ChatBotOptions options) {

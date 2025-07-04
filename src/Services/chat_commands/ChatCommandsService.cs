@@ -2,7 +2,6 @@
 using ChatBot.Services.chat_commands.Data;
 using ChatBot.Services.interfaces;
 using ChatBot.Services.logger;
-using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -28,15 +27,20 @@ public class ChatCommandsService : Service {
             var parsed = ProcessArgs(args.Command.ArgumentsAsList);
             var chatMessage = args.Command.ChatMessage;
         
-            foreach (var cmd in Options.DefaultCmds) {
+            if (Options.VerboseState == State.Enabled) {
+                Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Количество аргументов - {parsed.Count}");
+            }
+            
+            foreach (var cmd in Options.DefaultCmds!) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+                if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
+                    && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (Options.DefaultCmds
                         .Any(defaultCmd =>
-                                 defaultCmd.Name.Equals(cmd.Name)
+                                 string.Equals(defaultCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
                                  && defaultCmd.Restriction < cmd.Restriction
                                  && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))
                             ) continue;
-                if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
                 var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -48,9 +52,12 @@ public class ChatCommandsService : Service {
                 return;
             }
             
-            foreach (var cmd in Options.CustomCmds) {
+            foreach (var cmd in Options.CustomCmds!) {
                 if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
-                if (Options.CustomCmds.Any(defaultCmd => defaultCmd.Name == cmd.Name && defaultCmd.Restriction < cmd.Restriction)) continue;
+                if (Options.CustomCmds.Any(customCmd => 
+                                               string.Equals(customCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
+                                               && customCmd.Restriction < cmd.Restriction
+                                               && RestrictionHandler.Handle(customCmd.Restriction, chatMessage))) continue;
                 if (cmdName != cmd.Name && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                 if (cmd.State == State.Disabled) continue;
                 
