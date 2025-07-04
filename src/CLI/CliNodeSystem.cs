@@ -669,57 +669,6 @@ public class CliNodeSystem {
                                                      _state,
                                                      true,
                                                      [
-                                                         new CliNodeStaticDirectory(
-                                                                                    "Filters",
-                                                                                    _state,
-                                                                                    true,
-                                                                                    [
-                                                                                        new CliNodeString(
-                                                                                             "Platforms",
-                                                                                             _state.Data.GameRequests.GetFilterPlatform,
-                                                                                             CliNodePermission.Default,
-                                                                                             _state.Data.GameRequests.Options.SetFilterPlatform
-                                                                                             ),
-                                                                                        new CliNodeStaticDirectory(
-                                                                                             "Completion Time",
-                                                                                             _state,
-                                                                                             true,
-                                                                                             [
-                                                                                                 new CliNodeInt(
-                                                                                                      "Min",
-                                                                                                      _state.Data.GameRequests.GetFilterMinTime,
-                                                                                                      CliNodePermission.Default,
-                                                                                                      _state.Data.GameRequests.Options.SetFilterMinTime
-                                                                                                     ),
-                                                                                                 new CliNodeInt(
-                                                                                                      "Max",
-                                                                                                      _state.Data.GameRequests.GetFilterMaxTime,
-                                                                                                      CliNodePermission.Default,
-                                                                                                      _state.Data.GameRequests.Options.SetFilterMaxTime
-                                                                                                     ),
-                                                                                             ]
-                                                                                            ),
-                                                                                        new CliNodeStaticDirectory(
-                                                                                             "Release Year",
-                                                                                             _state,
-                                                                                             true,
-                                                                                             [
-                                                                                                 new CliNodeString(
-                                                                                                      "Min",
-                                                                                                      _state.Data.GameRequests.GetFilterMinYear,
-                                                                                                      CliNodePermission.Default,
-                                                                                                      _state.Data.GameRequests.Options.SetFilterMinYear
-                                                                                                     ),
-                                                                                                 new CliNodeString(
-                                                                                                      "Max",
-                                                                                                      _state.Data.GameRequests.GetFilterMaxYear,
-                                                                                                      CliNodePermission.Default,
-                                                                                                      _state.Data.GameRequests.Options.SetFilterMaxYear
-                                                                                                     ),
-                                                                                             ]
-                                                                                            ),
-                                                                                    ]
-                                                                                    ),
                                                          new CliNodeEnum(
                                                                          "Service State",
                                                                          _state.Data.GameRequests.GetServiceStateAsInt,

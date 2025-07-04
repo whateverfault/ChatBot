@@ -6,7 +6,6 @@ using ChatBot.Services.logger;
 using ChatBot.Services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using ChatBot.utils.HowLongToBeat;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
@@ -41,86 +40,60 @@ public class GameRequestsService : Service {
         }
     }
 
-    public async Task AddGameRequest(List<string> args, ChatMessage chatMessage) {
+    public Task AddGameRequest(List<string> args, ChatMessage chatMessage) {
         var gameNameSb = new StringBuilder();
-        var yearFilter = Options.GameRequestsFilter.RangeYear;
 
-        foreach (var word in args) {
-            if (word == "--year") break;
-            gameNameSb.Append($"{word} ");
+        foreach (var arg in args) {
+            if (arg[0..2].Contains("--")) {
+                continue;
+            }
+
+            gameNameSb.Append($"{arg} ");
         }
-
-        var index = args.IndexOf("--year");
+        
+        var index = args.IndexOf("--position");
+        var position = Options.GameRequests!.Count+1;
         if (index >= 0 && index < args.Count-1) {
-            var year = args[index+1];
-            yearFilter.Min = year;
-            yearFilter.Max = year;
+            position = int.Parse(args[index+1]);
+        }
+        
+        if (position <= 0 || position >= Options.GameRequests!.Count) {
+            position = Options.GameRequests!.Count+1;
         }
         
         var gameName = gameNameSb.ToString().Trim();
-        var gameFilter = new GameFilter(
-                                        gameName,
-                                        Options.GameRequestsFilter.Platforms,
-                                        Options.GameRequestsFilter.RangeTime,
-                                        yearFilter
-                                        );
         
         try {
-            var gameInfoResponse = await HltbUtils.FetchGamesByName(gameFilter, _logger);
-            if (gameInfoResponse == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, Client);
-                return;
-            } if (gameInfoResponse.Count <= 0) {
-                ErrorHandler.ReplyWithError(ErrorCode.NothingFound, chatMessage, Client);
-                return;
-            }
-            var gameInfo = gameInfoResponse.Games[0];
-
-            if (Options.GameRequests.Any(request => request.GameId == gameInfo.GameId)) {
+            if (Options.GameRequests.Any(request => string.Equals(request.GameName, gameName, StringComparison.OrdinalIgnoreCase))) {
                 ErrorHandler.ReplyWithError(ErrorCode.AlreadyContains, chatMessage, Client);
-                return;
+                return Task.CompletedTask;
             }
             
             var gameRequest = new GameRequest(
-                                              gameInfo.GameId,
-                                              gameInfo.GameName,
-                                              (int)MathF.Round((float)gameInfo.CompMain/3600),
-                                              gameInfo.ReleaseYear,
+                                              gameName,
                                               chatMessage.Username
                                               );
-            Options.AddRequest(gameRequest);
-            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameInfo.GameName} добавлена в очередь на позицию {Options.GameRequests.Count}.");
+            
+            Options.AddRequest(gameRequest, position-1);
+            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} добавлена в очередь на позицию {position}.");
+            return Task.CompletedTask;
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+            return Task.CompletedTask;
         }
     }
     
-    public List<GameRequest> GetGameRequests() {
+    public List<GameRequest>? GetGameRequests() {
         return Options.GameRequests;
     }
 
-    public string GetFilterPlatform() {
-        return Options.GameRequestsFilter.Platforms;
-    }
-
-    public int GetFilterMinTime() {
-        return Options.GameRequestsFilter.RangeTime.Min ?? -1;
-    }
-    
-    public int GetFilterMaxTime() {
-        return Options.GameRequestsFilter.RangeTime.Max ?? -1;
-    }
-    
-    public string GetFilterMinYear() {
-        return Options.GameRequestsFilter.RangeYear.Min;
-    }
-    
-    public string GetFilterMaxYear() {
-        return Options.GameRequestsFilter.RangeYear.Max;
+    public string GetRawgApiKey() {
+        return Options.RawgApiKey;
     }
     
     public override void Init(Bot bot) {
-        _bot = (bot.ChatBot)bot;
         base.Init(bot);
+
+        _bot = (bot.ChatBot)bot;
     }
 }

@@ -14,8 +14,6 @@ using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 using ChatBot.utils.GD.AREDL;
-using ChatBot.utils.HowLongToBeat;
-using ChatBot.utils.HowLongToBeat.Request.Data;
 using ChatBot.utils.Twitch.Helix;
 using MessageState = ChatBot.Services.message_randomizer.MessageState;
 
@@ -348,14 +346,6 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      "how-long-to-beat",
-                                                      "<game_name> [--year release_year]",
-                                                      "время, которое уйдет на прохождение игры.",
-                                                      HowLongToBeat,
-                                                      Restriction.Everyone,
-                                                      aliases: ["hltb"]
-                                                      ),
-                               new DefaultChatCommand(
                                                       "games",
                                                       "[page]",
                                                       "список заказов игр.",
@@ -364,7 +354,7 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       "add-game",
-                                                      "<game_name> [--year release_year]",
+                                                      "<game_name> [--position integer]",
                                                       "добавить игру в очередь.",
                                                       AddGame,
                                                       Restriction.Broadcaster
@@ -1389,42 +1379,6 @@ public static class CommandsList {
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
     }
 
-    private static async Task HowLongToBeat(ChatCmdArgs cmdArgs) {
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-        var chatMessage = cmdArgs.Args.Command.ChatMessage;
-        var client = cmdArgs.Bot.GetClient();
-        
-        if (cmdArgs.Parsed.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            return;
-        }
-
-        var argSb = new StringBuilder();
-        foreach (var arg in cmdArgs.Parsed) {
-            argSb.Append($"{arg} ");
-        }
-        var gameName = argSb.ToString();
-        
-        var gameFilter = new GameFilter(
-                                        gameName.Trim(),
-                                        "",
-                                        new RangeTime(),
-                                        new RangeYear()
-                                        );
-        var gameInfoResponse = await HltbUtils.FetchGamesByName(gameFilter, logger);
-        if (gameInfoResponse == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-            return;
-        } if (gameInfoResponse.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.NothingFound, chatMessage, client);
-            return;
-        }
-
-        var gameInfo = gameInfoResponse.Games[0];
-        var timeInHours = (int)MathF.Round((float)gameInfo.CompMain/3600);
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Чтобы пройти {gameInfo.GameName} потребуется примерно {timeInHours} {Declensioner.Hours(timeInHours)}");
-    }
-
     private static Task Games(ChatCmdArgs cmdArgs) {
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
@@ -1433,25 +1387,21 @@ public static class CommandsList {
 
         var gameRequests = gameRequestService.GetGameRequests();
 
-        if (gameRequests.Count <= 0) {
+        if (gameRequests?.Count <= 0) {
             ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
             return Task.CompletedTask;
         }
         
         var reply = new List<string>();
-        for (var i = 0; i < gameRequests.Count; i++) {
+        for (var i = 0; i < gameRequests?.Count; i++) {
             var gameRequest = gameRequests[i];
-            var lenghtStr = $"~{gameRequest.GameLenght} {Declensioner.Hours(gameRequest.GameLenght)}";
             var separator = "/";
             
-            if (gameRequest.GameLenght <= 0) {
-                lenghtStr = $"<1 часа";
-            }
             if (i >= gameRequests.Count-1) {
                 separator = string.Empty;
             }
             
-            reply.Add($"{i+1}. {gameRequest.GameName} ({gameRequest.ReleaseYear}) {lenghtStr}. {separator}");
+            reply.Add($"{i+1}. {gameRequest.GameName} -> {gameRequest.RequesterUsername} {separator}");
         }
 
         SendPagedReply(reply, cmdArgs);
@@ -1488,17 +1438,17 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
     
-    private static async Task AddGame(ChatCmdArgs cmdArgs) {
+    private static Task AddGame(ChatCmdArgs cmdArgs) {
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var client = cmdArgs.Bot.GetClient();
 
         if (cmdArgs.Parsed.Count <= 0) {
             ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            return;
+            return Task.CompletedTask;
         }
 
-        await gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
+        return gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
     }
     
     private static Task CompleteGame(ChatCmdArgs cmdArgs) {
@@ -1519,7 +1469,7 @@ public static class CommandsList {
 
         var gameRequests = gameRequestService.GetGameRequests();
         
-        if (indexToRemove <= 0 || indexToRemove > gameRequests.Count) {
+        if (indexToRemove <= 0 || indexToRemove > gameRequests!.Count) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return Task.CompletedTask;
         }
