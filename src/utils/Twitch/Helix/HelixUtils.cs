@@ -517,6 +517,40 @@ public static class HelixUtils {
         return null;
     }
     
+    public static async Task<bool> DeleteChannelReward(ChatBotOptions options, string rewardId) {
+        try {
+            var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
+            if (string.IsNullOrEmpty(broadcasterId)) {
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
+                return false;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.BroadcasterOAuth);
+
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Delete,
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}&id={rewardId}")
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode) {
+                _logger.Log(LogLevel.Info, $"Successfully deleted reward ID: {rewardId}");
+                return true;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _logger.Log(LogLevel.Error, $"Failed to delete reward. Status: {response.StatusCode}. Response: {responseContent}");
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error deleting reward: {ex.Message}");
+        }
+        return false;
+    }
+    
     #endregion
     
     #region create clip

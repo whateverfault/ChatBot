@@ -398,8 +398,15 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       "create-reward",
                                                       "<title;cost;> [is_input_required (true/false)]",
-                                                      "создать команду.",
+                                                      "создать награду.",
                                                       CreateReward,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      "delete-reward",
+                                                      "<reward_id>",
+                                                      "удалить награду.",
+                                                      DeleteReward,
                                                       Restriction.DevBroad
                                                      ),
                            ];
@@ -641,17 +648,30 @@ public static class CommandsList {
                 switch (cmdArgs.Parsed[0]) {
                     case "off": {
                         reqState = ReqState.Off;
-                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        var result = await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        if (!result) {
+                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                            return;
+                        }
+                        
                         break;
                     }
                     case "points": {
                         reqState = ReqState.Points;
-                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), true);
+                        var result = await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), true);
+                        if (!result) {
+                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                            return;
+                        }
                         break;
                     }
                     case "on": {
                         reqState = ReqState.On;
-                        await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        var result = await HelixUtils.SetChannelRewardState(cmdArgs.Bot.Options, levelRequests.GetRewardId(), false);
+                        if (!result) {
+                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                            return;
+                        }
                         break;
                     }
                 }
@@ -1556,7 +1576,26 @@ public static class CommandsList {
             return;
         }
         
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, "Награда успешно создана.");
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Награда успешно создана. ({rewardId})");
+    }
+    
+    private static async Task DeleteReward(ChatCmdArgs cmdArgs) {
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var rewardId = cmdArgs.Parsed[0];
+        var result = await HelixUtils.DeleteChannelReward(cmdArgs.Bot.Options, rewardId);
+        if (!result) {
+            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+        
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Награда успешно удалена. ({rewardId})");
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
