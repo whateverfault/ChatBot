@@ -504,7 +504,7 @@ public static class HelixUtils {
                 var rewardResponse = JsonConvert.DeserializeObject<RewardCreationResponse>(responseContent);
             
                 _logger.Log(LogLevel.Info, $"Successfully created reward: {title} (Cost: {cost})");
-                return rewardResponse?.Data?.FirstOrDefault()?.Id;
+                return rewardResponse?.Data.FirstOrDefault()?.Id;
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();

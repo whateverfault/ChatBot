@@ -28,6 +28,7 @@ public static class CommandsList {
     static CommandsList() {
         DefaultsCommands = [
                                new DefaultChatCommand(
+                                                      0,
                                                    "cmds",
                                                    "[page]",
                                                    "список комманд.",
@@ -35,6 +36,7 @@ public static class CommandsList {
                                                    Restriction.Everyone
                                                   ),
                                new DefaultChatCommand(
+                                                      1,
                                                       "help",
                                                       string.Empty,
                                                       "использование комманд.",
@@ -42,6 +44,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      2,
                                                       "followage",
                                                       "[username]",
                                                       "время, которое пользователь отслеживает канал.",
@@ -49,6 +52,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -56,6 +60,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      3,
                                                       "title",
                                                       string.Empty, 
                                                       "посмотреть название стрима.",
@@ -63,6 +68,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      4,
                                                       "title",
                                                       "[title]",
                                                       "посмотреть/изменить название стрима.",
@@ -70,6 +76,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      5,
                                                       "game",
                                                       string.Empty,
                                                       "посмотреть категорию стрима.",
@@ -77,6 +84,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      6,
                                                       "game",
                                                       "[game]",
                                                       "изменить категорию стрима.",
@@ -84,6 +92,7 @@ public static class CommandsList {
                                                       Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
+                                                      7,
                                                       "clip",
                                                       string.Empty,
                                                       "создать клип.",
@@ -91,6 +100,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      8,
                                                       "req",
                                                       string.Empty, 
                                                       "узнать включены ли реквесты",
@@ -98,6 +108,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -105,6 +116,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      9,
                                                       "rizz",
                                                       "[text]",
                                                       "RIZZ",
@@ -112,6 +124,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      10,
                                                       "when",
                                                       "[text]",
                                                       "Waiting",
@@ -119,6 +132,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      11,
                                                       "ban",
                                                       "[text]",
                                                       "SillyJail",
@@ -126,6 +140,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -133,6 +148,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      12,
                                                       "ai",
                                                       "[prompt]",
                                                       "задать вопрос ии.",
@@ -140,6 +156,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      13,
                                                       "potato",
                                                       string.Empty,
                                                       "сгенерировать сообщение",
@@ -147,6 +164,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      14,
                                                       "carrot",
                                                       string.Empty,
                                                       "зарандомить новое сообщение",
@@ -154,6 +172,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -161,6 +180,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      15,
                                                       "req",
                                                       "[on/off]",
                                                       "включить/выключить реквесты",
@@ -168,6 +188,7 @@ public static class CommandsList {
                                                       Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
+                                                      16,
                                                       "set-req-reward",
                                                       string.Empty, 
                                                       "установить награду для реквестов.",
@@ -175,6 +196,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
+                                                      17,
                                                       "verbose",
                                                       "[on/off]",
                                                       "включить/выключить/узнать включены ли дополнительные логи",
@@ -182,6 +204,7 @@ public static class CommandsList {
                                                       Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -189,6 +212,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      18,
                                                       "guess",
                                                       "[username]",
                                                       "угадать ник написавшего.",
@@ -196,6 +220,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      19,
                                                       "whose",
                                                       string.Empty,
                                                       "узнать ник написавшего.",
@@ -203,6 +228,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
+                                                      20,
                                                       "repeat",
                                                       string.Empty,
                                                       "повторить сообщение.",
@@ -210,6 +236,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -217,6 +244,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      21,
                                                       "translate",
                                                       "<text> [-- target_language]",
                                                       "перевести текст.",
@@ -224,6 +252,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      22,
                                                       "detect-lang",
                                                       "<text>",
                                                       "узнать язык, на котором написан текст.",
@@ -231,6 +260,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      23,
                                                       "lang",
                                                       "[lang_code]",
                                                       "установить дефолтный язык переводчика.",
@@ -238,6 +268,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
+                                                      24,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -245,6 +276,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      25,
                                                       "top",
                                                       "<position>",
                                                       "уровень стоящий на данной позиции по AREDL.",
@@ -252,6 +284,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      26,
                                                       "place",
                                                       "<level_name> [by creator_name] [--page page_count]",
                                                       "позиция уровня по AREDL.",
@@ -259,6 +292,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      27,
                                                       "roulette",
                                                       "<from> <to>",
                                                       "зарандомить экстрим.",
@@ -267,6 +301,7 @@ public static class CommandsList {
                                                       aliases: ["rulet"]
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -274,6 +309,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      28,
                                                       "hardest",
                                                       "[username]",
                                                       "хардест пользователя по AREDL.",
@@ -281,6 +317,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      29,
                                                       "easiest",
                                                       "[username]",
                                                       "легчайший экстрим пользователя по AREDL.",
@@ -289,6 +326,7 @@ public static class CommandsList {
                                                       aliases: ["lowest"]
                                                      ),
                                new DefaultChatCommand(
+                                                      30,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -296,6 +334,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      31,
                                                       "ptop",
                                                       "<position>",
                                                       "уровень стоящий на данной позиции по Pemon List.",
@@ -303,6 +342,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      32,
                                                       "pplace",
                                                       "<level> [by creator_name] [--page page_count]",
                                                       "позиция уровня по Pemon List.",
@@ -310,6 +350,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -317,6 +358,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      33,
                                                       "clan",
                                                       "<clan_tag>",
                                                       "Информация о клане.",
@@ -324,6 +366,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      34,
                                                       "clan-hardest",
                                                       "<clan_tag>",
                                                       "хардест клана.",
@@ -331,6 +374,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      35,
                                                       "clan-roulette",
                                                       "<clan_tag>",
                                                       "случайный пройденный кланом уровень.",
@@ -339,6 +383,7 @@ public static class CommandsList {
                                                       aliases: ["clan-rulet"]
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -346,6 +391,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      36,
                                                       "games",
                                                       "[page]",
                                                       "список заказов игр.",
@@ -353,6 +399,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      37,
                                                       "add-game",
                                                       "<game_name> [--position integer]",
                                                       "добавить игру в очередь.",
@@ -360,6 +407,7 @@ public static class CommandsList {
                                                       Restriction.Broadcaster
                                                      ),
                                new DefaultChatCommand(
+                                                      38,
                                                       "complete",
                                                       "<game_index>",
                                                       "удалить игру из очереди.",
@@ -367,6 +415,7 @@ public static class CommandsList {
                                                       Restriction.Broadcaster
                                                      ),
                                new DefaultChatCommand(
+                                                      39,
                                                       "reset-games",
                                                       string.Empty,
                                                       "очистить очередь заказов игр.",
@@ -375,6 +424,7 @@ public static class CommandsList {
                                                       aliases: ["nuke-games"]
                                                      ),
                                new DefaultChatCommand(
+                                                      40,
                                                       "add-game-reqs-reward",
                                                       string.Empty,
                                                       "добавить награду для заказа игр.",
@@ -382,6 +432,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                       ),
                                new DefaultChatCommand(
+                                                      41,
                                                       "reset-game-reqs-rewards",
                                                       string.Empty,
                                                       "очистить список наград для заказа игр.",
@@ -389,6 +440,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
+                                                      -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -396,6 +448,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      42,
                                                       "create-reward",
                                                       "<title;cost;> [is_input_required (true/false)]",
                                                       "создать награду.",
@@ -403,6 +456,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
+                                                      43,
                                                       "delete-reward",
                                                       "<reward_id>",
                                                       "удалить награду.",

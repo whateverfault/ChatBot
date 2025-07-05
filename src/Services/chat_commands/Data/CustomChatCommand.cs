@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 namespace ChatBot.Services.chat_commands.Data;
 
 public sealed class CustomChatCommand : ChatCommand {
+    [JsonProperty(PropertyName = "id")]
+    public override int Id { get; protected set; }
     [JsonProperty(PropertyName = "name")]
     public override string Name { get; protected set; }
     [JsonProperty(PropertyName = "args")]

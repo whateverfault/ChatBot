@@ -7,8 +7,9 @@ namespace ChatBot.Services.chat_commands.Data;
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
 
 public abstract class ChatCommand {
-    protected static ChatCommandsService chatCommandsService = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+    protected static readonly ChatCommandsService chatCommandsService = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
     
+    public abstract int Id { get; protected set; }
     public abstract string Name { get; protected set; }
     public abstract string Args { get; protected set; }
     public abstract string Description { get; protected set; }

@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 namespace ChatBot.Services.chat_commands.Data;
 
 public sealed class DefaultChatCommand : ChatCommand {
+    [JsonProperty(PropertyName = "id")]
+    public override int Id { get; protected set; }
     [JsonProperty(PropertyName = "name")]
     public override string Name { get; protected set; }
     [JsonProperty(PropertyName = "args")]
@@ -27,6 +29,7 @@ public sealed class DefaultChatCommand : ChatCommand {
     
     
     public DefaultChatCommand(
+        int id,
         string name,
         string args,
         string description,
@@ -36,6 +39,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         long lastUsed = 0,
         List<string>? aliases = null,
         State state = State.Enabled) {
+        Id = id;
         Name = name;
         Args = args;
         Description = description;
@@ -49,6 +53,7 @@ public sealed class DefaultChatCommand : ChatCommand {
     
     [JsonConstructor]
     public DefaultChatCommand(
+        [JsonProperty(PropertyName = "id")] int id,
         [JsonProperty(PropertyName = "name")] string name,
         [JsonProperty(PropertyName = "args")] string args,
         [JsonProperty(PropertyName = "description")] string description,
@@ -56,15 +61,12 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "restriction")] Restriction restriction,
         [JsonProperty(PropertyName = "cooldown")] int cooldown,
         [JsonProperty(PropertyName = "state")] State state) {
+        Id = id;
         Name = name;
         Args = args;
         Description = description;
         foreach (var cmd in CommandsList.DefaultsCommands) {
-            if (!string.Equals(name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)) continue;
-            if (CommandsList.DefaultsCommands
-                         .Any(defaultCmd =>
-                                  string.Equals(defaultCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
-                                  && defaultCmd.Restriction < cmd.Restriction)) continue;
+            if (cmd.Id != Id) continue;
 
             Action = cmd.Action;
             break;
