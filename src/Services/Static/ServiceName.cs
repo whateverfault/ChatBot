@@ -14,4 +14,5 @@ public static class ServiceName {
     public const string Ai = "Ai";
     public const string Translator = "Translator";
     public const string GameRequests = "Game Requests";
+    public const string TgNotifications = "Notifications";
 }

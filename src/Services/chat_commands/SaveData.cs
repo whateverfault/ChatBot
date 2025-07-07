@@ -17,6 +17,9 @@ public class SaveData {
     [JsonProperty("base_title")]
     public string BaseTitle { get; set; } = string.Empty;
 
+    [JsonProperty("swip")]
+    public State SendWhisperIfPossible { get; set; }
+
 
     public SaveData() {}
     
@@ -25,10 +28,12 @@ public class SaveData {
         [JsonProperty("service_state")] State serviceState,
         [JsonProperty("command_identifier")] char commandIdentifier,
         [JsonProperty("verbose_state")] State verboseState,
-        [JsonProperty("base_title")] string baseTitle) {
+        [JsonProperty("base_title")] string baseTitle,
+        [JsonProperty("swip")] State sendWhisperIfPossible) {
         ServiceState = serviceState;
         CommandIdentifier = commandIdentifier;
         VerboseState = verboseState;
         BaseTitle = baseTitle;
+        SendWhisperIfPossible = sendWhisperIfPossible;
     }
 }

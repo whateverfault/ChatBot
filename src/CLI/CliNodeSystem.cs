@@ -4,7 +4,6 @@ using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.CLI.CliNodes.Directories.ChatCommands;
 using ChatBot.CLI.CliNodes.Directories.Moderation;
 using ChatBot.Services.ai;
-using ChatBot.Services.interfaces;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
@@ -231,6 +230,13 @@ public class CliNodeSystem {
                                                                                              CliNodePermission.Default,
                                                                                              _state.Data.ChatCommands.SetBaseTitle
                                                                                              ),
+                                                                                        new CliNodeEnum(
+                                                                                             "Send Whisper If Possible",
+                                                                                             _state.Data.ChatCommands.GetSendWhisperIfPossibleStateAsInt,
+                                                                                             typeof(State),
+                                                                                             CliNodePermission.Default,
+                                                                                             _state.Data.ChatCommands.SendWhisperIfPossibleStateNext
+                                                                                            ),
                                                                                      ]
                                                                                      ),
                                                           new CliNodeEnum(
@@ -678,6 +684,59 @@ public class CliNodeSystem {
                                                                         ),
                                                      ]
                                                      );
+
+        var tgNotificationsDir = new CliNodeStaticDirectory(
+                                                            ServiceName.TgNotifications,
+                                                            _state,
+                                                            true,
+                                                            [
+                                                                new CliNodeLong(
+                                                                                "Chat Id",
+                                                                                _state.Data.TgNotifications.GetChatId,
+                                                                                CliNodePermission.Default,
+                                                                                _state.Data.TgNotifications.SetChatId
+                                                                               ),
+                                                                new CliNodeString(
+                                                                                "Notification Prompt",
+                                                                                _state.Data.TgNotifications.GetNotificationPrompt,
+                                                                                CliNodePermission.Default,
+                                                                                _state.Data.TgNotifications.SetNotificationPrompt
+                                                                               ),
+                                                                new CliNodeLong(
+                                                                                  "Cooldown",
+                                                                                  _state.Data.TgNotifications.GetCooldown,
+                                                                                  CliNodePermission.Default,
+                                                                                  _state.Data.TgNotifications.Options.SetCooldown
+                                                                                 ),
+                                                                new CliNodeStaticDirectory(
+                                                                                           "Secret",
+                                                                                           _state,
+                                                                                           true,
+                                                                                           [
+                                                                                               new CliNodeString(
+                                                                                                    "Bot Token",
+                                                                                                    _state.Data.TgNotifications.GetBotToken,
+                                                                                                    CliNodePermission.Default,
+                                                                                                    _state.Data.TgNotifications.SetBotToken
+                                                                                                   ),
+                                                                                           ]
+                                                                                           ),
+                                                                new CliNodeEnum(
+                                                                                "Service State",
+                                                                                _state.Data.TgNotifications.GetServiceStateAsInt,
+                                                                                typeof(State),
+                                                                                CliNodePermission.Default,
+                                                                                _state.Data.TgNotifications.ServiceStateNext
+                                                                                ),
+                                                            ]
+                                                            );
+
+        var tgDir = new CliNodeStaticDirectory(
+                                               "Telegram",
+                                               _state,
+                                               true,
+                                               [tgNotificationsDir]
+                                               );
         
         var presetsDir = new CliNodeStaticDirectory(
                                                     "Presets",
@@ -719,6 +778,7 @@ public class CliNodeSystem {
                                                       moderationDir,
                                                       levelReqsDir,
                                                       gameReqsDir,
+                                                      tgDir,
                                                       loggerDir,
                                                   ]);
         

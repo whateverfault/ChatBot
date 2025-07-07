@@ -103,7 +103,7 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.Ban: {
-                await HelixUtils.BanUserHelix(botOptions, message.Username, ModeratorComment);
+                await HelixUtils.BanUser(botOptions, message.Username, ModeratorComment);
                 break;
             }
             case ModerationActionType.Timeout: {
@@ -119,7 +119,7 @@ public class ModAction {
         
         if (Type == ModerationActionType.Warn) {
             client?.SendReply(message.Channel, message.Id, ModeratorComment);
-            await HelixUtils.DeleteMessageHelix(options, message);
+            await HelixUtils.DeleteMessage(options, message);
             return;
         }
         
@@ -143,13 +143,13 @@ public class ModAction {
         user.GiveWarn();
         client?.SendMessage(message.Channel, $"@{message.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
-            await HelixUtils.DeleteMessageHelix(options, message);
+            await HelixUtils.DeleteMessage(options, message);
             return;
         }
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                await HelixUtils.BanUserHelix(options, message.Username, ModeratorComment);
+                await HelixUtils.BanUser(options, message.Username, ModeratorComment);
                 warnedUsers.RemoveAt(userIndex);
                 break;
             }

@@ -11,6 +11,7 @@ using ChatBot.Services.message_filter;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
+using ChatBot.Services.telegram;
 using ChatBot.Services.text_generator;
 using ChatBot.Services.translator;
 
@@ -114,9 +115,16 @@ public static class ServiceManager {
                                           new GameRequestsEvents()
                                       )
                                   },
+                                  {
+                                      ServiceName.TgNotifications,
+                                      (
+                                          new TgNotificationsService(),
+                                          new TgNotificationsEvents()
+                                      )
+                                  },
                               };
         } catch (Exception e) {
-            Console.WriteLine($"Failed to initialize services: {e}");
+            Console.WriteLine($"Failed to initialize services: {e.Message}");
             throw new Exception($"Failed to initialize services: {e}");
         }
     }
@@ -130,7 +138,7 @@ public static class ServiceManager {
             events.Subscribe();
         }
     }
-
+    
     public static void ServicesToDefault(string[] exclude) {
         foreach (var (_, (service, _)) in _services) {
             if (exclude.Contains(service.Name)) continue;

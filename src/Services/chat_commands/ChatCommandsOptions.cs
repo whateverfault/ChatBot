@@ -26,6 +26,7 @@ public class ChatCommandsOptions : Options {
     public List<CustomChatCommand>? CustomCmds => _customCmds;
     public List<DefaultChatCommand>? DefaultCmds => _defaultCmds;
     public string BaseTitle => _saveData!.BaseTitle;
+    public State SendWhisperIfPossible => _saveData!.SendWhisperIfPossible;
 
     public event CommandIdentifierChangedHandler? OnCommandIdentifierChanged;
 
@@ -91,6 +92,11 @@ public class ChatCommandsOptions : Options {
         Save();
     }
 
+    public void SetSendWhisperIfPossibleState(State state) {
+        _saveData!.SendWhisperIfPossible = state;
+        Save();
+    }
+    
     public void SetBaseTitle(string title) {
         _saveData!.BaseTitle = title;
         Save();

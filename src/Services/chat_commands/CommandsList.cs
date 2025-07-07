@@ -8,6 +8,7 @@ using ChatBot.Services.level_requests;
 using ChatBot.Services.logger;
 using ChatBot.Services.message_randomizer;
 using ChatBot.Services.Static;
+using ChatBot.Services.telegram;
 using ChatBot.Services.text_generator;
 using ChatBot.Services.translator;
 using ChatBot.shared.Handlers;
@@ -182,7 +183,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       15,
                                                       "req",
-                                                      "[on/off]",
+                                                      "[on/points/off]",
                                                       "включить/выключить реквесты",
                                                       Req,
                                                       Restriction.DevMod
@@ -463,6 +464,38 @@ public static class CommandsList {
                                                       DeleteReward,
                                                       Restriction.DevBroad
                                                      ),
+                               new DefaultChatCommand(
+                                                      -1,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      44,
+                                                      "tg-notify",
+                                                      string.Empty,
+                                                      "узнать включены ли уведомления.",
+                                                      TgNotifyEveryone,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      45,
+                                                      "tg-notify",
+                                                      "[enable/disable]",
+                                                      "включить/выключить уведомления.",
+                                                      TgNotify,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      46,
+                                                      "tg-notify-prompt",
+                                                      "<notification_prompt>",
+                                                      "изменить текст уведомления.",
+                                                      TgNotifyPrompt,
+                                                      Restriction.DevBroad
+                                                     ),
                            ];
     }
     
@@ -470,7 +503,7 @@ public static class CommandsList {
         _chatCmds.Options.SetDefaultCmds(DefaultsCommands);
     }
 
-    private static Task Cmds(ChatCmdArgs cmdArgs) {
+    private static async Task Cmds(ChatCmdArgs cmdArgs) {
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var cmdId = cmdArgs.Args.Command.CommandIdentifier;
         var index = 1;
@@ -524,19 +557,31 @@ public static class CommandsList {
                     );
         }
         
-        SendPagedReply(cmds, cmdArgs);
-        return Task.CompletedTask;
+        
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
     }
     
-    private static Task Help(ChatCmdArgs cmdArgs) {
+    private static async Task Help(ChatCmdArgs cmdArgs) {
         var client = cmdArgs.Bot.GetClient();
+        var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var cmdId = cmdArgs.Args.Command.CommandIdentifier;
         
         var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds?[0].Name} для списка комманд";
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, usage);
-        
-        return Task.CompletedTask;
+
+        switch (chatCommands.Options.SendWhisperIfPossible) {
+            case State.Disabled: {
+                client?.SendReply(chatMessage.Channel, chatMessage.Id, usage);
+                break;
+            }
+            case State.Enabled: {
+                var result = await HelixUtils.SendWhisper(cmdArgs.Bot.Options, chatMessage.UserId, usage);
+                if (!result) {
+                    ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                }
+                break;
+            }
+        }
     }
 
         private static Task When(ChatCmdArgs cmdArgs) {
@@ -765,7 +810,7 @@ public static class CommandsList {
         var client = cmdArgs.Bot.GetClient();
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         
-        var clipId = await HelixUtils.CreateClipHelix(cmdArgs.Bot.Options);
+        var clipId = await HelixUtils.CreateClip(cmdArgs.Bot.Options);
 
         if (clipId == null) {
             ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
@@ -1162,16 +1207,21 @@ public static class CommandsList {
         var tier = 
             levelInfo.nlwTier == null? 
                 string.Empty:
-                $"({levelInfo.nlwTier} tier)";
+                $"({levelInfo.nlwTier} tier";
+
+        var enjoyment = (levelInfo.edelEnjoyment == null) switch {
+                            true  => string.IsNullOrEmpty(tier) ? string.Empty : ")",
+                            false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.edelEnjoyment})" : $"; EDL: {(int)levelInfo.edelEnjoyment})"
+                        };
 
         var pages = 
             levelsInfo.Count <= 1 ? 
                 string.Empty : 
                 $"Страница {page+1} из {levelsInfo.Count} |";
         
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier} {verificationLink}");
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier}{enjoyment} {verificationLink}");
     }
-
+    
     private static async Task Ptop(ChatCmdArgs cmdArgs) {
         var demonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
         var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
@@ -1507,7 +1557,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {gameRequest.GameName} -> {gameRequest.RequesterUsername} {separator}");
         }
 
-        SendPagedReply(reply, cmdArgs);
+        _ = SendPagedReply(reply, cmdArgs);
         return Task.CompletedTask;
     }
 
@@ -1545,13 +1595,13 @@ public static class CommandsList {
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var chatMessage = cmdArgs.Args.Command.ChatMessage;
         var client = cmdArgs.Bot.GetClient();
-
-        if (cmdArgs.Parsed.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            return Task.CompletedTask;
+        
+        if (cmdArgs.Parsed.Count > 0) {
+            return gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
         }
-
-        return gameRequestService.AddGameRequest(cmdArgs.Parsed, chatMessage);
+        
+        ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+        return Task.CompletedTask;
     }
     
     private static Task CompleteGame(ChatCmdArgs cmdArgs) {
@@ -1652,12 +1702,74 @@ public static class CommandsList {
         client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Награда успешно удалена. ({rewardId})");
     }
     
+    private static Task TgNotifyEveryone(ChatCmdArgs cmdArgs) {
+        var tgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        var stateStr =
+            tgNotifications.GetServiceState() == State.Enabled? 
+                "включены":
+                "отключены";
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Уведомления о стримах {stateStr}");
+        return Task.CompletedTask;
+    }
+    
+    private static Task TgNotify(ChatCmdArgs cmdArgs) {
+        var tgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            return TgNotifyEveryone(cmdArgs);
+        }
+
+        switch (cmdArgs.Parsed[0]) {
+            case "enable": {
+                tgNotifications.Options.SetState(State.Enabled);
+                break;
+            }
+            case "disable": {
+                tgNotifications.Options.SetState(State.Disabled);
+                break;
+            }
+        }
+        
+        var stateStr =
+            tgNotifications.GetServiceState() == State.Enabled? 
+                "включены":
+                "отключены";
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Уведомления о стримах теперь {stateStr}");
+        return Task.CompletedTask;
+    }
+    
+    private static Task TgNotifyPrompt(ChatCmdArgs cmdArgs) {
+        var tgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var client = cmdArgs.Bot.GetClient();
+
+        if (cmdArgs.Parsed.Count <= 0) {
+            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return Task.CompletedTask;
+        }
+        
+        var prompt = new StringBuilder();
+        foreach (var arg in cmdArgs.Parsed) {
+            prompt.Append($"{arg} ");
+        }
+        
+        tgNotifications.SetNotificationPrompt(prompt.ToString().Trim());
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Текст уведомлений успешно изменен.");
+        return Task.CompletedTask;
+    }
+    
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
         return Task.CompletedTask;
     }
     
-    private static void SendPagedReply(List<string> reply, ChatCmdArgs cmdArgs) {
+    private static async Task SendPagedReply(List<string> reply, ChatCmdArgs cmdArgs, bool whisper = false) {
         var client = cmdArgs.Bot.GetClient();
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
         
         var page = 0;
         if (cmdArgs.Parsed.Count > 0) {
@@ -1687,6 +1799,18 @@ public static class CommandsList {
             }
         }
         
-        client?.SendReply(cmdArgs.Args.Command.ChatMessage.Channel, cmdArgs.Args.Command.ChatMessage.Id, message.ToString());
+        switch (whisper) {
+            case false: {
+                client?.SendReply(chatMessage.Channel, chatMessage.Id, message.ToString());
+                break;
+            }
+            case true: {
+                var result = await HelixUtils.SendWhisper(cmdArgs.Bot.Options, chatMessage.UserId, message.ToString());
+                if (!result) {
+                    ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                }
+                break;
+            }
+        }
     }
 }

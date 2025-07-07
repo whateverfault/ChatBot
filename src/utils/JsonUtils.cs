@@ -21,7 +21,6 @@ public static class JsonUtils {
 
     public static bool TryRead<T>(string fileName, out T? obj) {
         obj = default;
-        if (new FileInfo(fileName).IsLocked()) return false;
         if (!File.Exists(fileName)) return false;
         Read(fileName, out obj);
         return true;

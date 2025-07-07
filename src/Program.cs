@@ -19,6 +19,7 @@ namespace ChatBot;
 
 internal static class Program {
     private static Cli _cli = null!;
+    private static bot.ChatBot _bot = null!;
 
     private static bool _forcedToRender;
     
@@ -43,14 +44,14 @@ internal static class Program {
             }
         }
         
-        var bot = new bot.ChatBot();
-
-        ServiceManager.InitServices(bot, []);
-        var cliData = new CliData(bot);
+        _bot = new bot.ChatBot();
+        
+        ServiceManager.InitServices(_bot, []);
+        var cliData = new CliData(_bot);
         _cli = new Cli(cliData);
         if (autoInit) {
-            bot.Options.Load();
-            bot.Start();
+            _bot.Options.Load();
+            _bot.Start();
         }
         if (resetDefaultCmds) {
             CommandsList.SetDefaults();
@@ -63,6 +64,10 @@ internal static class Program {
         Console.ReadLine();
     }
 
+    public static bot.ChatBot GetBot() {
+        return _bot;
+    }
+    
     public static void ForceToRender() {
         _forcedToRender = true;
     }

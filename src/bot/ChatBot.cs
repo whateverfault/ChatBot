@@ -31,6 +31,7 @@ public class ChatBot : Bot {
     public override event EventHandler<OnChatCommandReceivedArgs>? OnChatCommandReceived;
     public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
     public override event EventHandler<OnLogArgs>? OnLog;
+    public event NoArgs? OnInitialized;
     
     
     private void Init() {
@@ -68,6 +69,8 @@ public class ChatBot : Bot {
         _client.Connect();
         _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
         _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");
+        
+        OnInitialized?.Invoke();
     }
     
     public override void Enable() {

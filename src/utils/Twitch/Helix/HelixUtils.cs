@@ -17,7 +17,7 @@ public static class HelixUtils {
     
     
     #region ban user
-    public static async Task BanUserHelix(ChatBotOptions options, string username, string message) {
+    public static async Task BanUser(ChatBotOptions options, string username, string message) {
         try {
             var userId = await TwitchLibUtils.GetUserId(options, username);
             var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
@@ -122,7 +122,7 @@ public static class HelixUtils {
     #endregion
     
     #region delete message
-    public static async Task DeleteMessageHelix(ChatBotOptions options, ChatMessage message) {
+    public static async Task DeleteMessage(ChatBotOptions options, ChatMessage message) {
         try {
             var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
             var botId = await TwitchLibUtils.GetUserId(options, options.Username!);
@@ -553,8 +553,53 @@ public static class HelixUtils {
     
     #endregion
     
+    #region Whisper
+    
+    public static async Task<bool> SendWhisper(ChatBotOptions options, string userId, string message) {
+        try {
+            var botId = await TwitchLibUtils.GetUserId(options, options.Username!);
+            if (string.IsNullOrEmpty(botId)) {
+                _logger.Log(LogLevel.Error, $"Channel {options.Channel!} not found");
+                return false;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+
+            var requestBody = new { 
+                                      message 
+                                  };
+
+            var jsonContent = JsonConvert.SerializeObject(requestBody);
+            
+            var requestMessage = new HttpRequestMessage
+                                 {
+                                     Method = HttpMethod.Post,
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/whispers?from_user_id={botId}&to_user_id={userId}"),
+                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+                                 };
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode) {
+                _logger.Log(LogLevel.Info, $"Successfully sent whisper to {userId}");
+                return true;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _logger.Log(LogLevel.Error, $"Failed to send whisper. Status: {response.StatusCode}. Response: {responseContent}");
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error sending whisper: {ex.Message}");
+        }
+        return false;
+    }
+    
+    #endregion
+    
     #region create clip
-    public static async Task<string?> CreateClipHelix(ChatBotOptions options) {
+    public static async Task<string?> CreateClip(ChatBotOptions options) {
         try {
             var broadcasterId = await TwitchLibUtils.GetUserId(options, options.Channel!);
             if (string.IsNullOrEmpty(broadcasterId)) {
@@ -599,5 +644,44 @@ public static class HelixUtils {
 
         return null;
     }
+    #endregion
+
+    #region Stream Info
+
+    public static async Task<StreamResponse?> GetStreams(ChatBotOptions options, string username) {
+        try {
+            var channelId = await TwitchLibUtils.GetUserId(options, username);
+            if (string.IsNullOrEmpty(channelId)) {
+                _logger.Log(LogLevel.Error, $"Channel {username} not found");
+                return null;
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
+        
+            var response = await _httpClient.GetAsync($"https://api.twitch.tv/helix/streams?user_id={channelId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode) {
+                var streamResponse = JsonConvert.DeserializeObject<StreamResponse>(responseContent);
+
+                if (streamResponse?.Data.Count > 0) {
+                    _logger.Log(LogLevel.Info, $"Retrieved streams info for {username}");
+                    return streamResponse;
+                }
+                
+                _logger.Log(LogLevel.Info, $"Channel {username} is not currently streaming");
+                return null;
+            }
+            
+            _logger.Log(LogLevel.Error, $"Failed to get stream info for {username}. Status: {response.StatusCode}. Response: {responseContent}");
+        }
+        catch (Exception ex) {
+            _logger.Log(LogLevel.Error, $"Error getting stream title: {ex.Message}");
+        }
+        return null;
+    }
+
     #endregion
 }

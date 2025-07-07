@@ -99,6 +99,14 @@ public class ChatCommandsService : Service {
         Options.SetVerboseState((State)(((int)Options.VerboseState+1)%Enum.GetValues(typeof(State)).Length));
     }
 
+    public int GetSendWhisperIfPossibleStateAsInt() {
+        return (int)Options.SendWhisperIfPossible;
+    }
+
+    public void SendWhisperIfPossibleStateNext() {
+        Options.SetVerboseState((State)(((int)Options.SendWhisperIfPossible+1)%Enum.GetValues(typeof(State)).Length));
+    }
+    
     public string GetBaseTitle() {
         return Options.BaseTitle;
     }

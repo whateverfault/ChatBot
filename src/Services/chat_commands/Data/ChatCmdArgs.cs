@@ -12,7 +12,8 @@ public class ChatCmdArgs {
     public ChatCmdArgs(
         OnChatCommandReceivedArgs args,
         List<string> parsed,
-        bot.ChatBot bot, ChatCommand command) {
+        bot.ChatBot bot, 
+        ChatCommand command) {
         Args = args;
         Parsed = parsed;
         Bot = bot;

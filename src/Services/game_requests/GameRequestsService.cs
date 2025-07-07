@@ -44,20 +44,26 @@ public class GameRequestsService : Service {
         var gameNameSb = new StringBuilder();
 
         foreach (var arg in args) {
-            if (arg[0..2].Contains("--")) {
-                continue;
+            if (arg.Length >= 2 && arg[0..2].Contains("--")) {
+                break;
             }
 
             gameNameSb.Append($"{arg} ");
         }
         
         var index = args.IndexOf("--position");
-        var position = Options.GameRequests!.Count+1;
+        var position = -1;
         if (index >= 0 && index < args.Count-1) {
             position = int.Parse(args[index+1]);
         }
         
-        if (position <= 0 || position >= Options.GameRequests!.Count) {
+        index = args.IndexOf("--user");
+        var requester = chatMessage.Username;
+        if (index >= 0 && index < args.Count-1) {
+            requester = args[index+1];
+        }
+        
+        if (position <= 0 || position > Options.GameRequests!.Count+1) {
             position = Options.GameRequests!.Count+1;
         }
         
@@ -71,11 +77,11 @@ public class GameRequestsService : Service {
             
             var gameRequest = new GameRequest(
                                               gameName,
-                                              chatMessage.Username
+                                              requester
                                               );
             
             Options.AddRequest(gameRequest, position-1);
-            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} добавлена в очередь на позицию {position}.");
+            Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} добавлена в очередь на {position} позицию.");
             return Task.CompletedTask;
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e.Message}");

@@ -10,6 +10,7 @@ using ChatBot.Services.message_randomizer;
 using ChatBot.Services.moderation;
 using ChatBot.Services.presets;
 using ChatBot.Services.Static;
+using ChatBot.Services.telegram;
 using ChatBot.Services.text_generator;
 using ChatBot.Services.translator;
 
@@ -30,6 +31,7 @@ public class CliData {
     public AiService Ai { get; }
     public TranslatorService Translator { get; }
     public GameRequestsService GameRequests { get; }
+    public TgNotificationsService TgNotifications { get; }
 
 
     public CliData(bot.ChatBot bot) {
@@ -47,5 +49,6 @@ public class CliData {
         Ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
         Translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
         GameRequests = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        TgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
     }
 }
