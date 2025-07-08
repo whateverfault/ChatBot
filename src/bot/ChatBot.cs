@@ -10,6 +10,7 @@ using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
+using TwitchLib.Communication.Events;
 using TwitchLib.Communication.Models;
 using LogLevel = ChatBot.Services.logger.LogLevel;
 
@@ -61,18 +62,19 @@ public class ChatBot : Bot {
         }
 
         Init();
-        
+
         _client!.OnChatCommandReceived += OnChatCommandReceived;
         _client.OnMessageReceived += OnMessageReceived;
+        _client.OnDisconnected += Reconnect;
         _client.OnLog += OnLog;
         
         _client.Connect();
         _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
         _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");
-        
+
         OnInitialized?.Invoke();
     }
-    
+
     public override void Enable() {
         _options.SetState(State.Enabled);
     }
@@ -80,7 +82,7 @@ public class ChatBot : Bot {
     public override void Disable() {
         _options.SetState(State.Disabled);
     }
-    
+
     public override ErrorCode TryGetClient(out ITwitchClient? client) {
         client = GetClient();
         return !_initialized ? ErrorCode.NotInitialized : ErrorCode.None;
@@ -90,8 +92,9 @@ public class ChatBot : Bot {
         return _client;
     }
 
-    public override void ToggleService() {
-        _options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
+    private void Reconnect(object? sender, OnDisconnectedEventArgs args) {
+        _client?.Reconnect();
+        _messageLogger.Log(LogLevel.Info, "Reconnected.");
     }
     
     private ErrorCode IsValidSave() {
