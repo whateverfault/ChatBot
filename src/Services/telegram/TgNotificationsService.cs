@@ -26,23 +26,29 @@ public class TgNotificationsService : Service {
             if (response is not { Ok: true }) {
                 return null;
             }
-            
-            return response.Result.MessageId;
+
+            var messageId = response.Result.MessageId;
+            _logger.Log(LogLevel.Info, $"Notification is sent. (id: {messageId})");
+            return messageId;
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
             return null;
         }
     }
 
-    public async Task DeleteNotification(int messageId) {
+    public async Task<bool> DeleteNotification(int messageId) {
         try {
-            await _tgBotClient.DeleteMessageAsync(messageId, logger: _logger);
+            _logger.Log(LogLevel.Info, $"Deleted a previous notification message. (id: {messageId})");
+            return await _tgBotClient.DeleteMessageAsync(messageId, logger: _logger);
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
         }
+        return false;
     }
     
     private string ProcessPrompt(string prompt, string streamTitle) {
+        var random = Random.Shared;
+        
         var replacements = new Dictionary<string, string> {
                                                               {
                                                                   "{title}",
@@ -50,7 +56,7 @@ public class TgNotificationsService : Service {
                                                               },
                                                               {
                                                                   "{link}",
-                                                                  $"{Constants.BaseTwitchUrl}{_bot.Options.Channel}"
+                                                                  $"{Constants.BaseTwitchUrl}{_bot.Options.Channel}?v={random.Next(int.MinValue, int.MaxValue)}"
                                                               },
                                                               {
                                                                   "\\n",

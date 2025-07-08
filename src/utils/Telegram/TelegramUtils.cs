@@ -58,7 +58,7 @@ public static class TelegramUtils {
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Error deleting Telegram message. Status: {response.StatusCode}. Content: {responseContent}");
+                logger?.Log(LogLevel.Error, $"Error deleting a Telegram message (chatId: {chatId}; id: {messageId}). Status: {response.StatusCode}. Content: {responseContent}");
                 return false;
             }
         
@@ -66,7 +66,7 @@ public static class TelegramUtils {
             return true;
         }
         catch (Exception ex) {
-            logger?.Log(LogLevel.Error, $"Error deleting message: {ex.Message}");
+            logger?.Log(LogLevel.Error, $"Caught an exception: {ex.Message}");
             return false;
         }
     }

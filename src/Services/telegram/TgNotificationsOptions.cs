@@ -81,7 +81,7 @@ public class TgNotificationsOptions : Options {
         Save();
     }
 
-    public void SetLastMessageId(int id) {
+    public void SetLastMessageId(int? id) {
         _saveData!.LastMessageId = id;
         Save();
     }

@@ -8,5 +8,5 @@ public class SendMessageResponse {
     public bool Ok { get; set; }
     
     [JsonProperty("result")]
-    public SendMessageResult Result { get; set; }
+    public SendMessageResult Result { get; set; } = null!;
 }

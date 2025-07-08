@@ -665,14 +665,7 @@ public static class HelixUtils {
 
             if (response.IsSuccessStatusCode) {
                 var streamResponse = JsonConvert.DeserializeObject<StreamResponse>(responseContent);
-
-                if (streamResponse?.Data.Count > 0) {
-                    _logger.Log(LogLevel.Info, $"Retrieved streams info for {username}");
-                    return streamResponse;
-                }
-                
-                _logger.Log(LogLevel.Info, $"Channel {username} is not currently streaming");
-                return null;
+                return streamResponse?.Data.Count <= 0 ? null : streamResponse;
             }
             
             _logger.Log(LogLevel.Error, $"Failed to get stream info for {username}. Status: {response.StatusCode}. Response: {responseContent}");
