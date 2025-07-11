@@ -36,7 +36,7 @@ public class MessageFilterOptions : Options {
                                  State.Disabled,
                                  [
                                      new CommentedRegex(
-                                                        new Regex(@"(?<!\d)\d{8,11}(?!\d)"), 
+                                                        new Regex(@"(?:^|\s)(\d{8,11})(?=\s|$)"), 
                                                         true, 
                                                         "Level Requests"),
                                      new CommentedRegex(
