@@ -247,7 +247,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       21,
                                                       "translate",
-                                                      "<text> [-- target_language]",
+                                                      "<text> [--lang lang_code --source_lang lang_code]",
                                                       "перевести текст.",
                                                       Translate,
                                                       Restriction.Vip
@@ -1042,22 +1042,28 @@ public static class CommandsList {
         
         var textSb = new StringBuilder();
         foreach (var arg in cmdArgs.Parsed) {
-            if (arg is null or "--") break;
+            if (arg.Contains("--")) break;
             textSb.Append($"{arg} ");
         }
 
         var targetLang = string.Empty;
-        var index = cmdArgs.Parsed.IndexOf("--");
+        var index = cmdArgs.Parsed.IndexOf("--lang");
         if (index >= 0 && index < cmdArgs.Parsed.Count-1) {
             targetLang = cmdArgs.Parsed[index+1];
         }
         
-        var translated = await translator.Translate(textSb.ToString(), targetLang);
+        var sourceLang = string.Empty;
+        index = cmdArgs.Parsed.IndexOf("--source_lang");
+        if (index >= 0 && index < cmdArgs.Parsed.Count-1) {
+            sourceLang = cmdArgs.Parsed[index+1];
+        }
+        
+        var translated = await translator.Translate(textSb.ToString(), targetLang, sourceLang);
         if (translated == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            ErrorHandler.ReplyWithError(ErrorCode.TranslationFailed, chatMessage, client);
             return;
         }
-        client?.SendReply(chatMessage.Channel, chatMessage.Id, translated);
+        client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Перевод: {translated}");
     }
 
     private static async Task DetectLang(ChatCmdArgs cmdArgs) {
@@ -1798,7 +1804,7 @@ public static class CommandsList {
                 message.Append($"{reply[i]} ");
             }
         }
-        
+
         switch (whisper) {
             case false: {
                 client?.SendReply(chatMessage.Channel, chatMessage.Id, message.ToString());

@@ -57,7 +57,7 @@ public class GoogleTranslateClient {
         }
     }
     
-    public async Task<TranslateTextResponse?> TranslateTextAsync(List<string> texts, string targetLanguage, string? sourceLanguage = null, LoggerService? logger = null) {
+    public async Task<TranslateTextResponse?> Translate(List<string> texts, string targetLanguage, string? sourceLanguage = null, LoggerService? logger = null) {
         var endpoint = $"https://translate.googleapis.com/v3beta1/projects/{_projectId}/locations/{_location}:translateText";
 
         var request = new TranslateTextRequest

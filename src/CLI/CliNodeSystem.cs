@@ -7,6 +7,7 @@ using ChatBot.Services.ai;
 using ChatBot.Services.level_requests;
 using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
+using ChatBot.Services.translator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
@@ -622,6 +623,19 @@ public class CliNodeSystem {
                                                        _state,
                                                        true,
                                                        [
+                                                           new CliNodeEnum(
+                                                                             "Translation Service",
+                                                                             _state.Data.Translator.GetTranslationServiceAsInt,
+                                                                             typeof(TranslationService),
+                                                                             CliNodePermission.Default,
+                                                                             _state.Data.Translator.TranslationServiceNext
+                                                                            ),
+                                                           new CliNodeString(
+                                                                             "Target Language",
+                                                                             _state.Data.Translator.GetTargetLanguage,
+                                                                             CliNodePermission.Default,
+                                                                             _state.Data.Translator.SetTargetLanguage
+                                                                            ),
                                                            new CliNodeStaticDirectory(
                                                                                       "Google Translator",
                                                                                       _state,
@@ -646,20 +660,34 @@ public class CliNodeSystem {
                                                                                                [
                                                                                                    new CliNodeString(
                                                                                                         "Api Token",
-                                                                                                        _state.Data.Translator.GetToken,
+                                                                                                        _state.Data.Translator.GetGoogleToken,
                                                                                                         CliNodePermission.Default,
-                                                                                                        _state.Data.Translator.SetToken
+                                                                                                        _state.Data.Translator.SetGoogleToken
                                                                                                         ),
                                                                                                ]
                                                                                                ),
                                                                                       ]
                                                                                       ),
-                                                           new CliNodeString(
-                                                                             "TargetLanguage",
-                                                                             _state.Data.Translator.GetTargetLanguage,
-                                                                             CliNodePermission.Default,
-                                                                             _state.Data.Translator.SetTargetLanguage
-                                                                             ), 
+                                                           new CliNodeStaticDirectory(
+                                                                                      "Vk Translator",
+                                                                                      _state,
+                                                                                      true,
+                                                                                      [
+                                                                                          new CliNodeStaticDirectory(
+                                                                                               "Secret",
+                                                                                               _state,
+                                                                                               true,
+                                                                                               [
+                                                                                                   new CliNodeString(
+                                                                                                        "Api Token",
+                                                                                                        _state.Data.Translator.GetVkToken,
+                                                                                                        CliNodePermission.Default,
+                                                                                                        _state.Data.Translator.SetVkToken
+                                                                                                        ),
+                                                                                               ]
+                                                                                               ),
+                                                                                      ]
+                                                                                      ),
                                                            new CliNodeEnum(
                                                                            "Service State",
                                                                            _state.Data.Translator.GetServiceStateAsInt,

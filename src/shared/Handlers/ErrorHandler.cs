@@ -25,6 +25,7 @@ public enum ErrorCode {
     ClipCreationFailed,
     RequestFailed,
     NothingFound,
+    TranslationFailed,
     None,
 }
 
@@ -51,6 +52,7 @@ public class ErrorHandler {
                                                                   "Failed to create a clip",
                                                                   "Request Failed.",
                                                                   "Nothing found.",
+                                                                  "Translation failed.",
                                                               ];
 
 
@@ -74,6 +76,7 @@ public class ErrorHandler {
                                                                 "Не удалось создать клип.",
                                                                 "Запрос не удался.",
                                                                 "Ничего не найдено.",
+                                                                "Не удалось перевести.",
                                                             ];
 
 

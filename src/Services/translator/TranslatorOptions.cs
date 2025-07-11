@@ -15,10 +15,12 @@ public class TranslatorOptions : Options {
     public override State ServiceState => _saveData!.ServiceState;
     public string ProjectId => _saveData!.ProjectId;
     public string Location => _saveData!.Location;
-    public string Token => _saveData!.Token;
+    public string GoogleToken => _saveData!.GoogleToken;
+    public string VkToken => _saveData!.VkToken;
     public string TargetLanguage => _saveData!.TargetLanguage;
+    public TranslationService TranslationService => _saveData!.TranslationService;
 
-    
+
     public override bool TryLoad() {
         return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
@@ -58,13 +60,23 @@ public class TranslatorOptions : Options {
         Save();
     }
     
-    public void SetToken(string token) {
-        _saveData!.Token = token;
+    public void SetGoogleToken(string token) {
+        _saveData!.GoogleToken = token;
+        Save();
+    }
+    
+    public void SetVkToken(string token) {
+        _saveData!.VkToken = token;
         Save();
     }
 
     public void SetTargetLanguage(string language) {
         _saveData!.TargetLanguage = language;
+        Save();
+    }
+
+    public void SetTranslationService(TranslationService service) {
+        _saveData!.TranslationService = service;
         Save();
     }
 }
