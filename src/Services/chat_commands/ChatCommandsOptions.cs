@@ -101,6 +101,10 @@ public class ChatCommandsOptions : Options {
         _saveData!.BaseTitle = title;
         Save();
     }
+
+    public List<CustomChatCommand>? GetCustomCommands() {
+        return CustomCmds;
+    }
     
     public void AddChatCmd(ChatCommand chatCmd) {
         if (chatCmd.GetType() != typeof(CustomChatCommand)) return;

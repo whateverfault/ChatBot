@@ -170,6 +170,12 @@ public class CliNodeSystem {
                                                                     CliNodePermission.Default,
                                                                     cmd.SetArgs
                                                                    ),
+                                                  new CliNodeAliases(
+                                                                     "Aliases",
+                                                                     cmd.GetAliases,
+                                                                     CliNodePermission.Default,
+                                                                     cmd.SetAliases
+                                                                    ),
                                                   new CliNodeString(
                                                                     "Description",
                                                                     cmd.GetDescription,
@@ -218,6 +224,7 @@ public class CliNodeSystem {
                                                                                               "Remove Custom Command",
                                                                                               _state.Data.ChatCommands.Options.AddChatCmd,
                                                                                               _state.Data.ChatCommands.Options.RemoveChatCmd,
+                                                                                              _state.Data.ChatCommands.Options.GetCustomCommands() ?? [],
                                                                                               _state
                                                                                               ),
                                                           new CliNodeStaticDirectory(

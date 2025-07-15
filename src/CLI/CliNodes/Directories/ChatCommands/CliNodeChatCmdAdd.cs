@@ -1,5 +1,4 @@
-﻿using ChatBot.Services.chat_commands;
-using ChatBot.Services.chat_commands.Data;
+﻿using ChatBot.Services.chat_commands.Data;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
@@ -10,8 +9,10 @@ public delegate void AddChatCmdHandler(ChatCommand chatCmd);
 public class CliNodeChatCmdAdd : CliNode {
     private readonly AddChatCmdHandler _add;
 
+    private int _id;
+
     protected override string Text { get; }
-    
+
 
     public CliNodeChatCmdAdd(string text, AddChatCmdHandler add) {
         Text = text;
@@ -24,15 +25,16 @@ public class CliNodeChatCmdAdd : CliNode {
         Console.Write("Chat Output: ");
         var output = Console.ReadLine() ?? "--";
         var chatCmd = new CustomChatCommand(
-                                      name,
-                                      "--",
-                                      "--",
-                                      [],
-                                      output,
-                                      Restriction.Everyone,
-                                      State.Enabled,
-                                      1,
-                                      0);
+                                            _id++,
+                                            name,
+                                            "--",
+                                            "--",
+                                            [],
+                                            output,
+                                            Restriction.Everyone,
+                                            State.Enabled,
+                                            1,
+                                            0);
         _add.Invoke(chatCmd);
     }
 }

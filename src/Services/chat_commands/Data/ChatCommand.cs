@@ -47,6 +47,10 @@ public abstract class ChatCommand {
         return Aliases;
     }
 
+    public virtual void SetAliases(List<string> aliases) {
+        Aliases = aliases;
+    }
+    
     public virtual void AddAlias(string alias) {
         Aliases?.Add(alias);
         chatCommandsService.Options.Save();

@@ -30,6 +30,7 @@ public sealed class CustomChatCommand : ChatCommand {
     
     
     public CustomChatCommand(
+        int id,
         string name,
         string args,
         string description,
@@ -39,6 +40,7 @@ public sealed class CustomChatCommand : ChatCommand {
         State state,
         int cooldown,
         long lastUsed) {
+        Id = id;
         Name = name;
         Args = args;
         Description = description;
@@ -51,7 +53,9 @@ public sealed class CustomChatCommand : ChatCommand {
         LastUsed = lastUsed;
     }
     
+    [JsonConstructor]
     public CustomChatCommand(
+        [JsonProperty(PropertyName = "id")] int id,
         [JsonProperty(PropertyName = "name")] string name,
         [JsonProperty(PropertyName = "args")] string args,
         [JsonProperty(PropertyName = "description")] string description,
@@ -60,6 +64,7 @@ public sealed class CustomChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "restriction")] Restriction restriction,
         [JsonProperty(PropertyName = "state")] State state,
         [JsonProperty(PropertyName = "cooldown")] int cooldown) {
+        Id = id;
         Name = name;
         Args = args;
         Description = description;

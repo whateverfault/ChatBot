@@ -22,6 +22,7 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
         string removeText,
         AddChatCmdHandler addHandler,
         RemoveHandler removeHandler,
+        List<CustomChatCommand> commands,
         CliState state) {
         Text = text;
         _state = state;
@@ -44,6 +45,10 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                         )
                          );
 
+        foreach (var cmd in commands) {
+            _content.AddNode(CommandToNode(cmd));
+        }
+        
         Nodes = [
                     new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
                     new CliNodeChatCmdAdd(addText, Add),
@@ -56,6 +61,22 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
         if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
 
         var cmd = (CustomChatCommand)chatCmd;
+        var node = CommandToNode(cmd);
+        
+        _content.AddNode(node);
+        _addHandler.Invoke(chatCmd);
+    }
+    
+    private void Remove(int index) {
+        if (index < 0 || index >= _content.Nodes.Count-2) {
+            return;
+        }
+        
+        _content.RemoveNode(index+2);
+        _removeHandler.Invoke(index);
+    }
+
+    private CliNodeStaticDirectory CommandToNode(CustomChatCommand cmd) {
         var node = new CliNodeStaticDirectory(
                                               cmd.Name,
                                               _state,
@@ -73,6 +94,12 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                                                     CliNodePermission.Default,
                                                                     cmd.SetArgs
                                                                    ),
+                                                  new CliNodeAliases(
+                                                                     "Aliases",
+                                                                     cmd.GetAliases,
+                                                                     CliNodePermission.Default,
+                                                                     cmd.SetAliases
+                                                                    ),
                                                   new CliNodeString(
                                                                     "Description",
                                                                     cmd.GetDescription,
@@ -107,17 +134,7 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                                                  ),
                                               ]
                                               );
-        
-        _content.AddNode(node);
-        _addHandler.Invoke(chatCmd);
-    }
-    
-    private void Remove(int index) {
-        if (index < 0 || index >= _content.Nodes.Count-2) {
-            return;
-        }
-        
-        _content.RemoveNode(index+2);
-        _removeHandler.Invoke(index);
+
+        return node;
     }
 }
