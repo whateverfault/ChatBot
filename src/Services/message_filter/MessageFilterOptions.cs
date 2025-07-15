@@ -8,7 +8,7 @@ namespace ChatBot.Services.message_filter;
 
 public class MessageFilterOptions : Options {
     private SaveData? _saveData;
-    private List<CommentedRegex> Patterns => _saveData!.Patterns;
+    private List<Filter> Filters => _saveData!.Filters;
     
     protected override string Name => "messageFilter";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
@@ -33,23 +33,19 @@ public class MessageFilterOptions : Options {
 
     public override void SetDefaults() {
         _saveData = new SaveData(
-                                 State.Disabled,
                                  [
-                                     new CommentedRegex(
-                                                        new Regex(@"(?:^|\s)(\d{8,11})(?=\s|$)"), 
-                                                        true, 
-                                                        "Level Requests"),
-                                     new CommentedRegex(
-                                                        new Regex(@"^[!@~]+"),
-                                                        true,
-                                                        "Special Symbols"
-                                                        ),
-                                     new CommentedRegex(
-                                                        new Regex(@"^~"),
-                                                        true,
-                                                        "Commands"
-                                                       ),
-                                 ]
+                                     new Filter(
+                                                "Level Requests",
+                                                @"(?:^|\s)(\d{8,11})",
+                                                true
+                                                ),
+                                     new Filter(
+                                                "Special Symbols",
+                                                "^[!@~]+",
+                                                true
+                                                ),
+                                 ],
+                                 State.Disabled
                                 );
         Save();
     }
@@ -62,23 +58,18 @@ public class MessageFilterOptions : Options {
     public override State GetState() {
         return ServiceState;
     }
-    
-    public void AddPattern(CommentedRegex regex) {
-        Patterns.Add(regex);
-        Save();
+
+    public List<Filter> GetFilters() {
+        return Filters;
     }
     
-    public void AddPatternWithComment(CommentedRegex regex) {
-        Patterns.Add(regex);
+    public void AddFilter(Filter filter) {
+        Filters.Add(filter);
         Save();
     }
 
     public void RemovePattern(int index) {
-        Patterns.RemoveAt(index);
+        Filters.RemoveAt(index);
         Save();
-    }
-
-    public List<CommentedRegex> GetPatterns() {
-        return Patterns;
     }
 }

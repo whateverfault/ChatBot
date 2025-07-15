@@ -2,10 +2,10 @@
 using ChatBot.CLI.CliNodes.Client;
 using ChatBot.CLI.CliNodes.Directories;
 using ChatBot.CLI.CliNodes.Directories.ChatCommands;
+using ChatBot.CLI.CliNodes.Directories.MessageFilter;
 using ChatBot.CLI.CliNodes.Directories.Moderation;
 using ChatBot.Services.ai;
 using ChatBot.Services.level_requests;
-using ChatBot.Services.moderation;
 using ChatBot.Services.Static;
 using ChatBot.Services.translator;
 using ChatBot.shared.Handlers;
@@ -255,57 +255,18 @@ public class CliNodeSystem {
                                                                          _state.Data.ChatCommands.ServiceStateNext
                                                                          ),
                                                       ]);
-
-        var timeoutDir = new CliNodeDynamicModerationDirectory(
-                                                               "Timeout Patterns",
-                                                               "Add Pattern",
-                                                               "Remove Pattern",
-                                                               ModerationActionType.Timeout,
-                                                               _state
-                                                              );
-        
-        var banDir = new CliNodeDynamicModerationDirectory(
-                                                               "Ban Patterns",
-                                                               "Add Pattern",
-                                                               "Remove Pattern",
-                                                               ModerationActionType.Ban,
-                                                               _state
-                                                              );
-        
-        var warnDir = new CliNodeDynamicModerationDirectory(
-                                                           "Warn Patterns",
-                                                           "Add Pattern",
-                                                           "Remove Pattern",
-                                                           ModerationActionType.Warn,
-                                                           _state
-                                                          );
-        
-        var warnWithTimeoutDir = new CliNodeDynamicModerationDirectory(
-                                                            "Warn With Timeout Patterns",
-                                                            "Add Pattern",
-                                                            "Remove Pattern",
-                                                            ModerationActionType.WarnWithTimeout,
-                                                            _state
-                                                           );
-        
-        var warnWithBanDir = new CliNodeDynamicModerationDirectory(
-                                                            "Warn With Ban Patterns",
-                                                            "Add Pattern",
-                                                            "Remove Pattern",
-                                                            ModerationActionType.WarnWithBan,
-                                                            _state
-                                                           );
         
         var moderationDir = new CliNodeStaticDirectory(
                                                        ServiceName.Moderation,
                                                        _state,
                                                        true,
                                                        [
-                                                           banDir,
-                                                           timeoutDir,
-                                                           warnWithBanDir,
-                                                           warnWithTimeoutDir,
-                                                           warnDir,
+                                                           new CliNodeDynamicModerationDirectory(
+                                                                                                 "Moderation Patterns",
+                                                                                                 "Add Pattern",
+                                                                                                 "Remove Pattern",
+                                                                                                 _state
+                                                                                                ),
                                                            new CliNodeEnum(
                                                                            "Service State",
                                                                            _state.Data.Moderation.GetServiceStateAsInt,
@@ -316,16 +277,13 @@ public class CliNodeSystem {
                                                        ]
                                                       );
         
-        var globalPatterns = new CliNodeDynamicDirectory(
-                                                   "Global Patterns",
-                                                   "Add Pattern",
-                                                   "Remove Pattern",
-                                                   _state.Data.MessageFilter.AddPatternWithComment,
-                                                   _state.Data.MessageFilter.RemovePattern,
-                                                   _state.Data.MessageFilter.GetPatternsWithComments(),
-                                                   _state,
-                                                   true
-                                                   );
+        var globalPatterns = new CliNodeMessageFilterDynamicDirectory(
+                                                                      "Global Filters",
+                                                                      _state.Data.MessageFilter.AddFilter,
+                                                                      _state.Data.MessageFilter.RemovePattern,
+                                                                      _state,
+                                                                      _state.Data.MessageFilter.GetFilters()
+                                                                     );
         
         var messageFilterDir = new CliNodeStaticDirectory(
                                                   ServiceName.MessageFilter,

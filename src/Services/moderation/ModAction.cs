@@ -11,7 +11,10 @@ using TwitchLib.Client.Models;
 namespace ChatBot.Services.moderation;
 
 public class ModAction {
-    private static readonly Options _options = ServiceManager.GetService(ServiceName.Moderation).Options;
+    private static readonly ModerationOptions _options = (ModerationOptions)ServiceManager.GetService(ServiceName.Moderation).Options;
+
+    [JsonProperty("name")] 
+    public string Name { get; private set; } = null!;
 
     [JsonProperty(PropertyName = "pattern_index")]
     public int PatternIndex { get; private set; }
@@ -26,74 +29,91 @@ public class ModAction {
     public ModerationActionType Type { get; private set; }
     [JsonProperty(PropertyName = "restriction")]
     public Restriction Restriction { get; private set; }
+    
+    [JsonProperty(PropertyName = "is_default")]
+    public bool IsDefault { get; private set; }
+    
     [JsonProperty(PropertyName = "state")]
     public State State { get; private set; }
 
     
     public ModAction() {}
     
-    public ModAction(int patternIndex, int duration, string moderatorComment, Restriction restriction) {
+    public ModAction(string name, int patternIndex, int duration, string moderatorComment, Restriction restriction, bool isDefault = false) {
+        Name = name;
         Type = ModerationActionType.Timeout;
         PatternIndex = patternIndex;
         Duration = duration;
         ModeratorComment = moderatorComment;
         Restriction = restriction;
-        State = State.Disabled;
         MaxWarnCount = 1;
+        IsDefault = isDefault;
+        State = State.Disabled;
     }
 
-    public ModAction(int patternIndex, string moderatorComment, Restriction restriction) {
+    public ModAction(string name, int patternIndex, string moderatorComment, Restriction restriction, bool isDefault = false) {
+        Name = name;
         Type = ModerationActionType.Ban;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
         Restriction = restriction;
-        State = State.Disabled;
         MaxWarnCount = 1;
+        IsDefault = isDefault;
+        State = State.Disabled;
     }
     
-    public ModAction(int patternIndex, string moderatorComment, ModerationActionType actionType, Restriction restriction) {
+    public ModAction(string name, int patternIndex, string moderatorComment, ModerationActionType actionType, Restriction restriction, bool isDefault = false) {
+        Name = name;
         Type = actionType;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
         Restriction = restriction;
-        State = State.Disabled;
         MaxWarnCount = 1;
+        IsDefault = isDefault;
+        State = State.Disabled;
     }
     
-    public ModAction(int patternIndex, string moderatorComment, int maxWarnCount, Restriction restriction) {
+    public ModAction(string name, int patternIndex, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false) {
+        Name = name;
         Type = ModerationActionType.WarnWithBan;
         PatternIndex = patternIndex;
         ModeratorComment = moderatorComment;
         MaxWarnCount = maxWarnCount;
         Restriction = restriction;
+        IsDefault = isDefault;
         State = State.Disabled;
     }
     
-    public ModAction(int patternIndex, int duration, string moderatorComment, int maxWarnCount, Restriction restriction) {
+    public ModAction(string name, int patternIndex, int duration, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false) {
+        Name = name;
         Type = ModerationActionType.WarnWithTimeout;
         PatternIndex = patternIndex;
         Duration = duration;
         ModeratorComment = moderatorComment;
         MaxWarnCount = maxWarnCount;
         Restriction = restriction;
+        IsDefault = isDefault;
         State = State.Disabled;
     }
     
     [JsonConstructor]
     public ModAction(
+        [JsonProperty("name")] string name, 
         [JsonProperty("pattern_index")] int patternIndex,
         [JsonProperty("duration")] int duration,
         [JsonProperty("max_warn_count")] int maxWarnCount,
         [JsonProperty("moderator_comment")] string moderatorComment,
         [JsonProperty("type")] ModerationActionType type,
-        [JsonProperty("restriction")] Restriction restriction
-        ) {
+        [JsonProperty("restriction")] Restriction restriction,
+        [JsonProperty("is_default")] bool isDefault) {
+        Name = name;
         PatternIndex = patternIndex;
         Duration = duration;
         MaxWarnCount = maxWarnCount;
         ModeratorComment = moderatorComment;
         Type = type;
         Restriction = restriction;
+        IsDefault = isDefault;
         State = State.Disabled;
     }
 
@@ -162,14 +182,28 @@ public class ModAction {
         
         _options.Save();
     }
+
+    public string GetName() {
+        return Name;
+    }
+
+    public void SetName(string name) {
+        Name = name;
+        _options.Save();
+    }
     
     public int GetIndex() {
         return PatternIndex;
     }
 
-    public void SetIndex(int index) {
+    public bool SetIndex(int index) {
+        if (index < 0 || index >= _options.ModerationActions.Count) {
+            return false;
+        }
+        
         PatternIndex = index;
         _options.Save();
+        return true;
     }
     
     public int GetDuration() {

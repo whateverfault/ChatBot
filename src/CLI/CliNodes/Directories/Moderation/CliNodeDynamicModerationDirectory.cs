@@ -8,8 +8,11 @@ namespace ChatBot.CLI.CliNodes.Directories.Moderation;
 
 public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
     private readonly MessageFilterService _messageFilter;
+    private readonly ModerationService _moderation;
+    
     private readonly AddModActionHandler _addHandler;
     private readonly RemoveHandler _removeHandler;
+    
     private readonly CliNodeStaticDirectory _content;
     private readonly CliState _state;
 
@@ -22,7 +25,6 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
         string text,
         string addText,
         string removeText,
-        ModerationActionType actionType,
         CliState state) {
         Text = text;
         _state = state;
@@ -31,7 +33,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
 
         _content = new CliNodeStaticDirectory(
                                               "Content",
-                                              state, 
+                                              state,
                                               true, 
                                               []
                                               );
@@ -46,465 +48,134 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                          );
 
         _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        _moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
 
         var nodesContent = _state.Data.Moderation.GetModActions();
         
-        foreach (var nodeContent in nodesContent) {
-            if (nodeContent.Type != actionType) continue;
-
-            switch (nodeContent.Type) {
-                case ModerationActionType.Ban:
-                    _content.AddNode(
-                                        new CliNodeStaticDirectory
-                                            (
-                                             _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
-                                             _state,
-                                             true,
-                                             [
-                                                 new CliNodeInt(
-                                                                "Global Pattern Index",
-                                                                nodeContent.GetIndex,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetIndex
-                                                               ),
-                                                 new CliNodeEnum(
-                                                                 "Exclude Roles",
-                                                                 nodeContent.GetRestrictionAsInt,
-                                                                 typeof(Restriction),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.RestrictionNext
-                                                                ),
-                                                 new CliNodeString(
-                                                                   "Moderator Comment",
-                                                                   nodeContent.GetComment,
-                                                                   CliNodePermission.Default,
-                                                                   nodeContent.SetComment
-                                                                  ),
-                                                 new CliNodeEnum(
-                                                                 "State",
-                                                                 nodeContent.GetStateAsInt,
-                                                                 typeof(State),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.StateNext
-                                                                ),
-                                             ]
-                                            )
-                                       );
-                    break;
-                case ModerationActionType.Timeout:
-                    _content.AddNode(
-                                        new CliNodeStaticDirectory
-                                            (
-                                             _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
-                                             _state,
-                                             true,
-                                             [
-                                                 new CliNodeInt(
-                                                                "Global Pattern Index",
-                                                                nodeContent.GetIndex,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetIndex
-                                                               ),
-                                                 new CliNodeInt(
-                                                                "Duration",
-                                                                nodeContent.GetDuration,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetDuration
-                                                               ),
-                                                 new CliNodeEnum(
-                                                                 "Exclude Roles",
-                                                                 nodeContent.GetRestrictionAsInt,
-                                                                 typeof(Restriction),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.RestrictionNext
-                                                                ),
-                                                 new CliNodeString(
-                                                                   "Moderator Comment",
-                                                                   nodeContent.GetComment,
-                                                                   CliNodePermission.Default,
-                                                                   nodeContent.SetComment
-                                                                  ),
-                                                 new CliNodeEnum(
-                                                                 "State",
-                                                                 nodeContent.GetStateAsInt,
-                                                                 typeof(State),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.StateNext
-                                                                ),
-                                             ]
-                                            )
-                                       );
-                    break;
-                case ModerationActionType.Warn:
-                    _content.AddNode(
-                                        new CliNodeStaticDirectory
-                                            (
-                                             _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
-                                             _state,
-                                             true,
-                                             [
-                                                 new CliNodeInt(
-                                                                "Global Pattern Index",
-                                                                nodeContent.GetIndex,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetIndex
-                                                               ),
-                                                 new CliNodeEnum(
-                                                                 "Exclude Roles",
-                                                                 nodeContent.GetRestrictionAsInt,
-                                                                 typeof(Restriction),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.RestrictionNext
-                                                                ),
-                                                 new CliNodeString(
-                                                                   "Moderator Comment",
-                                                                   nodeContent.GetComment,
-                                                                   CliNodePermission.Default,
-                                                                   nodeContent.SetComment
-                                                                  ),
-                                                 new CliNodeEnum(
-                                                                 "State",
-                                                                 nodeContent.GetStateAsInt,
-                                                                 typeof(State),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.StateNext
-                                                                ),
-                                             ]
-                                            )
-                                       );
-                    break;
-                case ModerationActionType.WarnWithTimeout:
-                    _content.AddNode(
-                                        new CliNodeStaticDirectory
-                                            (
-                                             _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
-                                             _state,
-                                             true,
-                                             [
-                                                 new CliNodeInt(
-                                                                "Global Pattern Index",
-                                                                nodeContent.GetIndex,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetIndex
-                                                               ),
-                                                 new CliNodeInt(
-                                                                "Max Warns",
-                                                                nodeContent.GetMaxWarnCount,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetMaxWarnCount
-                                                               ),
-                                                 new CliNodeInt(
-                                                                "Duration",
-                                                                nodeContent.GetDuration,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetDuration
-                                                               ),
-                                                 new CliNodeEnum(
-                                                                 "Exclude Roles",
-                                                                 nodeContent.GetRestrictionAsInt,
-                                                                 typeof(Restriction),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.RestrictionNext
-                                                                ),
-                                                 new CliNodeString(
-                                                                   "Moderator Comment",
-                                                                   nodeContent.GetComment,
-                                                                   CliNodePermission.Default,
-                                                                   nodeContent.SetComment
-                                                                  ),
-                                                 new CliNodeEnum(
-                                                                 "State",
-                                                                 nodeContent.GetStateAsInt,
-                                                                 typeof(State),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.StateNext
-                                                                ),
-                                             ]
-                                            )
-                                       );
-                    break;
-                case ModerationActionType.WarnWithBan:
-                    _content.AddNode(
-                                        new CliNodeStaticDirectory
-                                            (
-                                             _messageFilter.GetPatternWithComment(nodeContent.PatternIndex).Comment,
-                                             _state,
-                                             true,
-                                             [
-                                                 new CliNodeInt(
-                                                                "Global Pattern Index",
-                                                                nodeContent.GetIndex,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetIndex
-                                                               ),
-                                                 new CliNodeInt(
-                                                                "Max Warns",
-                                                                nodeContent.GetMaxWarnCount,
-                                                                CliNodePermission.Default,
-                                                                nodeContent.SetMaxWarnCount
-                                                               ),
-                                                 new CliNodeEnum(
-                                                                 "Exclude Roles",
-                                                                 nodeContent.GetRestrictionAsInt,
-                                                                 typeof(Restriction),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.RestrictionNext
-                                                                ),
-                                                 new CliNodeString(
-                                                                   "Moderator Comment",
-                                                                   nodeContent.GetComment,
-                                                                   CliNodePermission.Default,
-                                                                   nodeContent.SetComment
-                                                                  ),
-                                                 new CliNodeEnum(
-                                                                 "State",
-                                                                 nodeContent.GetStateAsInt,
-                                                                 typeof(State),
-                                                                 CliNodePermission.Default,
-                                                                 nodeContent.StateNext
-                                                                ),
-                                             ]
-                                            )
-                                       );
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+        foreach (var node in nodesContent.Select(ModActionToNode)) {
+            _content.AddNode(node);
         }
 
         Nodes = [
                     new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodeModActionAdd(addText, Add, actionType),
+                    new CliNodeModActionAdd(addText, Add),
                     new CliNodeRemove(removeText, Remove),
                     _content,
                 ];
     }
     
     private void Add(ModAction modAction) {
-        CliNodeStaticDirectory node;
-        
-        switch (modAction.Type) {
-            case ModerationActionType.Ban: {
-                node = new CliNodeStaticDirectory(
-                                                  _messageFilter.GetPatternWithComment(modAction.PatternIndex).Comment,
-                                                  _state,
-                                                  true,
-                                                  [
-                                                      new CliNodeInt(
-                                                                     "Global Pattern Index",
-                                                                     modAction.GetIndex,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetIndex
-                                                                    ),
-                                                      new CliNodeEnum(
-                                                                      "Exclude Roles",
-                                                                      modAction.GetRestrictionAsInt,
-                                                                      typeof(Restriction),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.RestrictionNext
-                                                                     ),
-                                                      new CliNodeString(
-                                                                        "Moderator Comment",
-                                                                        modAction.GetComment,
-                                                                        CliNodePermission.Default,
-                                                                        modAction.SetComment
-                                                                       ),
-                                                      new CliNodeEnum(
-                                                                      "State",
-                                                                      modAction.GetStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.StateNext
-                                                                     ),
-                                                  ],
-                                                  _messageFilter.GetComment
-                                                 );
-                break;
-            }
-            case ModerationActionType.Timeout: {
-                node = new CliNodeStaticDirectory(
-                                                  _messageFilter.GetPatternWithComment(modAction.PatternIndex).Comment,
-                                                  _state,
-                                                  true,
-                                                  [
-                                                      new CliNodeInt(
-                                                                     "Global Pattern Index",
-                                                                     modAction.GetIndex,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetIndex
-                                                                    ),
-                                                      new CliNodeInt(
-                                                                     "Duration",
-                                                                     modAction.GetDuration,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetDuration
-                                                                    ),
-                                                      new CliNodeEnum(
-                                                                      "Exclude Roles",
-                                                                      modAction.GetRestrictionAsInt,
-                                                                      typeof(Restriction),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.RestrictionNext
-                                                                     ),
-                                                      new CliNodeString(
-                                                                        "Moderator Comment",
-                                                                        modAction.GetComment,
-                                                                        CliNodePermission.Default,
-                                                                        modAction.SetComment
-                                                                       ),
-                                                      new CliNodeEnum(
-                                                                      "State",
-                                                                      modAction.GetStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.StateNext
-                                                                     ),
-                                                  ],
-                                                  _messageFilter.GetComment
-                                                 );
-                break;
-            }
-            case ModerationActionType.Warn: {
-                                node = new CliNodeStaticDirectory(
-                                                  _messageFilter.GetPatternWithComment(modAction.PatternIndex).Comment,
-                                                  _state,
-                                                  true,
-                                                  [
-                                                      new CliNodeInt(
-                                                                     "Global Pattern Index",
-                                                                     modAction.GetIndex,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetIndex
-                                                                    ),
-                                                      new CliNodeEnum(
-                                                                      "Exclude Roles",
-                                                                      modAction.GetRestrictionAsInt,
-                                                                      typeof(Restriction),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.RestrictionNext
-                                                                     ),
-                                                      new CliNodeString(
-                                                                        "Moderator Comment",
-                                                                        modAction.GetComment,
-                                                                        CliNodePermission.Default,
-                                                                        modAction.SetComment
-                                                                       ),
-                                                      new CliNodeEnum(
-                                                                      "State",
-                                                                      modAction.GetStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.StateNext
-                                                                     ),
-                                                  ],
-                                                  _messageFilter.GetComment
-                                                 );
-                break;
-            }
-            case ModerationActionType.WarnWithTimeout:
-                                node = new CliNodeStaticDirectory(
-                                                  _messageFilter.GetPatternWithComment(modAction.PatternIndex).Comment,
-                                                  _state,
-                                                  true,
-                                                  [
-                                                      new CliNodeInt(
-                                                                     "Global Pattern Index",
-                                                                     modAction.GetIndex,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetIndex
-                                                                    ),
-                                                      new CliNodeInt(
-                                                                     "Max Warns",
-                                                                     modAction.GetMaxWarnCount,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetMaxWarnCount
-                                                                    ),
-                                                      new CliNodeInt(
-                                                                     "Duration",
-                                                                     modAction.GetDuration,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetDuration
-                                                                    ),
-                                                      new CliNodeEnum(
-                                                                      "Exclude Roles",
-                                                                      modAction.GetRestrictionAsInt,
-                                                                      typeof(Restriction),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.RestrictionNext
-                                                                     ),
-                                                      new CliNodeString(
-                                                                        "Moderator Comment",
-                                                                        modAction.GetComment,
-                                                                        CliNodePermission.Default,
-                                                                        modAction.SetComment
-                                                                       ),
-                                                      new CliNodeEnum(
-                                                                      "State",
-                                                                      modAction.GetStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.StateNext
-                                                                     ),
-                                                  ],
-                                                  _messageFilter.GetComment
-                                                 );
-                break;
-            case ModerationActionType.WarnWithBan:
-                                node = new CliNodeStaticDirectory(
-                                                  _messageFilter.GetPatternWithComment(modAction.PatternIndex).Comment,
-                                                  _state,
-                                                  true,
-                                                  [
-                                                      new CliNodeInt(
-                                                                     "Global Pattern Index",
-                                                                     modAction.GetIndex,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetIndex
-                                                                    ),
-                                                      new CliNodeInt(
-                                                                     "Max Warns",
-                                                                     modAction.GetMaxWarnCount,
-                                                                     CliNodePermission.Default,
-                                                                     modAction.SetMaxWarnCount
-                                                                    ),
-                                                      new CliNodeEnum(
-                                                                      "Exclude Roles",
-                                                                      modAction.GetRestrictionAsInt,
-                                                                      typeof(Restriction),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.RestrictionNext
-                                                                     ),
-                                                      new CliNodeString(
-                                                                        "Moderator Comment",
-                                                                        modAction.GetComment,
-                                                                        CliNodePermission.Default,
-                                                                        modAction.SetComment
-                                                                       ),
-                                                      new CliNodeEnum(
-                                                                      "State",
-                                                                      modAction.GetStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      modAction.StateNext
-                                                                     ),
-                                                  ],
-                                                  _messageFilter.GetComment
-                                                 );
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
-        _content.AddNode(node);
+        _content.AddNode(ModActionToNode(modAction));
         _addHandler.Invoke(modAction);
     }
     
     private void Remove(int index) {
-        if (index < 0 || index >= _content.Nodes.Count-2) {
+        var modActions = _moderation.GetModActions();
+
+        if (index < 0 || index > modActions.Count || index >= _content.Nodes.Count-2) {
+            return;
+        }
+
+        if (modActions[index].IsDefault) {
             return;
         }
         
         _content.RemoveNode(index+2);
         _removeHandler.Invoke(index);
+    }
+
+    private CliNodeStaticDirectory ModActionToNode(ModAction modAction) {
+        var node = modAction.Type switch {
+                       ModerationActionType.Ban => new
+                           CliNodeStaticDirectory(modAction.Name, _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString("Name", modAction.GetName,
+                                                                        CliNodePermission.Default, modAction.SetName),
+                                                      new CliNodeIndex("Global Filter Index", modAction.GetIndex,
+                                                                     CliNodePermission.Default, modAction.SetIndex),
+                                                      new CliNodeEnum("Exclude Roles", modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction), CliNodePermission.Default,
+                                                                      modAction.RestrictionNext),
+                                                      new CliNodeString("Moderator Comment", modAction.GetComment,
+                                                                        CliNodePermission.Default, modAction.SetComment),
+                                                      new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
+                                                                      CliNodePermission.Default, modAction.StateNext),
+                                                  ], modAction.GetName),
+                       ModerationActionType.Timeout => new
+                           CliNodeStaticDirectory(modAction.Name, _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString("Name", modAction.GetName,
+                                                                        CliNodePermission.Default, modAction.SetName),
+                                                      new CliNodeIndex("Global Filter Index", modAction.GetIndex,
+                                                                     CliNodePermission.Default, modAction.SetIndex),
+                                                      new CliNodeInt("Duration", modAction.GetDuration,
+                                                                     CliNodePermission.Default, modAction.SetDuration),
+                                                      new CliNodeEnum("Exclude Roles", modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction), CliNodePermission.Default,
+                                                                      modAction.RestrictionNext),
+                                                      new CliNodeString("Moderator Comment", modAction.GetComment,
+                                                                        CliNodePermission.Default, modAction.SetComment),
+                                                      new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
+                                                                      CliNodePermission.Default, modAction.StateNext),
+                                                  ], modAction.GetName),
+                       ModerationActionType.Warn => new
+                           CliNodeStaticDirectory(modAction.Name, _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString("Name", modAction.GetName,
+                                                                        CliNodePermission.Default, modAction.SetName),
+                                                      new CliNodeIndex("Global Filter Index", modAction.GetIndex,
+                                                                     CliNodePermission.Default, modAction.SetIndex),
+                                                      new CliNodeEnum("Exclude Roles", modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction), CliNodePermission.Default,
+                                                                      modAction.RestrictionNext),
+                                                      new CliNodeString("Moderator Comment", modAction.GetComment,
+                                                                        CliNodePermission.Default, modAction.SetComment),
+                                                      new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
+                                                                      CliNodePermission.Default, modAction.StateNext),
+                                                  ], modAction.GetName),
+                       ModerationActionType.WarnWithTimeout => new
+                           CliNodeStaticDirectory(modAction.Name, _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString("Name", modAction.GetName,
+                                                                        CliNodePermission.Default, modAction.SetName),
+                                                      new CliNodeIndex("Global Filter Index", modAction.GetIndex,
+                                                                       CliNodePermission.Default, modAction.SetIndex),
+                                                      new CliNodeInt("Max Warns", modAction.GetMaxWarnCount,
+                                                                     CliNodePermission.Default, modAction.SetMaxWarnCount),
+                                                      new CliNodeInt("Duration", modAction.GetDuration,
+                                                                     CliNodePermission.Default, modAction.SetDuration),
+                                                      new CliNodeEnum("Exclude Roles", modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction), CliNodePermission.Default,
+                                                                      modAction.RestrictionNext),
+                                                      new CliNodeString("Moderator Comment", modAction.GetComment,
+                                                                        CliNodePermission.Default, modAction.SetComment),
+                                                      new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
+                                                                      CliNodePermission.Default, modAction.StateNext),
+                                                  ], modAction.GetName),
+                       ModerationActionType.WarnWithBan => new
+                           CliNodeStaticDirectory(modAction.Name, _state,
+                                                  true,
+                                                  [
+                                                      new CliNodeString("Name", modAction.GetName,
+                                                                        CliNodePermission.Default, modAction.SetName),
+                                                      new CliNodeIndex("Global Filter Index", modAction.GetIndex,
+                                                                       CliNodePermission.Default, modAction.SetIndex),
+                                                      new CliNodeInt("Max Warns", modAction.GetMaxWarnCount,
+                                                                     CliNodePermission.Default, modAction.SetMaxWarnCount),
+                                                      new CliNodeEnum("Exclude Roles", modAction.GetRestrictionAsInt,
+                                                                      typeof(Restriction), CliNodePermission.Default,
+                                                                      modAction.RestrictionNext),
+                                                      new CliNodeString("Moderator Comment", modAction.GetComment,
+                                                                        CliNodePermission.Default, modAction.SetComment),
+                                                      new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
+                                                                      CliNodePermission.Default, modAction.StateNext),
+                                                  ], modAction.GetName),
+                       _ => throw new ArgumentOutOfRangeException()
+                   };
+        return node;
     }
 }

@@ -26,13 +26,15 @@ public class MessageFilterService : Service {
 
 
     public void HandleMessage(object? sender, OnMessageReceivedArgs args) {
-        var patterns = Options.GetPatterns();
+        var filters = Options.GetFilters();
         var message = args.ChatMessage.Message;
         var status = FilterStatus.NotMatch;
         var index = 0;
 
-        for (var i = 0; i < patterns.Count; i++) {
-            if (!patterns[i].Regex.Match(message).Success) continue;
+        for (var i = 0; i < filters.Count; i++) {
+            var regex = new Regex(filters[i].Pattern);
+            if (!regex.Match(message).Success) continue;
+            
             status = FilterStatus.Match;
             index = i;
             break;
@@ -41,41 +43,17 @@ public class MessageFilterService : Service {
         OnMessageFiltered?.Invoke(args.ChatMessage, status, index);
     }
 
-    public void AddPattern(string pattern) {
-        Options.AddPattern(new CommentedRegex(new Regex(pattern), false, ""));
+    public void AddFilter(Filter filter) {
+        Options.AddFilter(filter);
     }
 
-    public void AddPatternWithComment(string pattern, bool hasComment, string comment = "") {
-        Options.AddPattern(new CommentedRegex(new Regex(pattern), hasComment, comment));
-    }
-    
-    public List<string> GetPatterns() {
-        return Options.GetPatterns().Select(pattern => pattern.ToString()).ToList()!;
-    }
-    
-    public List<Content> GetPatternsWithComments() {
-        return Options
-           .GetPatterns()
-           .Select(pattern => new Content(pattern.Regex.ToString(), pattern.HasComment, pattern.Comment))
-           .ToList();
-    }
-    
-    public CommentedRegex GetPatternWithComment(int index) {
-        return Options.GetPatterns()[index];
-    }
-
-    public string GetComment(int index) {
-        return Options.GetPatterns()[index].Comment;
-    }
-    
-    public string GetPattern(int index) {
-        return Options.GetPatterns()[index].ToString() ?? string.Empty;
+    public List<Filter> GetFilters() {
+        return Options.GetFilters();
     }
 
     public void RemovePattern(int index) {
-        var patterns = Options.GetPatterns();
+        var patterns = Options.GetFilters();
         if (index > patterns.Count || index < 0) {
-            _logger.Log(LogLevel.Error, "Tried to delete not existing pattern");
             return;
         }
 

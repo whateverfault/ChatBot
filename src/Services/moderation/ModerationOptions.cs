@@ -36,19 +36,14 @@ public class ModerationOptions : Options {
                                  State.Disabled,
                                  [
                                  new ModAction(
+                                               "Level Requests",
                                                0,
                                                600,
                                                "Реквесты только для випов и выше",
                                                2,
-                                               Restriction.Vip
-                                               ),
-                                 new ModAction(
-                                               1,
-                                               69,
-                                               "Эта команда доступна только випам и выше",
-                                               3,
-                                               Restriction.Vip
-                                              ),
+                                               Restriction.Vip,
+                                               true
+                                               )
                                  ],
                                  []
                                  );
