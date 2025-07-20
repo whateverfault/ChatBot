@@ -36,7 +36,7 @@ public class MessageFilterOptions : Options {
                                  [
                                      new Filter(
                                                 "Level Requests",
-                                                @"(?:^|\s)(\d{8,11})",
+                                                @"\b\d{8,11}\b",
                                                 true
                                                 ),
                                      new Filter(

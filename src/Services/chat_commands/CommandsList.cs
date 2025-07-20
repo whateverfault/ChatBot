@@ -27,7 +27,16 @@ public static class CommandsList {
 
 
     static CommandsList() {
+        // 47
         DefaultsCommands = [
+                               new DefaultChatCommand(
+                                                      1,
+                                                      "help",
+                                                      string.Empty,
+                                                      "использование комманд.",
+                                                      Help,
+                                                      Restriction.Everyone
+                                                     ),
                                new DefaultChatCommand(
                                                       0,
                                                    "cmds",
@@ -37,11 +46,11 @@ public static class CommandsList {
                                                    Restriction.Everyone
                                                   ),
                                new DefaultChatCommand(
-                                                      1,
-                                                      "help",
-                                                      string.Empty,
-                                                      "использование комманд.",
-                                                      Help,
+                                                      47,
+                                                      "more",
+                                                      "[page]",
+                                                      "список дополнительных комманд.",
+                                                      More,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -509,7 +518,7 @@ public static class CommandsList {
         var index = 1;
         var cmds = new List<string>();
 
-        for (var i = 0; i < _chatCmds.Options.DefaultCmds?.Count; i++, index++) {
+        for (var i = 0; i < _chatCmds.Options.DefaultCmds?.Count; i++) {
             var cmd = _chatCmds.Options.DefaultCmds[i];
             if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
             if (_chatCmds.Options.DefaultCmds
@@ -523,17 +532,33 @@ public static class CommandsList {
             if (string.IsNullOrEmpty(cmd.Name)) {
                 if (cmds[^1].Equals(Page.pageTerminator)) continue;
                 cmds.Add(Page.pageTerminator);
-                index = 0;
+                index = 1;
                 continue;
             }
             
-            cmds.Add(string.IsNullOrEmpty(cmd.Args)?
-                         $"{index}. {cmdId}{cmd.Name} - {cmd.Description} " 
-                         : $"{index}. {cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} "
-                     );
-        }
+            var desc = cmd.Description.Equals("--") ?
+                           string.Empty :
+                           $"- {cmd.Description}";
 
-        for (var i = 0; i < _chatCmds.Options.CustomCmds?.Count; i++, index++) {
+            var args = string.IsNullOrEmpty(cmd.Args) || cmd.Args.Equals("--") ?
+                           string.Empty :
+                           cmd.Args;
+            
+            cmds.Add($"{index}. {cmdId}{cmd.Name} {args} {desc} ");
+            index++;
+        }
+        
+        
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+    }
+    
+    private static async Task More(ChatCmdArgs cmdArgs) {
+        var chatMessage = cmdArgs.Args.Command.ChatMessage;
+        var cmdId = cmdArgs.Args.Command.CommandIdentifier;
+        var index = 1;
+        var cmds = new List<string>();
+
+        for (var i = 0; i < _chatCmds.Options.CustomCmds?.Count; i++) {
             var cmd = _chatCmds.Options.CustomCmds[i];
             if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
             if (_chatCmds.Options.CustomCmds
@@ -547,16 +572,21 @@ public static class CommandsList {
             if (string.IsNullOrEmpty(cmd.Name)) {
                 if (cmds[^1].Equals(Page.pageTerminator)) continue;
                 cmds.Add(Page.pageTerminator);
-                index = 0;
+                index = 1;
                 continue;
             }
+
+            var desc = cmd.Description.Equals("--") ?
+                           string.Empty :
+                           $"- {cmd.Description}";
+
+            var args = string.IsNullOrEmpty(cmd.Args) || cmd.Args.Equals("--") ?
+                           string.Empty :
+                           cmd.Args;
             
-            cmds.Add(string.IsNullOrEmpty(cmd.Args)?
-                         $"{index}. {cmdId}{cmd.Name} - {cmd.Description} " 
-                         : $"{index}. {cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} "
-                    );
+            cmds.Add($"{index}. {cmdId}{cmd.Name} {args} {desc} ");
+            index++;
         }
-        
         
         await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
     }
@@ -1792,8 +1822,10 @@ public static class CommandsList {
 
         var message = new StringBuilder();
         var pageTerminatorsCount = 0;
-        
-        message.Append($"Страница {page} из {pages[^1]} | ");
+
+        if (pages[^1] > 1) { 
+            message.Append($"Страница {page} из {pages[^1]} | ");
+        }
         
         for (var i = 0; i < reply.Count; i++) {
             if (reply[i] == Page.pageTerminator) {

@@ -1,5 +1,4 @@
-﻿using ChatBot.extensions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace ChatBot.utils;
@@ -42,7 +41,7 @@ public static class JsonUtils {
         if (!Directory.Exists(directory)) {
             Directory.CreateDirectory(directory);
         }
-        if (File.Exists(fileName) && new FileInfo(fileName).IsLocked()) return;
+        
         Clear(fileName);
         Write(fileName, data);
     }

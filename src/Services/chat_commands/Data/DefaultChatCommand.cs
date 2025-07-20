@@ -40,7 +40,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         List<string>? aliases = null,
         State state = State.Enabled) {
         Id = id;
-        Name = name;
+        Name = name.Replace(" ", "");
         Args = args;
         Description = description;
         Action = action;
@@ -62,7 +62,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "cooldown")] int cooldown,
         [JsonProperty(PropertyName = "state")] State state) {
         Id = id;
-        Name = name;
+        Name = name.Replace(" ", "");
         Args = args;
         Description = description;
         foreach (var cmd in CommandsList.DefaultsCommands) {

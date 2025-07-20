@@ -13,12 +13,12 @@ public class Preset {
     }
 
     public void Create() {
-        Directories.ChangeDataDirectory($@"{Name}_data\");
+        Directories.ChangeDataDirectory($"{Name}_data");
         ServiceManager.ServicesToDefault([ServiceName.Presets]);
     }
 
     public void Load(Bot bot) {
-        Directories.ChangeDataDirectory($@"{Name}_data\");
+        Directories.ChangeDataDirectory($"{Name}_data");
         ServiceManager.InitServices(bot, [ServiceName.Presets]);
     }
 }

@@ -8,8 +8,6 @@ namespace ChatBot.Services.game_requests;
 
 public class GameRequestsOptions : Options {
     private SaveData? _saveData;
-    
-    private string FilterPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_filters.json");
 
     private List<GameRequest>? _gameRequests = [];
     private string GameRequestsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}.json");

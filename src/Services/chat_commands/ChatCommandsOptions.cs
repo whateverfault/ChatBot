@@ -12,11 +12,11 @@ public class ChatCommandsOptions : Options {
 
     private List<DefaultChatCommand>? _defaultCmds = [];
     private string DefaultCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_defaultCmds.json");
-    
+
     private List<CustomChatCommand>? _customCmds = [];
     private string CustomCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_customCmds.json");
-    
-    
+
+
     protected override string Name => "chat_commands";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     

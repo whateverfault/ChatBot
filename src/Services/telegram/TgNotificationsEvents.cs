@@ -49,16 +49,16 @@ public class TgNotificationsEvents : ServiceEvents {
             var streamResponse = await HelixUtils.GetStreams(bot.Options, bot.Options.Channel);
 
             if (streamResponse == null) {
+                if (curTime-_service.Options.LastStreamed < _service.Options.Cooldown) {
+                    continue;
+                }
+
                 isStreamRunning = false;
                 _service.Options.SetWasStreaming(isStreamRunning);
                 continue;
             }
 
-            if (!isStreamRunning) {
-                if (curTime-_service.Options.LastStreamed < _service.Options.Cooldown) {
-                    continue;
-                }
-                
+            if (!isStreamRunning && curTime-_service.Options.LastStreamed >= _service.Options.Cooldown) {
                 if (lastNotificationId.HasValue) {
                     await _service.DeleteNotification(lastNotificationId.Value);
                 }

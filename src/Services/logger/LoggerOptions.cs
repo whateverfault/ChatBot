@@ -1,5 +1,4 @@
-﻿using ChatBot.extensions;
-using ChatBot.shared;
+﻿using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
@@ -16,12 +15,10 @@ public class LoggerOptions : Options {
 
 
     public override bool TryLoad() {
-        if (new FileInfo(OptionsPath).IsLocked()) return false;
         return JsonUtils.TryRead(OptionsPath, out _saveData);
     }
 
     public override void Load() {
-        if (new FileInfo(OptionsPath).IsLocked()) return;
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
@@ -47,7 +44,6 @@ public class LoggerOptions : Options {
     }
 
     public void AddLog(Log log) {
-        if (new FileInfo(OptionsPath).IsLocked()) return;
         Logs.Add(log);
         Save();
     }

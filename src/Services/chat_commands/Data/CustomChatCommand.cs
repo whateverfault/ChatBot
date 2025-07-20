@@ -41,7 +41,7 @@ public sealed class CustomChatCommand : ChatCommand {
         int cooldown,
         long lastUsed) {
         Id = id;
-        Name = name;
+        Name = name.Replace(" ", "");
         Args = args;
         Description = description;
         Aliases = aliases;
@@ -65,7 +65,7 @@ public sealed class CustomChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "state")] State state,
         [JsonProperty(PropertyName = "cooldown")] int cooldown) {
         Id = id;
-        Name = name;
+        Name = name.Replace(" ", "");
         Args = args;
         Description = description;
         Aliases = aliases;

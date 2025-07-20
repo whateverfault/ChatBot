@@ -9,7 +9,7 @@ public class ChatBotOptions : Options {
     private SaveData? _saveData = new();
 
     protected override string Name => "chat_bot";
-    protected override string OptionsPath => Path.Combine($"{Directories.DataDirectory}{Name}", $"{Name}_opt.json");
+    protected override string OptionsPath => Path.Combine($"{Directories.DataDirectory}/{Name}", $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public string? Username => _saveData!.Username;
