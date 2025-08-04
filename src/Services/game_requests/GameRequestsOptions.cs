@@ -1,12 +1,14 @@
-﻿using ChatBot.Services.game_requests.Data;
+﻿using ChatBot.services.game_requests.Data;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.services.game_requests;
 
 public class GameRequestsOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
 
     private List<GameRequest>? _gameRequests = [];
@@ -17,33 +19,22 @@ public class GameRequestsOptions : Options {
 
     public override State ServiceState => _saveData!.ServiceState;
     public List<GameRequest>? GameRequests => _gameRequests;
-    public string RawgApiKey => _saveData!.RawgApiKey;
     public List<string> GameRequestsRewards => _saveData!.GameRequestsRewards;
-
     
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData) &&
-               JsonUtils.TryRead(GameRequestsPath, out _gameRequests);
-    }
 
     public override void Load() {
-        var anythingWentWrong = false;
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
-            anythingWentWrong = true;
+            SetDefaults();
         } if (!JsonUtils.TryRead(GameRequestsPath, out _gameRequests!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
-            anythingWentWrong = true;
-        }
-
-        if (anythingWentWrong) {
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
-        JsonUtils.WriteSafe(GameRequestsPath, Path.Combine(Directories.ServiceDirectory, Name), _gameRequests);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+            JsonUtils.WriteSafe(GameRequestsPath, Path.Combine(Directories.ServiceDirectory, Name), _gameRequests);
+        }
     }
 
     public override void SetDefaults() {
@@ -55,10 +46,6 @@ public class GameRequestsOptions : Options {
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
         Save();
-    }
-
-    public override State GetState() {
-        return ServiceState;
     }
 
     public void AddRequest(GameRequest request, int position) {

@@ -1,14 +1,26 @@
-﻿using ChatBot.bot.interfaces;
-
-namespace ChatBot.Services.interfaces;
+﻿namespace ChatBot.services.interfaces;
 
 public abstract class ServiceEvents {
-    protected bool subscribed;
+    public abstract bool Initialized { get; protected set; }
     
-    
-    public abstract void Init(Service service, Bot bot);
+    protected bool Subscribed;
 
-    public virtual void Subscribe() {
-        subscribed = true;
+
+    public virtual void Init(Service service) {
+        Subscribe();
+        Initialized = true;
+    }
+
+    public virtual void Kill() {
+        UnSubscribe();
+        Initialized = false;
+    }
+
+    protected virtual void Subscribe() {
+        Subscribed = true;
+    }
+
+    protected virtual void UnSubscribe() {
+        Subscribed = false;
     }
 }

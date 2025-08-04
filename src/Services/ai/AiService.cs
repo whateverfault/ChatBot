@@ -1,15 +1,14 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.ai.AiClients.DeepSeek;
-using ChatBot.Services.ai.AiClients.Google;
-using ChatBot.Services.ai.AiClients.HuggingFace;
-using ChatBot.Services.ai.AiClients.interfaces;
-using ChatBot.Services.ai.AiClients.Ollama;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.ai.AiClients.DeepSeek;
+using ChatBot.services.ai.AiClients.Google;
+using ChatBot.services.ai.AiClients.HuggingFace;
+using ChatBot.services.ai.AiClients.interfaces;
+using ChatBot.services.ai.AiClients.Ollama;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.Services.ai;
+namespace ChatBot.services.ai;
 
 public enum AiKind {
     Ollama,
@@ -23,7 +22,7 @@ public class AiService : Service {
     private readonly List<AiClient> _aiClients = [];
     
     public override string Name => ServiceName.Ai;
-    public override AiOptions Options { get; } = new();
+    public override AiOptions Options { get; } = new AiOptions();
 
 
     public async Task<string?> GetResponse(string prompt) {
@@ -262,11 +261,8 @@ public class AiService : Service {
         Options.SetAiKind((AiKind)(((int)Options.AiKind+1)%Enum.GetValues(typeof(AiKind)).Length));
     }
     
-    public override void Init(Bot bot) {
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
-            return;
-        }
+    public override void Init() {
+        base.Init();
         
         _aiClients.Add(new OllamaClient());
         _aiClients.Add(new HuggingFaceClient());

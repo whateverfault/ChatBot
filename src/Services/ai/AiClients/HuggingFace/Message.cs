@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Services.ai.AiClients.HuggingFace;
+﻿namespace ChatBot.services.ai.AiClients.HuggingFace;
 
 public class Message {
     public string? Content { get; set; }

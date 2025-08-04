@@ -1,12 +1,12 @@
 ﻿using System.Text;
-using ChatBot.Services.ai.AiClients.interfaces;
-using ChatBot.Services.logger;
+using ChatBot.services.ai.AiClients.interfaces;
+using ChatBot.services.logger;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.HuggingFace;
+namespace ChatBot.services.ai.AiClients.HuggingFace;
 
 public class HuggingFaceClient : AiClient {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = new HttpClient();
 
 
     public override async Task<string?> GetResponse(string prompt, AiData aiData, LoggerService? logger = null) {
@@ -21,10 +21,10 @@ public class HuggingFaceClient : AiClient {
                                              {
                                                  role = "user",
                                                  content = $"{aiData.BasePrompt} {prompt}",
-                                             }
+                                             },
                                          },
                               model = aiData.Model,
-                              stream = false
+                              stream = false,
                           };
         var json = JsonConvert.SerializeObject(requestData);
         var content = new StringContent(json, Encoding.UTF8, "application/json");

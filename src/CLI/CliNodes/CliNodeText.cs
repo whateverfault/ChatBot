@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public class CliNodeText : CliNode {
     private readonly bool _hasIndex;

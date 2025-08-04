@@ -1,18 +1,20 @@
-﻿using ChatBot.Services.chat_logs;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.chat_logs;
+using ChatBot.services.Static;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.message_randomizer;
+namespace ChatBot.services.message_randomizer;
 
 public enum MessageState {
     NotGuessed,
-    Guessed
+    Guessed,
 }
 
 public class MessageRandomizerOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
 
     protected override string Name => "message_randomizer";
@@ -25,38 +27,26 @@ public class MessageRandomizerOptions : Options {
     public State Randomness => _saveData!.Randomness;
     public int RandomValue { get; private set; }
 
-    public Range Spreading => new(_saveData!.SpreadingFrom, _saveData!.SpreadingTo);
+    public Range Spreading => new Range(_saveData!.SpreadingFrom, _saveData!.SpreadingTo);
     public MessageState MessageState => _saveData!.MessageState;
     public Message LastGeneratedMessage => _saveData!.LastGeneratedMessage;
     public ChatLogsService ChatLogsService => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
-
-
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
-
+    
+    
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        }
     }
 
     public override void SetDefaults() {
-        const int counterMax = 20;
-        _saveData = new SaveData(
-                                 counterMax,
-                                 State.Disabled,
-                                 State.Disabled,
-                                 1,
-                                 counterMax,
-                                 MessageState.NotGuessed,
-                                 new Message(string.Empty, string.Empty)
-                                 );
+        _saveData = new SaveData();
         Save();
     }
 
@@ -72,10 +62,6 @@ public class MessageRandomizerOptions : Options {
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
         Save();
-    }
-
-    public override State GetState() {
-        return ServiceState;
     }
 
     public void SetRandomnessState(State state) {

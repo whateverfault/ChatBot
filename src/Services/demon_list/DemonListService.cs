@@ -1,16 +1,16 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.utils.GD.AREDL;
 using ChatBot.utils.GD.AREDL.Data;
 
-namespace ChatBot.Services.demon_list;
+namespace ChatBot.services.demon_list;
 
 public class DemonListService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     
     public override string Name => ServiceName.DemonList;
-    public override DemonListOptions Options { get; } = new();
+    public override DemonListOptions Options { get; } = new DemonListOptions();
 
 
     public async Task<LevelInfo?> GetLevelByPlacement(int placement) {

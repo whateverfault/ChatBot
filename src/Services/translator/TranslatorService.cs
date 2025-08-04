@@ -1,17 +1,15 @@
-﻿using System.Net.Sockets;
-using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
-using ChatBot.Services.translator.Google;
-using ChatBot.Services.translator.Google.Data;
-using ChatBot.Services.translator.VK;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
+using ChatBot.services.translator.Google;
+using ChatBot.services.translator.Google.Data;
+using ChatBot.services.translator.VK;
 
-namespace ChatBot.Services.translator;
+namespace ChatBot.services.translator;
 
 public enum TranslationService {
     Google,
-    Vk
+    Vk,
 }
 
 public class TranslatorService : Service {
@@ -20,7 +18,7 @@ public class TranslatorService : Service {
     private VkTranslateClient _vkTranslateClient = null!;
     
     public override string Name => ServiceName.Translator;
-    public override TranslatorOptions Options { get; } = new();
+    public override TranslatorOptions Options { get; } = new TranslatorOptions();
 
 
     public async Task<string?> Translate(string text, string? targetLang = null, string? sourceLang = null) {
@@ -30,7 +28,7 @@ public class TranslatorService : Service {
             return Options.TranslationService switch {
                        TranslationService.Google => await GTranslate(text, targetLanguage),
                        TranslationService.Vk     => await VkTranslate(text, targetLanguage, sourceLang),
-                       _                         => null
+                       _                         => null,
                    };
 
         } catch (Exception e) {
@@ -41,9 +39,9 @@ public class TranslatorService : Service {
     
     private async Task<string?> GTranslate(string text, string targetLang) {
         try {
-            var response = await _gTranslateClient.Translate([text], targetLang, logger: _logger);
+            var response = await _gTranslateClient.Translate([text,], targetLang, logger: _logger);
             
-            if (response is { Translations.Count: > 0 }) {
+            if (response is { Translations.Count: > 0, }) {
                 return response.Translations[0].TranslatedText;
             }
             
@@ -78,7 +76,7 @@ public class TranslatorService : Service {
         try {
             var response = await _gTranslateClient.DetectLanguage(text, _logger);
             
-            if (response is { Languages.Count: > 0 }) {
+            if (response is { Languages.Count: > 0, }) {
                 return response.Languages[0];
             }
             
@@ -146,8 +144,9 @@ public class TranslatorService : Service {
         Options.SetTranslationService((TranslationService)(((int)Options.TranslationService+1)%Enum.GetValues(typeof(TranslationService)).Length));
     }
     
-    public override void Init(Bot bot) {
-        base.Init(bot);
+    public override void Init() {
+        base.Init();
+        
         _gTranslateClient = new GoogleTranslateClient(Options.ProjectId, Options.Location, Options.GoogleToken);
         _vkTranslateClient = new VkTranslateClient(Options.VkToken);
     }

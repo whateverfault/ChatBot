@@ -10,7 +10,7 @@ public enum Restriction {
     VipOnly,
     Mod,
     Vip,
-    Everyone
+    Everyone,
 }
 
 public static class RestrictionHandler {
@@ -24,7 +24,7 @@ public static class RestrictionHandler {
                    Restriction.Mod         => message.IsBroadcaster || message.IsModerator,
                    Restriction.Vip         => message.IsBroadcaster || message.IsModerator || message.IsVip,
                    Restriction.Everyone    => true,
-                   _                       => throw new ArgumentOutOfRangeException(nameof(restriction), restriction, null)
+                   _                       => throw new ArgumentOutOfRangeException(nameof(restriction), restriction, null),
                };
     }
 }

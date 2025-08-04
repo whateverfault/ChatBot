@@ -1,8 +1,7 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
+﻿using ChatBot.services.interfaces;
 
-namespace ChatBot.Services.presets;
+namespace ChatBot.services.presets;
 
 public class PresetsEvents : ServiceEvents {
-    public override void Init(Service service, Bot bot) {}
+    public override bool Initialized { get; protected set; }
 }

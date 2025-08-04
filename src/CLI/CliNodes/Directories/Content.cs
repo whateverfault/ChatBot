@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public class Content {
     public string ContentString { get; }

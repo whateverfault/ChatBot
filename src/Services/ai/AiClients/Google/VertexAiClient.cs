@@ -1,15 +1,15 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.Services.ai.AiClients.Google.Response;
-using ChatBot.Services.ai.AiClients.interfaces;
-using ChatBot.Services.logger;
+using ChatBot.services.ai.AiClients.Google.Response;
+using ChatBot.services.ai.AiClients.interfaces;
+using ChatBot.services.logger;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.Google;
+namespace ChatBot.services.ai.AiClients.Google;
 
 public class VertexAiClient : AiClient {
     private readonly string _location;
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient _httpClient = new HttpClient();
 
     
     public VertexAiClient(string location) {
@@ -31,17 +31,17 @@ public class VertexAiClient : AiClient {
                                                          {
                                                              new
                                                              {
-                                                                 text = $"[SYSTEM INSTRUCTIONS]\n{aiData.BasePrompt}\n\n[USER PROMPT]\n{prompt}"
-                                                             }
-                                                         }
-                                             }
+                                                                 text = $"[SYSTEM INSTRUCTIONS]\n{aiData.BasePrompt}\n\n[USER PROMPT]\n{prompt}",
+                                                             },
+                                                         },
+                                             },
                                          },
                               generationConfig = new
                                                  {
                                                      temperature = 0.9, 
                                                      topP = 0.8,        
-                                                     maxOutputTokens = 2048
-                                                 }
+                                                     maxOutputTokens = 2048,
+                                                 },
                           };
     
         var json = JsonConvert.SerializeObject(requestData);

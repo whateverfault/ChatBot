@@ -1,12 +1,13 @@
-﻿using System.Resources;
-using ChatBot.shared;
+﻿using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.translator;
+namespace ChatBot.services.translator;
 
 public class TranslatorOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
 
     protected override string Name => "translator";
@@ -19,35 +20,28 @@ public class TranslatorOptions : Options {
     public string VkToken => _saveData!.VkToken;
     public string TargetLanguage => _saveData!.TargetLanguage;
     public TranslationService TranslationService => _saveData!.TranslationService;
-
-
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
+    
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        }
     }
 
     public override void SetDefaults() {
-        _saveData = new();
+        _saveData = new SaveData();
         Save();
     }
 
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
         Save();
-    }
-
-    public override State GetState() {
-        return ServiceState;
     }
 
     public void SetProjectId(string projectId) {

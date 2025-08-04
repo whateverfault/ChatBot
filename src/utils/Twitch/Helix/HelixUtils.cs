@@ -1,19 +1,19 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using ChatBot.bot;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.utils.Twitch.Helix.Data;
 using ChatBot.utils.Twitch.Helix.Responses;
 using Newtonsoft.Json;
 using TwitchLib.Client.Models;
-using LogLevel = ChatBot.Services.logger.LogLevel;
+using LogLevel = ChatBot.services.logger.LogLevel;
 
 namespace ChatBot.utils.Twitch.Helix;
 
 public static class HelixUtils {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient _httpClient = new HttpClient();
     
     
     #region ban user
@@ -42,8 +42,8 @@ public static class HelixUtils {
                               data = new
                                      {
                                          user_id = userId,
-                                         reason = message
-                                     }
+                                         reason = message,
+                                     },
                           };
 
             var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
@@ -90,8 +90,8 @@ public static class HelixUtils {
                                      {
                                          user_id = userId,
                                          duration = (int)durationSeconds.TotalSeconds,
-                                         reason = message
-                                     }
+                                         reason = message,
+                                     },
                           };
 
             var requestMessage = new HttpRequestMessage
@@ -102,8 +102,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -151,8 +151,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
             var response = await _httpClient.SendAsync(requestMessage);
             
@@ -195,8 +195,8 @@ public static class HelixUtils {
                 Headers =
                 {
                     { "Client-ID", options.ClientId },
-                    { "Authorization", $"Bearer {options.OAuth}" }
-                }
+                    { "Authorization", $"Bearer {options.OAuth}" },
+                },
             };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -254,8 +254,8 @@ public static class HelixUtils {
                                                             Headers =
                                                             {
                                                                 { "Client-ID", options.ClientId },
-                                                                { "Authorization", $"Bearer {options.BroadcasterOAuth}" }
-                                                            } 
+                                                                { "Authorization", $"Bearer {options.BroadcasterOAuth}" },
+                                                            },
                                                         };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -293,8 +293,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -332,8 +332,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -368,8 +368,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -424,7 +424,7 @@ public static class HelixUtils {
 
             var requestBody = new 
                               {
-                                  is_enabled = state
+                                  is_enabled = state,
                               };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
 
@@ -436,8 +436,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.BroadcasterOAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.BroadcasterOAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -485,7 +485,7 @@ public static class HelixUtils {
                                   is_enabled = isEnabled,
                                   background_color = backgroundColor,
                                   is_user_input_required = userInputRequired,
-                                  should_redemptions_skip_request_queue = skipQueue
+                                  should_redemptions_skip_request_queue = skipQueue,
                               };
 
             var jsonContent = JsonConvert.SerializeObject(requestBody);
@@ -494,7 +494,7 @@ public static class HelixUtils {
                                  {
                                      Method = HttpMethod.Post,
                                      RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}"),
-                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -532,7 +532,7 @@ public static class HelixUtils {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Delete,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}&id={rewardId}")
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={broadcasterId}&id={rewardId}"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -568,7 +568,7 @@ public static class HelixUtils {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
 
             var requestBody = new { 
-                                      message 
+                                      message,
                                   };
 
             var jsonContent = JsonConvert.SerializeObject(requestBody);
@@ -577,7 +577,7 @@ public static class HelixUtils {
                                  {
                                      Method = HttpMethod.Post,
                                      RequestUri = new Uri($"https://api.twitch.tv/helix/whispers?from_user_id={botId}&to_user_id={userId}"),
-                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+                                     Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -618,8 +618,8 @@ public static class HelixUtils {
                                      Headers =
                                      {
                                          { "Client-ID", options.ClientId },
-                                         { "Authorization", $"Bearer {options.OAuth}" }
-                                     }
+                                         { "Authorization", $"Bearer {options.OAuth}" },
+                                     },
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -655,7 +655,7 @@ public static class HelixUtils {
                 _logger.Log(LogLevel.Error, $"Channel {username} not found");
                 return null;
             }
-
+            
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", options.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.OAuth);
@@ -665,13 +665,13 @@ public static class HelixUtils {
 
             if (response.IsSuccessStatusCode) {
                 var streamResponse = JsonConvert.DeserializeObject<StreamResponse>(responseContent);
-                return streamResponse?.Data.Count <= 0 ? null : streamResponse;
+                return streamResponse;
             }
             
             _logger.Log(LogLevel.Error, $"Failed to get stream info for {username}. Status: {response.StatusCode}. Response: {responseContent}");
         }
         catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"Error getting stream title: {ex.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while getting stream info: {ex.Message}");
         }
         return null;
     }

@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.interfaces;
+namespace ChatBot.services.ai.AiClients.interfaces;
 
 public class AiFallback {
     [JsonProperty("state")]

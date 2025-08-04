@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.chat_logs;
+namespace ChatBot.services.chat_logs;
 
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]

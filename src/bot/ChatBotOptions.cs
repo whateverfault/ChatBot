@@ -1,12 +1,13 @@
 ﻿using ChatBot.shared;
-using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
 namespace ChatBot.bot;
 
 public class ChatBotOptions : Options {
-    private SaveData? _saveData = new();
+    private static readonly object _fileLock = new object();
+    
+    private SaveData? _saveData;
 
     protected override string Name => "chat_bot";
     protected override string OptionsPath => Path.Combine($"{Directories.DataDirectory}/{Name}", $"{Name}_opt.json");
@@ -17,33 +18,23 @@ public class ChatBotOptions : Options {
     public string? BroadcasterOAuth => _saveData!.BroadcasterOAuth;
     public string? Channel => _saveData!.Channel;
     public string? ClientId => _saveData!.ClientId;
-
-
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData!);
-    }
+    
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 State.Disabled,
-                                 "Empty",
-                                 "Empty",
-                                 "Empty",
-                                 "Empty",
-                                 "Empty"
-                                 );
+        _saveData = new SaveData();
         Save();
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.DataDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.DataDirectory, Name), _saveData);
+        }
     }
 
     public override void SetState(State state) {
@@ -75,6 +66,11 @@ public class ChatBotOptions : Options {
         Save();
     }
     
+    public void SetClientId(string clientId) {
+        _saveData!.ClientId = clientId;
+        Save();
+    }
+    
     public string GetUsername() {
         return Username ?? "Empty";
     }
@@ -93,10 +89,5 @@ public class ChatBotOptions : Options {
     
     public string GetClientId() {
         return ClientId ?? "Empty";
-    }
-    
-    public void SetClientId(string clientId) {
-        _saveData!.ClientId = clientId;
-        Save();
     }
 }

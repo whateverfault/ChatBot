@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public abstract class CliNodeDirectory : CliNode {
     protected override string Text { get; } = null!;

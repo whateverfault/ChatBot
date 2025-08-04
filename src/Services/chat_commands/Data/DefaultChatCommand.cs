@@ -2,7 +2,7 @@
 using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.chat_commands.Data;
+namespace ChatBot.services.chat_commands.Data;
 
 public sealed class DefaultChatCommand : ChatCommand {
     [JsonProperty(PropertyName = "id")]
@@ -18,9 +18,11 @@ public sealed class DefaultChatCommand : ChatCommand {
     [JsonProperty(PropertyName = "cooldown")]
     public override int Cooldown { get; protected set; }
     [JsonIgnore]
+    public override bool HasIdentifier { get; protected set; }
+    [JsonIgnore]
     public override long LastUsed { get; protected set; }
     [JsonIgnore]
-    public override CmdActionHandler? Action { get; protected set; }
+    public override CmdActionHandler Action { get; protected set; } = null!;
 
     [JsonProperty(PropertyName = "restriction")]
     public override Restriction Restriction { get; protected set; }
@@ -40,9 +42,10 @@ public sealed class DefaultChatCommand : ChatCommand {
         List<string>? aliases = null,
         State state = State.Enabled) {
         Id = id;
-        Name = name.Replace(" ", "");
+        Name = name.Replace(" ", "-");
         Args = args;
         Description = description;
+        HasIdentifier = true;
         Action = action;
         Restriction = restriction;
         Cooldown = cooldown;
@@ -62,9 +65,10 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty(PropertyName = "cooldown")] int cooldown,
         [JsonProperty(PropertyName = "state")] State state) {
         Id = id;
-        Name = name.Replace(" ", "");
+        Name = name;
         Args = args;
         Description = description;
+        HasIdentifier = true;
         foreach (var cmd in CommandsList.DefaultsCommands) {
             if (cmd.Id != Id) continue;
 

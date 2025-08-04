@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.logger;
+namespace ChatBot.services.logger;
 
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
@@ -10,16 +10,19 @@ public class SaveData {
     public List<Log> Logs { get; private set; }
 
 
-    public SaveData(State serviceState) {
-        ServiceState = serviceState;
+    public SaveData() {
         Logs = [];
+    }
+    
+    public SaveData(SaveData data) {
+        ServiceState = data.ServiceState;
+        Logs = new List<Log>(data.Logs);
     }
     
     [JsonConstructor]
     public SaveData(
         [JsonProperty(PropertyName = "service_state")] State serviceState,
-        [JsonProperty(PropertyName = "logs")] List<Log> logs
-        ) {
+        [JsonProperty(PropertyName = "logs")] List<Log> logs) {
         ServiceState = serviceState;
         Logs = logs;
     }

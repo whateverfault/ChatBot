@@ -1,9 +1,9 @@
 ﻿using ChatBot.bot;
-using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.Static;
+using ChatBot.bot.@interface;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.moderation;
+namespace ChatBot.services.moderation;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum ModerationActionType {
@@ -24,27 +24,32 @@ public enum ModerationActionType {
 
 public class ModerationService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    private Bot _bot = null!;
+    private static Bot Bot => TwitchChatBot.Instance;
     
     public override string Name => ServiceName.Moderation;
-    public override ModerationOptions Options { get; } = new();
+    public override ModerationOptions Options { get; } = new ModerationOptions();
 
 
     public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
-        if (Options.ServiceState == State.Disabled) return;
-        if (status == FilterStatus.NotMatch) return;
+        try {
+            if (Options.ServiceState == State.Disabled) return;
+            if (status == FilterStatus.NotMatch) return;
 
-        if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) return;
+            if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) return;
         
-        var err = _bot.TryGetClient(out var client);
-        if (ErrorHandler.LogError(err)) return;
+            var err = Bot.TryGetClient(out var client);
+            if (ErrorHandler.LogError(err)) return;
 
-        var modAction = Options.ModerationActions[patternIndex];
+            var modAction = Options.ModerationActions[patternIndex];
 
-        if (modAction.Type is ModerationActionType.Ban or ModerationActionType.Timeout) {
-            await modAction.Activate(client, (ChatBotOptions)_bot.Options, message);
-        } else {
-            await modAction.ActivateWarn(client, (ChatBotOptions)_bot.Options, message, Options.WarnedUsers);
+            if (modAction.Type is ModerationActionType.Ban or ModerationActionType.Timeout) {
+                await modAction.Activate(client, (ChatBotOptions)Bot.Options, message);
+            } else {
+                await modAction.ActivateWarn(client, (ChatBotOptions)Bot.Options, message);
+            }
+        }
+        catch (Exception e) {
+            _logger.Log(LogLevel.Error, $"An exception occured while moderating a message. {e.Message}");
         }
     }
 
@@ -56,10 +61,10 @@ public class ModerationService : Service {
             return;
         }
         
-        var err = _bot.TryGetClient(out var client);
+        var err = Bot.TryGetClient(out var client);
         if (ErrorHandler.LogError(err)) return;
         
-        var userId = await TwitchLibUtils.GetUserId((ChatBotOptions)_bot.Options, message.Username, _logger);
+        var userId = await TwitchLibUtils.GetUserId((ChatBotOptions)Bot.Options, message.Username, _logger);
         
         if (string.IsNullOrEmpty(userId)) {
             _logger.Log(LogLevel.Error, $"Couldn't Warn User {message.Username}");
@@ -70,7 +75,7 @@ public class ModerationService : Service {
         if (text != null) {
             modAction.SetComment(text);
         }
-        await modAction.ActivateWarn(client, (ChatBotOptions)_bot.Options, message, Options.WarnedUsers, true);
+        await modAction.ActivateWarn(client, (ChatBotOptions)Bot.Options, message, true);
         modAction.SetComment(temp);
     }
     
@@ -78,8 +83,8 @@ public class ModerationService : Service {
         Options.AddModAction(action);
     }
 
-    public void RemoveModAction(int index) {
-        Options.RemoveModAction(index);
+    public bool RemoveModAction(int index) {
+        return Options.RemoveModAction(index);
     }
 
     public List<ModAction> GetModActions() {
@@ -94,13 +99,5 @@ public class ModerationService : Service {
 
         modAction = Options.ModerationActions[index];
         return true;
-    }
-    
-    public override void Init(Bot bot) {
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
-        }
-
-        _bot = bot;
     }
 }

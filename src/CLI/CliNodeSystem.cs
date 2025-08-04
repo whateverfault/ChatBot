@@ -1,17 +1,18 @@
-﻿using ChatBot.CLI.CliNodes;
-using ChatBot.CLI.CliNodes.Client;
-using ChatBot.CLI.CliNodes.Directories;
-using ChatBot.CLI.CliNodes.Directories.ChatCommands;
-using ChatBot.CLI.CliNodes.Directories.MessageFilter;
-using ChatBot.CLI.CliNodes.Directories.Moderation;
-using ChatBot.Services.ai;
-using ChatBot.Services.level_requests;
-using ChatBot.Services.Static;
-using ChatBot.Services.translator;
+﻿using ChatBot.cli.CliNodes;
+using ChatBot.cli.CliNodes.Client;
+using ChatBot.cli.CliNodes.Directories;
+using ChatBot.cli.CliNodes.Directories.ChatAds;
+using ChatBot.cli.CliNodes.Directories.ChatCommands;
+using ChatBot.cli.CliNodes.Directories.MessageFilter;
+using ChatBot.cli.CliNodes.Directories.Moderation;
+using ChatBot.services.ai;
+using ChatBot.services.level_requests;
+using ChatBot.services.Static;
+using ChatBot.services.translator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.CLI;
+namespace ChatBot.cli;
 
 public class CliNodeSystem {
     private readonly CliState _state;
@@ -99,7 +100,7 @@ public class CliNodeSystem {
                                                                             typeof(State),
                                                                             CliNodePermission.Default,
                                                                             _state.Data.MessageRandomizer.ServiceStateNext
-                                                                            )
+                                                                            ),
                                                        ]);
         
         var textGeneratorDir = new CliNodeStaticDirectory(
@@ -131,7 +132,7 @@ public class CliNodeSystem {
                                                                                                   _state.Data.TextGenerator.Options.GetMaxLength,
                                                                                                   CliNodePermission.Default,
                                                                                                   _state.Data.TextGenerator.Options.SetMaxLength
-                                                                                                 )
+                                                                                                 ),
                                                                                          ]
                                                                                          ),
                                                               new CliNodeEnum(
@@ -144,6 +145,30 @@ public class CliNodeSystem {
                                                           ]
                                                           );
 
+        var chatAdsDir = new CliNodeStaticDirectory(
+                                                    ServiceName.ChatAds,
+                                                    _state,
+                                                    true,
+                                                    [
+                                                        new CliNodeDynamicChatAdsDirectory(
+                                                             "Ads",
+                                                             "Add Chat Ad",
+                                                             "Remove Chat Ad",
+                                                             _state.Data.ChatAds.Options.AddChatAd,
+                                                             _state.Data.ChatAds.Options.RemoveChatAd,
+                                                             _state.Data.ChatAds.Options.GetChatAds(),
+                                                             _state
+                                                            ),
+                                                        new CliNodeEnum(
+                                                                        "Service State",
+                                                                        _state.Data.ChatAds.GetServiceStateAsInt,
+                                                                        typeof(State),
+                                                                        CliNodePermission.Default,
+                                                                        _state.Data.ChatAds.ServiceStateNext
+                                                                       ),
+                                                    ]
+                                                    );
+        
         var defaultCmds = new CliNodeStaticDirectory(
                                                      "Default Commands",
                                                      _state,
@@ -224,9 +249,10 @@ public class CliNodeSystem {
                                                                                               "Remove Custom Command",
                                                                                               _state.Data.ChatCommands.Options.AddChatCmd,
                                                                                               _state.Data.ChatCommands.Options.RemoveChatCmd,
-                                                                                              _state.Data.ChatCommands.Options.GetCustomCommands() ?? [],
+                                                                                              _state.Data.ChatCommands.Options.GetCustomCommands(),
                                                                                               _state
                                                                                               ),
+                                                          chatAdsDir,
                                                           new CliNodeStaticDirectory(
                                                                                      "Special",
                                                                                      _state,
@@ -677,7 +703,48 @@ public class CliNodeSystem {
                                                                         ),
                                                      ]
                                                      );
-
+        
+        var streamStateCheckerDir = new CliNodeStaticDirectory(
+                                                               ServiceName.StreamStateChecker,
+                                                               _state,
+                                                               true,
+                                                               [
+                                                                   new CliNodeLong(
+                                                                        "Check Cooldown",
+                                                                        _state.Data.StreamStateChecker.Options.GetCheckCooldown,
+                                                                        CliNodePermission.Default,
+                                                                        _state.Data.StreamStateChecker.Options.SetCheckCooldown
+                                                                       ),
+                                                                   new CliNodeStaticDirectory(
+                                                                        "Info For Nerds",
+                                                                        _state,
+                                                                        true,
+                                                                        [
+                                                                            new CliNodeLong(
+                                                                                 "Last Time Checked", 
+                                                                                 _state.Data.StreamStateChecker.Options.GetLastCheckTime,
+                                                                                 CliNodePermission.ReadOnly
+                                                                                ),
+                                                                            new CliNodeLong(
+                                                                                "Last Time Was Online",
+                                                                                _state.Data.StreamStateChecker.Options.GetLastOnline,
+                                                                                CliNodePermission.ReadOnly
+                                                                               ),
+                                                                           new CliNodeLong(
+                                                                                "Online Time",
+                                                                                _state.Data.StreamStateChecker.Options.GetOnlineTime,
+                                                                                CliNodePermission.ReadOnly
+                                                                               ),
+                                                                           new CliNodeLong(
+                                                                                "Offline Time",
+                                                                                _state.Data.StreamStateChecker.Options.GetOfflineTime,
+                                                                                CliNodePermission.ReadOnly
+                                                                               ),
+                                                                        ]
+                                                                        ),
+                                                               ]
+                                                               );
+        
         var tgNotificationsDir = new CliNodeStaticDirectory(
                                                             ServiceName.TgNotifications,
                                                             _state,
@@ -696,10 +763,10 @@ public class CliNodeSystem {
                                                                                 _state.Data.TgNotifications.SetNotificationPrompt
                                                                                ),
                                                                 new CliNodeLong(
-                                                                                  "Cooldown",
-                                                                                  _state.Data.TgNotifications.GetCooldown,
-                                                                                  CliNodePermission.Default,
-                                                                                  _state.Data.TgNotifications.Options.SetCooldown
+                                                                                "Cooldown", 
+                                                                                _state.Data.TgNotifications.GetCooldown, 
+                                                                                CliNodePermission.Default, 
+                                                                                _state.Data.TgNotifications.Options.SetCooldown
                                                                                  ),
                                                                 new CliNodeStaticDirectory(
                                                                                            "Secret",
@@ -723,16 +790,9 @@ public class CliNodeSystem {
                                                                                 ),
                                                             ]
                                                             );
-
-        var tgDir = new CliNodeStaticDirectory(
-                                               "Telegram",
-                                               _state,
-                                               true,
-                                               [tgNotificationsDir]
-                                               );
         
         var presetsDir = new CliNodeStaticDirectory(
-                                                    "Presets",
+                                                    ServiceName.Presets,
                                                     _state,
                                                     true,
                                                     [
@@ -754,6 +814,16 @@ public class CliNodeSystem {
                                                                                 ),
                                                     ]
                                                     );
+
+        var debugDir = new CliNodeStaticDirectory(
+                                                  "Debug",
+                                                  _state,
+                                                  true,
+                                                  [
+                                                      streamStateCheckerDir,
+                                                      loggerDir,
+                                                  ]
+                                                  );
         
         var servicesDir = new CliNodeStaticDirectory(
                                                   "Services",
@@ -771,8 +841,8 @@ public class CliNodeSystem {
                                                       moderationDir,
                                                       levelReqsDir,
                                                       gameReqsDir,
-                                                      tgDir,
-                                                      loggerDir,
+                                                      tgNotificationsDir,
+                                                      debugDir,
                                                   ]);
         
         var loginDir = new CliNodeStaticDirectory(
@@ -824,7 +894,7 @@ public class CliNodeSystem {
                                                       new CliNodeAction(
                                                                         "Save",
                                                                         _state.Data.Bot.Options.Save
-                                                                       )
+                                                                       ),
                                                   ]
                                                  );
 
@@ -839,7 +909,7 @@ public class CliNodeSystem {
                                                                        _state.Data.Bot.Start
                                                                       ),
                                                      presetsDir,
-                                                     servicesDir
+                                                     servicesDir,
                                                  ]);
 
         _directories.Add(rootDir);

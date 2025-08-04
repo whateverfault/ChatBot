@@ -1,22 +1,48 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
+﻿using ChatBot.bot;
+using ChatBot.services.chat_commands.Parser;
+using ChatBot.services.interfaces;
+using TwitchLib.Client.Events;
 
-namespace ChatBot.Services.chat_commands;
+namespace ChatBot.services.chat_commands;
 
 public class ChatCommandsEvents : ServiceEvents {
-    private Bot _bot = null!;
-    private ChatCommandsService _serviceOld = null!;
+    private ChatCommandsService _chatCommands = null!;
 
+    public override bool Initialized { get; protected set; }
+    
 
-    public override void Init(Service service, Bot bot) {
-        _serviceOld = (ChatCommandsService)service;
-        _bot = bot;
+    public override void Init(Service service) {
+        _chatCommands = (ChatCommandsService)service;
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) return;
+    protected override void Subscribe() {
+        if (Subscribed) {
+            return;
+        }
         base.Subscribe();
-        _bot.OnChatCommandReceived += _serviceOld.HandleCommand;
-        _serviceOld.Options.OnCommandIdentifierChanged += _serviceOld.ChangeCommandIdentifier;
+        
+        TwitchChatBot.Instance.OnMessageReceived += ParseCommandAndHandle;
+        _chatCommands.Options.OnCommandIdentifierChanged += _chatCommands.ChangeCommandIdentifier;
+    }
+    
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
+        }
+        base.UnSubscribe();
+        
+        TwitchChatBot.Instance.OnMessageReceived -= ParseCommandAndHandle;
+        _chatCommands.Options.OnCommandIdentifierChanged -= _chatCommands.ChangeCommandIdentifier;
+    }
+
+    private void ParseCommandAndHandle(object? sender, OnMessageReceivedArgs args) {
+        var command = ChatCommandParser.Parse(args.ChatMessage);
+
+        if (command == null) {
+            return;
+        }
+
+        _chatCommands.HandleCommand(command);
     }
 }

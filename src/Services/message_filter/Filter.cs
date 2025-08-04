@@ -1,9 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using ChatBot.services.Static;
+using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.message_filter;
+namespace ChatBot.services.message_filter;
 
 public class Filter {
+    private static readonly Options _messageFilter = ServiceManager.GetService(ServiceName.MessageFilter).Options;
+    
+    
     [JsonProperty("name")]
     public string Name { get; private set; }
     
@@ -30,6 +34,7 @@ public class Filter {
 
     public void SetName(string name) {
         Name = name;
+        _messageFilter.Save();
     }
 
     public string GetPattern() {
@@ -38,5 +43,6 @@ public class Filter {
 
     public void SetPattern(string pattern) {
         Pattern = pattern;
+        _messageFilter.Save();
     }
 }

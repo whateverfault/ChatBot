@@ -1,12 +1,12 @@
 ﻿using System.Text;
-using ChatBot.Services.ai.AiClients.interfaces;
-using ChatBot.Services.logger;
+using ChatBot.services.ai.AiClients.interfaces;
+using ChatBot.services.logger;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.Ollama;
+namespace ChatBot.services.ai.AiClients.Ollama;
 
 public class OllamaClient : AiClient {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = new HttpClient();
 
 
     public override async Task<string?> GetResponse(string prompt, AiData aiData, LoggerService? logger = null) {

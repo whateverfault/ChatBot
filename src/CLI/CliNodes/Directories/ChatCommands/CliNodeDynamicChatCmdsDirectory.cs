@@ -1,8 +1,8 @@
-﻿using ChatBot.Services.chat_commands.Data;
+﻿using ChatBot.services.chat_commands.Data;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.CLI.CliNodes.Directories.ChatCommands;
+namespace ChatBot.cli.CliNodes.Directories.ChatCommands;
 
 public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
     private readonly AddChatCmdHandler _addHandler;
@@ -66,13 +66,13 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
         _addHandler.Invoke(chatCmd);
     }
     
-    private void Remove(int index) {
+    private bool Remove(int index) {
         if (index < 0 || index >= _content.Nodes.Count-2) {
-            return;
+            return false;
         }
         
         _content.RemoveNode(index+2);
-        _removeHandler.Invoke(index);
+        return _removeHandler.Invoke(index);
     }
 
     private CliNodeStaticDirectory CommandToNode(CustomChatCommand cmd) {
@@ -105,6 +105,12 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                                                     CliNodePermission.Default,
                                                                     cmd.SetDescription
                                                                    ),
+                                                  new CliNodeBool(
+                                                                  "Has Identifier",
+                                                                  cmd.GetHasIdentifier,
+                                                                  CliNodePermission.Default,
+                                                                  cmd.SetHasIdentifier
+                                                                  ),
                                                   new CliNodeString(
                                                                     "Output",
                                                                     cmd.GetOutput,

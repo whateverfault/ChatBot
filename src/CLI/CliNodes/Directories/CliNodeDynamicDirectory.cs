@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public class CliNodeDynamicDirectory : CliNodeDirectory {
     private readonly bool _commented;
@@ -92,12 +92,12 @@ public class CliNodeDynamicDirectory : CliNodeDirectory {
         _addHandler.Invoke(value, true, comment);
     }
     
-    private void Remove(int index) {
+    private bool Remove(int index) {
         if (index < 0 || index >= _dynamicDir.Nodes.Count-2) {
-            return;
+            return false;
         }
         
         _dynamicDir.RemoveNode(index+2);
-        _removeHandler.Invoke(index);
+        return _removeHandler.Invoke(index);
     }
 }

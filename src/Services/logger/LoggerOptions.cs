@@ -1,36 +1,37 @@
 ﻿using ChatBot.shared;
-using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.logger;
+namespace ChatBot.services.logger;
 
 public class LoggerOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
     protected override string Name => "logger";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     public override State ServiceState => _saveData!.ServiceState;
-    public List<Log> TwitchLogs { get; } = [];
     public List<Log> Logs => _saveData!.Logs;
-
-
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
+    
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        if (_saveData == null) {
+            return;
+        }
+        
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), new SaveData(_saveData));
+        }
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(State.Disabled);
+        _saveData = new SaveData();
         Save();
     }
 
@@ -39,17 +40,8 @@ public class LoggerOptions : Options {
         Save();
     }
 
-    public override State GetState() {
-        return _saveData!.GetState();
-    }
-
     public void AddLog(Log log) {
         Logs.Add(log);
-        Save();
-    }
-    
-    public void AddTwitchLog(Log log) {
-        TwitchLogs.Add(log);
         Save();
     }
 }

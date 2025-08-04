@@ -1,7 +1,7 @@
-﻿using ChatBot.Services.translator.VK.Data;
+﻿using ChatBot.services.translator.VK.Data;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator.VK.Response;
+namespace ChatBot.services.translator.VK.Response;
 
 public class VkTranslateResponse {
     [JsonProperty("response")]

@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public enum CliNodePermission {
     Default,

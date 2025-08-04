@@ -1,21 +1,35 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
+﻿using ChatBot.bot;
+using ChatBot.services.interfaces;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.services.game_requests;
 
 public class GameRequestsEvents : ServiceEvents {
-    private GameRequestsService _service = null!;
-    private Bot _bot = null!;
+    private GameRequestsService _gameRequests = null!;
+    
+    public override bool Initialized { get; protected set; }
     
     
-    public override void Init(Service service, Bot bot) {
-        _service = (GameRequestsService)service;
-        _bot = bot;
+    public override void Init(Service service) {
+        _gameRequests = (GameRequestsService)service;
+        
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) return;
+    protected override void Subscribe() {
+        if (Subscribed) {
+            return;
+        }
         base.Subscribe();
-        _bot.OnMessageReceived += _service.HandleMessage;
+        
+        TwitchChatBot.Instance.OnMessageReceived += _gameRequests.HandleMessage;
+    }
+    
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
+        }
+        base.UnSubscribe();
+        
+        TwitchChatBot.Instance.OnMessageReceived -= _gameRequests.HandleMessage;
     }
 }

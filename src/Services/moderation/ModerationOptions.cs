@@ -1,11 +1,12 @@
 ﻿using ChatBot.shared;
-using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.moderation;
+namespace ChatBot.services.moderation;
 
 public class ModerationOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
     
     protected override string Name => "moderation";
@@ -15,38 +16,21 @@ public class ModerationOptions : Options {
     public List<ModAction> ModerationActions => _saveData!.ModerationActions;
     public List<WarnedUser> WarnedUsers => _saveData!.WarnedUsers;
     
-    
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        }
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 State.Disabled,
-                                 [
-                                 new ModAction(
-                                               "Level Requests",
-                                               0,
-                                               600,
-                                               "Реквесты только для випов и выше",
-                                               2,
-                                               Restriction.Vip,
-                                               true
-                                               )
-                                 ],
-                                 []
-                                 );
+        _saveData = new SaveData();
         Save();
     }
 
@@ -55,22 +39,33 @@ public class ModerationOptions : Options {
         Save();
     }
 
-    public override State GetState() {
-        return ServiceState;
-    }
-
     public void AddModAction(ModAction action) {
         ModerationActions.Add(action);
         Save();
     }
 
-    public void RemoveModAction(int index) {
+    public bool RemoveModAction(int index) {
+        if (index < 0 | index >= ModerationActions.Count) {
+            return false;
+        }
+        
         ModerationActions.RemoveAt(index);
         Save();
+        return true;
     }
 
     public void AddWarnedUser(WarnedUser warnedUser) {
         WarnedUsers.Add(warnedUser);
         Save();
+    }
+
+    public bool RemoveWarnedUser(int index) {
+        if (index < 0 || index >= WarnedUsers.Count) {
+            return false;
+        }
+
+        WarnedUsers.RemoveAt(index);
+        Save();
+        return true;
     }
 }

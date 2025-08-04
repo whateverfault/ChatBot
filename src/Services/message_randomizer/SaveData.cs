@@ -1,14 +1,15 @@
-﻿using ChatBot.Services.chat_logs;
+﻿using ChatBot.services.chat_logs;
 using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.message_randomizer;
+namespace ChatBot.services.message_randomizer;
 
 public class SaveData {
     [JsonProperty(PropertyName ="counter_max")]
     public int CounterMax { get; set; }
     [JsonProperty(PropertyName ="last_generated_message")]
-    public Message LastGeneratedMessage { get; set; }
+    public Message LastGeneratedMessage { get; set; } = null!;
+
     [JsonProperty(PropertyName ="message_state")]
     public MessageState MessageState { get; set; }
     [JsonProperty(PropertyName ="randomness")]
@@ -21,6 +22,12 @@ public class SaveData {
     public int SpreadingTo { get; set; }
 
 
+    public SaveData() {
+        CounterMax = 25;
+        SpreadingFrom = 15;
+        SpreadingTo = 30;
+    }
+    
     public SaveData(
         [JsonProperty(PropertyName ="counter_max")] int counterMax,
         [JsonProperty(PropertyName ="service_state")] State serviceState,

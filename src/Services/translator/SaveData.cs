@@ -1,8 +1,7 @@
-﻿using System.Security.Principal;
-using ChatBot.shared.interfaces;
+﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator;
+namespace ChatBot.services.translator;
 
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]

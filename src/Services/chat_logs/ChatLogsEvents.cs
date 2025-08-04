@@ -1,22 +1,38 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 
-namespace ChatBot.Services.chat_logs;
+namespace ChatBot.services.chat_logs;
 
 public class ChatLogsEvents : ServiceEvents {
-    private ChatLogsService _service = null!;
+    private ChatLogsService _chatLogs = null!;
+    private MessageFilterService _messageFilter = null!;
+    
+    public override bool Initialized { get; protected set; }
     
     
-    public override void Init(Service service, Bot bot) {
-        _service = (ChatLogsService)service;
+    public override void Init(Service service) {
+        _chatLogs = (ChatLogsService)service;
+        _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) return;
+    protected override void Subscribe() {
+        if (Subscribed) {
+            return;
+        }
         base.Subscribe();
-        var regexService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        regexService.OnMessageFiltered += _service.HandleMessage;
+        
+        _messageFilter.OnMessageFiltered += _chatLogs.HandleMessage;
+    }
+    
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
+        }
+        base.UnSubscribe();
+        
+        _messageFilter.OnMessageFiltered -= _chatLogs.HandleMessage;
     }
 }

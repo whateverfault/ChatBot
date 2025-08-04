@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.Services.game_requests.Data;
+namespace ChatBot.services.game_requests.Data;
 
 public class GameRequest {
     [JsonProperty("game_name")]

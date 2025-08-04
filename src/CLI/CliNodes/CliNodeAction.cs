@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public delegate void ActionHandler();
 

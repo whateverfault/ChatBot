@@ -1,75 +1,55 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.shared.interfaces;
-using ChatBot.utils.Twitch.Helix;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.Static;
+using ChatBot.services.stream_state_checker;
+using ChatBot.services.stream_state_checker.Data;
+using ChatBot.utils.Twitch.Helix.Data;
 
-namespace ChatBot.Services.telegram;
+namespace ChatBot.services.telegram;
 
 public class TgNotificationsEvents : ServiceEvents {
-    private TgNotificationsService _service = null!;
-    private bot.ChatBot _bot = null!;
+    private TgNotificationsService _tgNotifications = null!;
+    private StreamStateCheckerService _streamStateCheckerService = null!;
 
+    public override bool Initialized { get; protected set; }
+    
 
-    public override void Init(Service service, Bot bot) {
-        _service = (TgNotificationsService)service;
-        _bot = (bot.ChatBot)bot;
+    public override void Init(Service service) {
+        _tgNotifications = (TgNotificationsService)service;
+        _streamStateCheckerService = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) {
+    protected override void Subscribe() {
+        if (Subscribed) {
             return;
         }
         base.Subscribe();
-        _bot.OnInitialized += () => {
-                                  Task.Run(MonitorChannel);
-                              };
+        _streamStateCheckerService.OnStreamStateChangedAsync += SendNotificationWrapper;
     }
 
-    private async Task MonitorChannel() {
-        const int checkCooldown = 120;
-        long lastChecked = 0;
-        var lastNotificationId = _service.Options.LastMessageId;
-        var isStreamRunning = _service.Options.WasStreaming;
-
-        while (true) {
-            if (_service.GetServiceState() == State.Disabled) {
-                continue;
-            }
-
-            var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (curTime-lastChecked < checkCooldown) continue;
-
-            lastChecked = curTime;
-
-            var bot = Program.GetBot();
-            if (bot.Options.Channel == null) {
-                continue;
-            }
-
-            var streamResponse = await HelixUtils.GetStreams(bot.Options, bot.Options.Channel);
-
-            if (streamResponse == null) {
-                if (curTime-_service.Options.LastStreamed < _service.Options.Cooldown) {
-                    continue;
-                }
-
-                isStreamRunning = false;
-                _service.Options.SetWasStreaming(isStreamRunning);
-                continue;
-            }
-
-            if (!isStreamRunning && curTime-_service.Options.LastStreamed >= _service.Options.Cooldown) {
-                if (lastNotificationId.HasValue) {
-                    await _service.DeleteNotification(lastNotificationId.Value);
-                }
-
-                lastNotificationId = await _service.SendNotification(streamResponse.Data[0]);
-                _service.Options.SetLastMessageId(lastNotificationId);
-                isStreamRunning = true;
-            }
-
-            _service.Options.SetWasStreaming(isStreamRunning);
-            _service.Options.SetLastStreamedTime(curTime);
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
         }
+        base.UnSubscribe();
+        
+        _streamStateCheckerService.OnStreamStateChangedAsync -= SendNotificationWrapper;
+    }
+    
+    private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
+        if (streamState.WasOnline) {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (now - streamState.LastOnline < _tgNotifications.GetCooldown()) return;
+        
+        var lastMessageId = _tgNotifications.Options.LastMessageId;
+        if (lastMessageId.HasValue) {
+            await _tgNotifications.DeleteNotification(lastMessageId.Value);
+        }
+        
+        var messageId = await _tgNotifications.SendNotification(data);
+        _tgNotifications.Options.SetLastMessageId(messageId);
     }
 }

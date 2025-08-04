@@ -1,6 +1,6 @@
 ﻿using ChatBot.shared;
 
-namespace ChatBot.bot.interfaces;
+namespace ChatBot.bot.@interface;
 
 public static class Page {
     public static readonly string pageTerminator = "--";

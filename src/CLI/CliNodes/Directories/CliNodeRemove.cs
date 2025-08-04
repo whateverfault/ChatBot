@@ -1,6 +1,8 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿using ChatBot.shared.Handlers;
 
-public delegate void RemoveHandler(int index);
+namespace ChatBot.cli.CliNodes.Directories;
+
+public delegate bool RemoveHandler(int index);
 
 public class CliNodeRemove : CliNode {
     private readonly RemoveHandler _remove;
@@ -17,9 +19,15 @@ public class CliNodeRemove : CliNode {
         Console.Write("Index: ");
         
         var line = Console.ReadLine();
-        var handled = string.IsNullOrEmpty(line)? "1" : line;
-        var index = int.Parse(handled);
-        if (index < 1) return;
-        _remove.Invoke(index-1);
+        if (string.IsNullOrEmpty(line)) {
+            return;
+        }
+        
+        var index = int.Parse(line);
+        
+        var result = _remove.Invoke(index-1);
+        if (!result) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidInput);
+        }
     }
 }

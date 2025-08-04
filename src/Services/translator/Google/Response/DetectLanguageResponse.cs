@@ -1,7 +1,7 @@
-﻿using ChatBot.Services.translator.Google.Data;
+﻿using ChatBot.services.translator.Google.Data;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator.Google.Response;
+namespace ChatBot.services.translator.Google.Response;
 
 public class DetectLanguageResponse {
     [JsonProperty("languages")]

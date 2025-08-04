@@ -1,24 +1,23 @@
 ﻿using System.Text;
-using ChatBot.bot.interfaces;
-using ChatBot.Services.game_requests.Data;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+using ChatBot.bot;
+using ChatBot.services.game_requests.Data;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.game_requests;
+namespace ChatBot.services.game_requests;
 
 public class GameRequestsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    private bot.ChatBot _bot = null!;
-    private ITwitchClient? Client => _bot.GetClient();
+    private static ITwitchClient? Client => TwitchChatBot.Instance.GetClient();
     
     public override string Name => ServiceName.GameRequests;
-    public override GameRequestsOptions Options { get; } = new();
+    public override GameRequestsOptions Options { get; } = new GameRequestsOptions();
 
 
     public async void HandleMessage(object? sender, OnMessageReceivedArgs args) {
@@ -91,15 +90,5 @@ public class GameRequestsService : Service {
     
     public List<GameRequest>? GetGameRequests() {
         return Options.GameRequests;
-    }
-
-    public string GetRawgApiKey() {
-        return Options.RawgApiKey;
-    }
-    
-    public override void Init(Bot bot) {
-        base.Init(bot);
-
-        _bot = (bot.ChatBot)bot;
     }
 }

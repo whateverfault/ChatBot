@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI;
+﻿namespace ChatBot.cli;
 
 public class CliState {
     public CliNodeSystem NodeSystem { get; private set; } = null!;

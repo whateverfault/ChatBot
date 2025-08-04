@@ -1,18 +1,16 @@
 ﻿using System.Text.RegularExpressions;
-using ChatBot.bot.interfaces;
-using ChatBot.CLI.CliNodes.Directories;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.message_filter;
+namespace ChatBot.services.message_filter;
 
 public enum FilterStatus {
     Match,
-    NotMatch
+    NotMatch,
 }
 
 public delegate void MessageHandler(ChatMessage message, FilterStatus status, int patternIndex);
@@ -21,7 +19,7 @@ public class MessageFilterService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     
     public override string Name => ServiceName.MessageFilter;
-    public override MessageFilterOptions Options { get; } = new();
+    public override MessageFilterOptions Options { get; } = new MessageFilterOptions();
     public event MessageHandler? OnMessageFiltered;
 
 
@@ -51,26 +49,17 @@ public class MessageFilterService : Service {
         return Options.GetFilters();
     }
 
-    public void RemovePattern(int index) {
+    public bool RemovePattern(int index) {
         var patterns = Options.GetFilters();
         if (index > patterns.Count || index < 0) {
-            return;
+            return false;
         }
 
         Options.RemovePattern(index);
-    }
-
-    public override void Init(Bot bot) {
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
-        }
+        return true;
     }
 
     public override State GetServiceState() {
         return Options.GetState();
-    }
-    
-    public override void ToggleService() {
-        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 }

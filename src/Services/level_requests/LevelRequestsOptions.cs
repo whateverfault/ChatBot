@@ -1,36 +1,38 @@
-﻿using ChatBot.Services.moderation;
+﻿using ChatBot.services.moderation;
+using ChatBot.services.Static;
 using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.level_requests;
+namespace ChatBot.services.level_requests;
 
 public class LevelRequestsOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
     protected override string Name => "level_requests";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    
+    public static ModerationService ModerationService => (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
+    
     public override State ServiceState => _saveData!.ServiceState;
     public int PatternIndex => _saveData!.PatternIndex;
     public string RewardId => _saveData!.RewardId;
     public ReqState ReqState => _saveData!.ReqState;
     public Restriction Restriction => _saveData!.Restriction;
-    public ModerationService ModerationService { get; set; } = null!;
-
     
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        }
     }
 
     public override void SetDefaults() {
@@ -41,10 +43,6 @@ public class LevelRequestsOptions : Options {
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
         Save();
-    }
-
-    public override State GetState() {
-        return ServiceState;
     }
     
     public int GetPatternIndex() {

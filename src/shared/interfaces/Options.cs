@@ -2,7 +2,7 @@
 
 public enum State {
     Disabled,
-    Enabled
+    Enabled,
 }
 
 public abstract class Options {
@@ -14,13 +14,13 @@ public abstract class Options {
 
     public abstract void Save();
 
-    public abstract bool TryLoad();
-
     public abstract void Load();
 
     public abstract void SetDefaults();
 
     public abstract void SetState(State state);
 
-    public abstract State GetState();
+    public virtual State GetState() {
+        return ServiceState;
+    }
 }

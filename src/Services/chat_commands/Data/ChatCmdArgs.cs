@@ -1,22 +1,17 @@
-﻿using TwitchLib.Client.Events;
+﻿using ChatBot.services.chat_commands.Parser.Data;
 
-namespace ChatBot.Services.chat_commands.Data;
+namespace ChatBot.services.chat_commands.Data;
 
 public class ChatCmdArgs {
-    public OnChatCommandReceivedArgs Args { get; }
-    public List<string> Parsed { get; }
-    public bot.ChatBot Bot { get; }
-    public ChatCommand Command { get; }
+    public readonly ParsedChatCommand Parsed;
+    public ChatCommand Command { get; private set; } = null!;
 
-    
-    public ChatCmdArgs(
-        OnChatCommandReceivedArgs args,
-        List<string> parsed,
-        bot.ChatBot bot, 
-        ChatCommand command) {
-        Args = args;
+
+    public ChatCmdArgs(ParsedChatCommand parsed) {
         Parsed = parsed;
-        Bot = bot;
+    }
+
+    public void UpdateCommand(ChatCommand command) {
         Command = command;
     }
 }

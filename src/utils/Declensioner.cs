@@ -8,7 +8,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "год",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "года",
-                   _                                                              => "лет"
+                   _                                                              => "лет",
                };
     }
 
@@ -19,7 +19,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "месяц",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "месяца",
-                   _                                                              => "месяцев"
+                   _                                                              => "месяцев",
                };
     }
     
@@ -30,7 +30,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "день",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "дня",
-                   _                                                              => "дней"
+                   _                                                              => "дней",
                };
     }
 
@@ -41,7 +41,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "час",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "часа",
-                   _                                                              => "часов"
+                   _                                                              => "часов",
                };
     }
     
@@ -52,7 +52,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "минуту",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "минуты",
-                   _                                                              => "минут"
+                   _                                                              => "минут",
                };
     }
     
@@ -63,7 +63,7 @@ public static class Declensioner {
         return lastDigit switch {
                    1 when lastTwoDigits != 11                                     => "секунду",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "секунды",
-                   _                                                              => "секунд"
+                   _                                                              => "секунд",
                };
     }
 }

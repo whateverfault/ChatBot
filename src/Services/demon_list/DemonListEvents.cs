@@ -1,8 +1,7 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
+﻿using ChatBot.services.interfaces;
 
-namespace ChatBot.Services.demon_list;
+namespace ChatBot.services.demon_list;
 
 public class DemonListEvents : ServiceEvents {
-    public override void Init(Service service, Bot bot) {}
+    public override bool Initialized { get; protected set; }
 }

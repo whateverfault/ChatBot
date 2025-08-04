@@ -1,12 +1,12 @@
 ﻿using System.Text;
-using ChatBot.Services.logger;
+using ChatBot.services.logger;
 using ChatBot.utils.Telegram.Response;
 using Newtonsoft.Json;
 
 namespace ChatBot.utils.Telegram;
 
 public static class TelegramUtils {
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient _httpClient = new HttpClient();
     
     
     public static async Task<SendMessageResponse?> SendMessageAsync(string botToken, long chatId, string message, bool disableNotification = false, LoggerService? logger = null) {
@@ -17,7 +17,7 @@ public static class TelegramUtils {
                               {
                                   chat_id = chatId,
                                   text = message,
-                                  disable_notification = disableNotification
+                                  disable_notification = disableNotification,
                               };
 
             var json = JsonConvert.SerializeObject(requestBody);
@@ -48,7 +48,7 @@ public static class TelegramUtils {
             var requestBody = new
                               {
                                   chat_id = chatId,
-                                  message_id = messageId
+                                  message_id = messageId,
                               };
 
             var json = JsonConvert.SerializeObject(requestBody);

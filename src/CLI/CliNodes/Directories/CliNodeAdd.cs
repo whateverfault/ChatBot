@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public delegate void AddHandler(string value);
 public delegate void AddWithCommentHandler(string value, bool hasComment, string comment = "");

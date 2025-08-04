@@ -1,7 +1,7 @@
-﻿using ChatBot.Services.Static;
+﻿using ChatBot.services.Static;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.moderation;
+namespace ChatBot.services.moderation;
 
 public class WarnedUser {
     [JsonProperty(PropertyName = "user_id")]
@@ -25,8 +25,7 @@ public class WarnedUser {
     public WarnedUser(
         [JsonProperty(PropertyName = "user_id")] string userId,
         [JsonProperty(PropertyName = "warns")] int warns,
-        [JsonProperty(PropertyName = "moderation_action")] ModAction modAction
-        ) {
+        [JsonProperty(PropertyName = "moderation_action")] ModAction modAction) {
         UserId = userId;
         Warns = warns;
         ModAction = modAction;

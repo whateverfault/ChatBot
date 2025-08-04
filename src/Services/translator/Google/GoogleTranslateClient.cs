@@ -1,11 +1,10 @@
 ﻿using System.Text;
-using ChatBot.Services.logger;
-using ChatBot.Services.translator.Google.Data;
-using ChatBot.Services.translator.Google.Request;
-using ChatBot.Services.translator.Google.Response;
+using ChatBot.services.logger;
+using ChatBot.services.translator.Google.Request;
+using ChatBot.services.translator.Google.Response;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator.Google;
+namespace ChatBot.services.translator.Google;
 
 public class GoogleTranslateClient {
     private readonly HttpClient _httpClient;
@@ -26,7 +25,7 @@ public class GoogleTranslateClient {
         var requestBody = new
                           {
                               content = text,
-                              mimeType = "text/plain"
+                              mimeType = "text/plain",
                           };
         var jsonBody = JsonConvert.SerializeObject(requestBody);
 
@@ -64,7 +63,7 @@ public class GoogleTranslateClient {
                       {
                           Contents = texts,
                           TargetLanguageCode = targetLanguage,
-                          SourceLanguageCode = sourceLanguage
+                          SourceLanguageCode = sourceLanguage,
                       };
         try {
             _httpClient.DefaultRequestHeaders.Clear();

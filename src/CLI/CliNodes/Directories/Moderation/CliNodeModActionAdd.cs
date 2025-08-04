@@ -1,7 +1,7 @@
-﻿using ChatBot.Services.moderation;
+﻿using ChatBot.services.moderation;
 using ChatBot.shared.Handlers;
 
-namespace ChatBot.CLI.CliNodes.Directories.Moderation;
+namespace ChatBot.cli.CliNodes.Directories.Moderation;
 
 public delegate void AddModActionHandler(ModAction action);
 
@@ -42,7 +42,7 @@ public class CliNodeModActionAdd : CliNode {
                          ModerationActionType.Warn            => new ModAction(name, index, modComment, ModerationActionType.Warn, Restriction.Everyone),
                          ModerationActionType.WarnWithTimeout => new ModAction(name, index, duration, modComment, warnCount, Restriction.Everyone),
                          ModerationActionType.WarnWithBan     => new ModAction(name, index, modComment, warnCount, Restriction.Everyone),
-                         _                                    => throw new ArgumentOutOfRangeException()
+                         _                                    => throw new ArgumentOutOfRangeException(),
                      };
         
         _add.Invoke(action);

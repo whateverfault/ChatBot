@@ -1,24 +1,27 @@
 ﻿using System.Text;
-using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.Static;
+using ChatBot.bot;
+using ChatBot.services.chat_logs;
+using ChatBot.services.interfaces;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Interfaces;
 
-namespace ChatBot.Services.text_generator;
+namespace ChatBot.services.text_generator;
 
 public class TextGeneratorService : Service {
-    private readonly Random _random = new();
-    private bot.ChatBot _bot = null!;
-    private ITwitchClient? Client => _bot.GetClient();
+    private static TwitchChatBot Bot => TwitchChatBot.Instance;
+    
+    private readonly Random _random = new Random();
+    private ITwitchClient? Client => Bot.GetClient();
 
     public override string Name => ServiceName.TextGenerator;
-    public override TextGeneratorOptions Options { get; } = new();
+    public override TextGeneratorOptions Options { get; } = new TextGeneratorOptions();
 
 
     public void Train() {
-        var chatLogs = Options.ChatLogsService.GetLogs();
+        var chatLogsService = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        var chatLogs = chatLogsService.GetLogs();
         var sb = new StringBuilder();
         
         foreach (var message in chatLogs) {
@@ -61,7 +64,7 @@ public class TextGeneratorService : Service {
             return;
         }
         
-        Client?.SendMessage(_bot.Options.Channel!, message);
+        Client?.SendMessage(Bot.Options.Channel!, message);
     }
     
     private string WeightedRandomChoice(Dictionary<string, int> modelOptions)
@@ -79,13 +82,5 @@ public class TextGeneratorService : Service {
         }
 
         return modelOptions.Keys.First();
-    }
-    
-    public override void Init(Bot bot) {
-        _bot = (bot.ChatBot)bot;
-
-        if (!Options.TryLoad()) {
-            Options.SetDefaults();
-        }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot;
-using ChatBot.Services.logger;
+using ChatBot.services.logger;
 using TwitchLib.Api;
 
 namespace ChatBot.utils;
@@ -9,11 +9,11 @@ public static class TwitchLibUtils {
         var api = new TwitchAPI {
                                     Settings = {
                                                    AccessToken = options.OAuth,
-                                                   ClientId = options.ClientId
-                                               }
+                                                   ClientId = options.ClientId,
+                                               },
                                 };
 
-        var user = await api.Helix.Users.GetUsersAsync(logins: [username]);
+        var user = await api.Helix.Users.GetUsersAsync(logins: [username,]);
         if (user.Users.Length > 0) {
             var userId = user.Users[0].Id;
             logger?.Log(LogLevel.Info, $"User {username} successfully found under id: {userId}");

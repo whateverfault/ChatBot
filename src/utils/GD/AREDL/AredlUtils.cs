@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using ChatBot.Services.logger;
+using ChatBot.services.logger;
 using ChatBot.utils.GD.AREDL.Data;
 using ChatBot.utils.GD.AREDL.Responses;
 using Newtonsoft.Json;
@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace ChatBot.utils.GD.AREDL;
 
 public partial class AredlUtils {
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient _httpClient = new HttpClient();
     
     
     public static async Task<ListLevelsResponse?> ListLevels(LoggerService? logger = null) {

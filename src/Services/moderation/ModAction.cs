@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot;
-using ChatBot.Services.Static;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils.Twitch.Helix;
@@ -8,7 +8,7 @@ using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.moderation;
+namespace ChatBot.services.moderation;
 
 public class ModAction {
     private static readonly ModerationOptions _options = (ModerationOptions)ServiceManager.GetService(ServiceName.Moderation).Options;
@@ -133,7 +133,7 @@ public class ModAction {
         }
     }
 
-    public async Task ActivateWarn(ITwitchClient? client, ChatBotOptions options, ChatMessage message, List<WarnedUser> warnedUsers, bool bypass = false) {
+    public async Task ActivateWarn(ITwitchClient? client, ChatBotOptions options, ChatMessage message, bool bypass = false) {
         if (State == State.Disabled && !bypass) return;
         if (RestrictionHandler.Handle(Restriction, message) && !bypass) return;
         
@@ -147,17 +147,19 @@ public class ModAction {
         var userIndex = -1;
         var found = false;
 
-        for (var index = 0; index < warnedUsers.Count; index++) {
+        for (var index = 0; index < _options.WarnedUsers.Count; index++) {
             userIndex = index;
-            if (!warnedUsers[index].UserId.Equals(message.UserId)) continue;
+            if (!_options.WarnedUsers[index].UserId.Equals(message.UserId)) continue;
 
             found = true;
-            user = warnedUsers[index];
+            user = _options.WarnedUsers[index];
+            break;
         }
+        
         if (!found) {
             user = new WarnedUser(message.UserId, this);
-            warnedUsers.Add(user);
-            userIndex++;
+            _options.AddWarnedUser(user);
+            ++userIndex;
         }
         
         user.GiveWarn();
@@ -170,17 +172,15 @@ public class ModAction {
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
                 await HelixUtils.BanUser(options, message.Username, ModeratorComment);
-                warnedUsers.RemoveAt(userIndex);
+                _options.RemoveWarnedUser(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
                 await HelixUtils.TimeoutUserHelix(options, message.Username, TimeSpan.FromSeconds(Duration), ModeratorComment);
-                warnedUsers.RemoveAt(userIndex);
+                _options.RemoveWarnedUser(userIndex);
                 break;
             }
         }
-        
-        _options.Save();
     }
 
     public string GetName() {

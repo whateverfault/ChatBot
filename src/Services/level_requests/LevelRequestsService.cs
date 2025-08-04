@@ -1,14 +1,12 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.moderation;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.level_requests;
+namespace ChatBot.services.level_requests;
 
 public enum ReqState {
     Off,
@@ -20,7 +18,7 @@ public class LevelRequestsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     
     public override string Name => ServiceName.LevelRequests;
-    public override LevelRequestsOptions Options { get; } = new();
+    public override LevelRequestsOptions Options { get; } = new LevelRequestsOptions();
 
 
     public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
@@ -36,15 +34,10 @@ public class LevelRequestsService : Service {
                     return;
             }
             
-            await Options.ModerationService.WarnUser(message, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
+            await LevelRequestsOptions.ModerationService.WarnUser(message, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e.Message}");
         }
-    }
-
-    public override void Init(Bot bot) {
-        Options.ModerationService = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
-        base.Init(bot);
     }
 
     public int GetPatternIndex() {
@@ -52,7 +45,7 @@ public class LevelRequestsService : Service {
     }
 
     public bool SetPatternIndex(int index) {
-        if (index < 0 || index >= Options.ModerationService.GetModActions().Count) return false;
+        if (index < 0 || index >= LevelRequestsOptions.ModerationService.GetModActions().Count) return false;
         
         Options.SetPatternIndex(index);
         return true;
@@ -91,7 +84,7 @@ public class LevelRequestsService : Service {
                    ReqState.Off    => "отключены.", 
                    ReqState.Points => "за баллы.", 
                    ReqState.On     => "включены.", 
-                   _               => throw new ArgumentOutOfRangeException()
+                   _               => throw new ArgumentOutOfRangeException(),
                };
     }
 }

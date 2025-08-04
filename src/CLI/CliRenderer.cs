@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI;
+﻿namespace ChatBot.cli;
 
 public class CliRenderer {
     private readonly CliState _state;

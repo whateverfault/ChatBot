@@ -1,7 +1,7 @@
-﻿using ChatBot.Services.message_filter;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 
-namespace ChatBot.CLI.CliNodes.Directories.MessageFilter;
+namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
 
 public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
     private readonly MessageFilterService _messageFilter;
@@ -55,19 +55,19 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
         _addHandler.Invoke(filter);
     }
 
-    private void Remove(int index) {
+    private bool Remove(int index) {
         var filters = _messageFilter.GetFilters();
 
         if (index < 0 || index > filters.Count || index >= _content.Nodes.Count-2) {
-            return;
+            return false;
         }
 
         if (filters[index].IsDefault) {
-            return;
+            return false;
         }
         
         _content.RemoveNode(index+2);
-        _removeHandler.Invoke(index);
+        return _removeHandler.Invoke(index);
     }
 
     private CliNodeStaticDirectory FilterToNode(Filter filter) {

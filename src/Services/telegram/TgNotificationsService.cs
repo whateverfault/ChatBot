@@ -1,29 +1,28 @@
-﻿using System.Text;
-using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+﻿using ChatBot.bot;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.shared;
 using ChatBot.utils.Twitch.Helix.Data;
 
-namespace ChatBot.Services.telegram;
+namespace ChatBot.services.telegram;
 
 public class TgNotificationsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    private static TwitchChatBot Bot => TwitchChatBot.Instance;
 
-    private bot.ChatBot _bot = null!;
     private TgBotClient _tgBotClient = null!;
     
     public override string Name => ServiceName.TgNotifications;
-    public override TgNotificationsOptions Options { get; } = new();
+    public override TgNotificationsOptions Options { get; } = new TgNotificationsOptions();
 
 
-    public async Task<int?> SendNotification(StreamData data) {
+    public async Task<int?> SendNotification(StreamData? data) {
         try {
-            var processed = ProcessPrompt(Options.NotificationPrompt, data.Title);
+            var processed = ProcessPrompt(Options.NotificationPrompt, data!.Title);
             var response = await _tgBotClient.SendMessageAsync(processed, logger: _logger);
 
-            if (response is not { Ok: true }) {
+            if (response is not { Ok: true, }) {
                 return null;
             }
 
@@ -31,7 +30,7 @@ public class TgNotificationsService : Service {
             _logger.Log(LogLevel.Info, $"Notification is sent. (id: {messageId})");
             return messageId;
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while sending a telegram notification message: {e.Message}");
             return null;
         }
     }
@@ -41,7 +40,7 @@ public class TgNotificationsService : Service {
             _logger.Log(LogLevel.Info, $"Deleted a previous notification message. (id: {messageId})");
             return await _tgBotClient.DeleteMessageAsync(messageId, logger: _logger);
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while deleting a telegram message: {e.Message}");
         }
         return false;
     }
@@ -56,7 +55,7 @@ public class TgNotificationsService : Service {
                                                               },
                                                               {
                                                                   "{link}",
-                                                                  $"{Constants.BaseTwitchUrl}{_bot.Options.Channel}?v={random.Next(int.MinValue, int.MaxValue)}"
+                                                                  $"{Constants.BaseTwitchUrl}{Bot.Options.Channel}?v={random.Next(int.MinValue, int.MaxValue)}"
                                                               },
                                                               {
                                                                   "\\n",
@@ -101,10 +100,9 @@ public class TgNotificationsService : Service {
         return Options.Cooldown;
     }
     
-    public override void Init(Bot bot) {
-        base.Init(bot);
-
-        _bot = (bot.ChatBot)bot;
+    public override void Init() {
+        base.Init();
+        
         _tgBotClient = new TgBotClient(Options.BotToken, Options.ChatId);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Services.chat_logs;
+﻿namespace ChatBot.services.chat_logs;
 
 public class Message {
 

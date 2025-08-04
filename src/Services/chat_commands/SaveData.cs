@@ -1,9 +1,7 @@
-﻿using ChatBot.Services.chat_commands.Data;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
+﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.chat_commands;
+namespace ChatBot.services.chat_commands;
 
 public class SaveData {
     [JsonProperty("service_state")]

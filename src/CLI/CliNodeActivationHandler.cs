@@ -1,10 +1,10 @@
-﻿namespace ChatBot.CLI;
+﻿namespace ChatBot.cli;
 
-public class CliNodeHandler {
+public class CliNodeActivationHandler {
     private readonly CliState _state;
 
 
-    public CliNodeHandler(CliState state) {
+    public CliNodeActivationHandler(CliState state) {
         _state = state;
     }
     

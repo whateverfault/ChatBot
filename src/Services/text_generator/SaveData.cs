@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.text_generator;
+namespace ChatBot.services.text_generator;
 
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
@@ -14,6 +14,13 @@ public class SaveData {
     public Dictionary<string, Dictionary<string, int>> Model { get; private set; }
 
 
+    public SaveData() {
+        ServiceState = State.Disabled;
+        ContextSize = 2;
+        MaxLength = 10;
+        Model = [];
+    }
+    
     [JsonConstructor]
     public SaveData(
         [JsonProperty(PropertyName = "service_state")] State serviceState,

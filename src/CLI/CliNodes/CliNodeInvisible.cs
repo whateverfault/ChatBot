@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public class CliNodeInvisible : CliNode {
     protected override string Text => string.Empty;

@@ -1,31 +1,34 @@
-﻿using ChatBot.shared.Handlers;
+﻿using ChatBot.bot;
+using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.chat_commands.Data;
+namespace ChatBot.services.chat_commands.Data;
 
 public sealed class CustomChatCommand : ChatCommand {
-    [JsonProperty(PropertyName = "id")]
+    [JsonProperty("id")]
     public override int Id { get; protected set; }
-    [JsonProperty(PropertyName = "name")]
+    [JsonProperty("name")]
     public override string Name { get; protected set; }
-    [JsonProperty(PropertyName = "args")]
+    [JsonProperty("args")]
     public override string Args { get; protected set; }
-    [JsonProperty(PropertyName = "description")]
+    [JsonProperty("description")]
     public override string Description { get; protected set; }
-    [JsonProperty(PropertyName = "aliases")]
+    [JsonProperty("has_identifier")]
+    public override bool HasIdentifier { get; protected set; }
+    [JsonProperty("aliases")]
     public override List<string>? Aliases { get; protected set; }
-    [JsonProperty(PropertyName = "output")]
+    [JsonProperty("output")]
     public string Output { get; private set; }
-    [JsonProperty(PropertyName = "cooldown")]
+    [JsonProperty("cooldown")]
     public override int Cooldown { get; protected set; }
     [JsonIgnore]
     public override long LastUsed { get; protected set; }
     [JsonIgnore]
-    public override CmdActionHandler? Action { get; protected set; }
-    [JsonProperty(PropertyName = "restriction")]
+    public override CmdActionHandler Action { get; protected set; }
+    [JsonProperty("restriction")]
     public override Restriction Restriction { get; protected set; }
-    [JsonProperty(PropertyName = "state")]
+    [JsonProperty("state")]
     public override State State { get; protected set; }
     
     
@@ -34,23 +37,23 @@ public sealed class CustomChatCommand : ChatCommand {
         string name,
         string args,
         string description,
+        bool hasIdentifier,
         List<string>? aliases,
         string output,
         Restriction restriction,
-        State state,
-        int cooldown,
-        long lastUsed) {
+        int cooldown = 1) {
         Id = id;
         Name = name.Replace(" ", "");
         Args = args;
         Description = description;
+        HasIdentifier = hasIdentifier;
         Aliases = aliases;
         Output = output;
         Action = CmdAction;
         Restriction = restriction;
-        State = state;
         Cooldown = cooldown;
-        LastUsed = lastUsed;
+        LastUsed = 0;
+        State = State.Enabled;
     }
     
     [JsonConstructor]
@@ -83,15 +86,15 @@ public sealed class CustomChatCommand : ChatCommand {
 
     public void SetOutput(string output) {
         Output = output;
-        chatCommandsService.Options.Save();
+        ChatCommandsService.Options.Save();
     }
     
     private Task CmdAction(ChatCmdArgs chatArgs) {
         if (chatArgs.Command.GetType() != typeof(CustomChatCommand)) return Task.CompletedTask;
 
         var command = (CustomChatCommand)chatArgs.Command;
-        var chatMessage = chatArgs.Args.Command.ChatMessage;
-        var client = chatArgs.Bot.GetClient();
+        var chatMessage = chatArgs.Parsed.ChatMessage;
+        var client = TwitchChatBot.Instance.GetClient();
         
         client?.SendReply(chatMessage.Channel, chatMessage.Id, command.Output);
         return Task.CompletedTask;

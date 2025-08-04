@@ -1,10 +1,9 @@
 ﻿using System.Text;
-using ChatBot.Services.logger;
+using ChatBot.services.logger;
+using ChatBot.services.translator.VK.Response;
 using Newtonsoft.Json;
-using ChatBot.Services.translator.VK.Data;
-using ChatBot.Services.translator.VK.Response;
 
-namespace ChatBot.Services.translator.VK;
+namespace ChatBot.services.translator.VK;
 
 public class VkTranslateClient {
     private readonly HttpClient _httpClient;
@@ -25,7 +24,7 @@ public class VkTranslateClient {
             var requestData = new
                               {
                                   texts = text[0],
-                                  translation_language = lang
+                                  translation_language = lang,
                               };
             
             _httpClient.DefaultRequestHeaders.Clear();

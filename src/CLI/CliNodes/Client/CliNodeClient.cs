@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.Handlers;
 using TwitchLib.Client.Interfaces;
 
-namespace ChatBot.CLI.CliNodes.Client;
+namespace ChatBot.cli.CliNodes.Client;
 
 public delegate void ClientHandler(ITwitchClient? client, string channel);
 

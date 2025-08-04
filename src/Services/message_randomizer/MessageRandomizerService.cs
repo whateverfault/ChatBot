@@ -1,14 +1,14 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.chat_logs;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.logger;
-using ChatBot.Services.Static;
+﻿using ChatBot.bot.@interface;
+using ChatBot.services.chat_logs;
+using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.message_randomizer;
+namespace ChatBot.services.message_randomizer;
 
 public class MessageRandomizerService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
@@ -16,7 +16,7 @@ public class MessageRandomizerService : Service {
     private ITwitchClient? Client => _bot.GetClient();
 
     public override string Name => ServiceName.MessageRandomizer;
-    public override MessageRandomizerOptions Options { get; } = new();
+    public override MessageRandomizerOptions Options { get; } = new MessageRandomizerOptions();
 
 
     public void HandleChatLog(ChatMessage message) {
@@ -82,13 +82,9 @@ public class MessageRandomizerService : Service {
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg) ? ErrorCode.NotEnoughData : ErrorCode.None;
+        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg)? ErrorCode.NotEnoughData : ErrorCode.None;
     }
-
-    public override void ToggleService() {
-        Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
-    }
-
+    
     public override State GetServiceState() {
         return Options.ServiceState;
     }
@@ -105,14 +101,9 @@ public class MessageRandomizerService : Service {
         return Options.Counter;
     }
 
-    public override void Init(Bot bot) {
-        _bot = bot;
-
-        if (Options.TryLoad()) {
-            Options.SetRandomValue();
-            return;
-        }
-        Options.SetDefaults();
+    public override void Init() {
+        base.Init();
+        
         Options.SetRandomValue();
     }
 }

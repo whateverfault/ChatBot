@@ -1,8 +1,8 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.Static;
+﻿using ChatBot.bot;
+using ChatBot.services.Static;
 using ChatBot.shared;
 
-namespace ChatBot.Services.presets;
+namespace ChatBot.services.presets;
 
 public class Preset {
     public string Name { get; private set; }
@@ -14,11 +14,16 @@ public class Preset {
 
     public void Create() {
         Directories.ChangeDataDirectory($"{Name}_data");
-        ServiceManager.ServicesToDefault([ServiceName.Presets]);
+        ServiceManager.ServicesToDefault([ServiceName.Presets,]);
     }
 
-    public void Load(Bot bot) {
+    public void Load() {
         Directories.ChangeDataDirectory($"{Name}_data");
-        ServiceManager.InitServices(bot, [ServiceName.Presets]);
+        
+        ServiceManager.InitServices([ServiceName.Presets,]);
+        
+        var bot = TwitchChatBot.Instance;
+        bot.Options.Load();
+        bot.Stop();
     }
 }

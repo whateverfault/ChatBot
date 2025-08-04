@@ -1,12 +1,12 @@
-﻿namespace ChatBot.CLI.CliNodes.Directories;
+﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public delegate string DynamicName();
 
 public sealed class CliNodeStaticDirectory : CliNodeDirectory {
     private readonly DynamicName? _dynamicName;
     private readonly bool _hasBackOption;
-    
-    private string _text { get; }
+
+    private readonly string _text;
 
     protected override string Text => 
         _dynamicName != null?

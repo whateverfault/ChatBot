@@ -1,23 +1,26 @@
-﻿using ChatBot.Services.ai;
-using ChatBot.Services.chat_commands;
-using ChatBot.Services.chat_logs;
-using ChatBot.Services.demon_list;
-using ChatBot.Services.game_requests;
-using ChatBot.Services.level_requests;
-using ChatBot.Services.logger;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.message_randomizer;
-using ChatBot.Services.moderation;
-using ChatBot.Services.presets;
-using ChatBot.Services.Static;
-using ChatBot.Services.telegram;
-using ChatBot.Services.text_generator;
-using ChatBot.Services.translator;
+﻿using ChatBot.bot;
+using ChatBot.services.ai;
+using ChatBot.services.chat_ads;
+using ChatBot.services.chat_commands;
+using ChatBot.services.chat_logs;
+using ChatBot.services.demon_list;
+using ChatBot.services.game_requests;
+using ChatBot.services.level_requests;
+using ChatBot.services.logger;
+using ChatBot.services.message_filter;
+using ChatBot.services.message_randomizer;
+using ChatBot.services.moderation;
+using ChatBot.services.presets;
+using ChatBot.services.Static;
+using ChatBot.services.stream_state_checker;
+using ChatBot.services.telegram;
+using ChatBot.services.text_generator;
+using ChatBot.services.translator;
 
-namespace ChatBot.CLI;
+namespace ChatBot.cli;
 
 public class CliData {
-    public bot.ChatBot Bot { get; }
+    public TwitchChatBot Bot { get; }
     public MessageRandomizerService MessageRandomizer { get; }
     public ChatCommandsService ChatCommands { get; }
     public MessageFilterService MessageFilter { get; }
@@ -31,11 +34,13 @@ public class CliData {
     public AiService Ai { get; }
     public TranslatorService Translator { get; }
     public GameRequestsService GameRequests { get; }
+    public StreamStateCheckerService StreamStateChecker { get; }
     public TgNotificationsService TgNotifications { get; }
+    public ChatAdsService ChatAds { get; }
 
 
-    public CliData(bot.ChatBot bot) {
-        Bot = bot;
+    public CliData() {
+        Bot = TwitchChatBot.Instance;
         MessageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
         ChatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         MessageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
@@ -49,6 +54,8 @@ public class CliData {
         Ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
         Translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
         GameRequests = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
+        StreamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
         TgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
+        ChatAds = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
     }
 }

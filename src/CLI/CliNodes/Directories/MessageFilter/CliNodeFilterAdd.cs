@@ -1,6 +1,6 @@
-﻿using ChatBot.Services.message_filter;
+﻿using ChatBot.services.message_filter;
 
-namespace ChatBot.CLI.CliNodes.Directories.MessageFilter;
+namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
 
 public delegate void AddFilterHandler(Filter filter);
 

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.Ollama;
+namespace ChatBot.services.ai.AiClients.Ollama;
 
 public class OllamaResponse {
     [JsonProperty(PropertyName = "response")]

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace ChatBot.CLI.CliNodes;
+namespace ChatBot.cli.CliNodes;
 
 public delegate List<string>? AliasesGetter();
 public delegate void AliasesSetter(List<string> aliases);
@@ -34,7 +34,11 @@ public class CliNodeAliases : CliNode {
 
         Console.WriteLine($"Current Aliases: {AliasesToString(_getter.Invoke())}");
         Console.Write("New Aliases: ");
-        var aliases = Console.ReadLine() ?? string.Empty;
+        var aliases = Console.ReadLine();
+        
+        if (string.IsNullOrEmpty(aliases)) {
+            return;
+        }
         
         _setter.Invoke(AliasesFromString(aliases));
     }

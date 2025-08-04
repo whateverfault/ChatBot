@@ -1,8 +1,7 @@
-﻿using ChatBot.Services.chat_commands.Data;
+﻿using ChatBot.services.chat_commands.Data;
 using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
 
-namespace ChatBot.CLI.CliNodes.Directories.ChatCommands;
+namespace ChatBot.cli.CliNodes.Directories.ChatCommands;
 
 public delegate void AddChatCmdHandler(ChatCommand chatCmd);
 
@@ -29,12 +28,10 @@ public class CliNodeChatCmdAdd : CliNode {
                                             name,
                                             "--",
                                             "--",
+                                            true,
                                             [],
                                             output,
-                                            Restriction.Everyone,
-                                            State.Enabled,
-                                            1,
-                                            0);
+                                            Restriction.Everyone);
         _add.Invoke(chatCmd);
     }
 }

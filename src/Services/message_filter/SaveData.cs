@@ -1,19 +1,35 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.message_filter;
+namespace ChatBot.services.message_filter;
 
 public class SaveData {
-    [JsonProperty(PropertyName ="filters")]
+    [JsonProperty("filters")]
     public List<Filter> Filters { get; }
-    [JsonProperty(PropertyName ="state")]
+    [JsonProperty("state")]
     public State State { get; set; }
 
 
+    public SaveData() {
+        Filters = [
+                      new Filter(
+                                 "Level Requests",
+                                 @"\b\d{8,11}\b",
+                                 true
+                                ),
+                      new Filter(
+                                 "Special Symbols",
+                                 "^[!@~]+",
+                                 true
+                                ),
+                  ];
+    }
+    
+    [JsonConstructor]
     public SaveData(
         [JsonProperty(PropertyName ="filters")] List<Filter> filters,
         [JsonProperty(PropertyName ="state")] State state) {
-        State = state;
         Filters = filters;
+        State = state;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.presets;
+namespace ChatBot.services.presets;
 
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
@@ -12,8 +12,11 @@ public class SaveData {
     public int CurrentPreset { get; set; }
     
 
-    public SaveData(List<Preset> presets) {
-        Presets = presets;
+    public SaveData() {
+        var preset = new Preset("default");
+        preset.Create();
+        
+        Presets = [preset,];
     }
     
     [JsonConstructor]

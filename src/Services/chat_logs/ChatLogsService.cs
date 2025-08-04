@@ -1,17 +1,17 @@
-﻿using ChatBot.Services.interfaces;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 using ChatBot.shared;
 using ChatBot.shared.interfaces;
 using TwitchLib.Client.Models;
 
-namespace ChatBot.Services.chat_logs;
+namespace ChatBot.services.chat_logs;
 
 public delegate void LogsAppendedHandler(ChatMessage message);
 
 public class ChatLogsService : Service {
     public override string Name => ServiceName.ChatLogs;
-    public override ChatLogsOptions Options { get; } = new();
+    public override ChatLogsOptions Options { get; } = new ChatLogsOptions();
     public event LogsAppendedHandler? OnLogsAppended;
 
 

@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public delegate Range RangeGetter();
 public delegate void RangeSetter(Range value);
@@ -38,13 +38,19 @@ public class CliNodeRange : CliNode {
         
         Console.Write("from: ");
         var line = Console.ReadLine();
-        var handled = string.IsNullOrEmpty(line)? "0" : line;
-        var from = int.Parse(handled);
+        
+        var from = _getter.Invoke().Start.Value;
+        if (!string.IsNullOrEmpty(line)) {
+            int.TryParse(line, out from);
+        }        
         
         Console.Write("to: ");
         line = Console.ReadLine();
-        handled = string.IsNullOrEmpty(line)? "9999" : line;
-        var to = int.Parse(handled);
+        
+        var to = _getter.Invoke().End.Value;
+        if (!string.IsNullOrEmpty(line)) {
+            int.TryParse(line, out to);
+        }   
         
         _setter.Invoke(new Range(from, to));
     }

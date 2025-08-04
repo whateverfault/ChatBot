@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator.Google.Data;
+namespace ChatBot.services.translator.Google.Data;
 
 public class Translation {
     [JsonProperty("translatedText")]

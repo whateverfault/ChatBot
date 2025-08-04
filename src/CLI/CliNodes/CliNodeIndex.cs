@@ -1,6 +1,6 @@
 ﻿using ChatBot.shared.Handlers;
 
-namespace ChatBot.CLI.CliNodes;
+namespace ChatBot.cli.CliNodes;
 
 public delegate int IndexGetter();
 public delegate bool IndexSetter(int index);
@@ -34,8 +34,13 @@ public class CliNodeIndex : CliNode {
         
         Console.WriteLine($"Value: {_getter.Invoke()+1}");
         Console.Write("New Value: ");
-        var line = Console.ReadLine() ?? "1";
-        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "1" : line);
+        
+        var line = Console.ReadLine();
+        if (string.IsNullOrEmpty(line)) {
+            return;
+        }
+        
+        if (!int.TryParse(line, out var index)) return;
         var result = _setter.Invoke(index-1);
 
         if (!result) {

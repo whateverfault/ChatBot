@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Services.Static;
+﻿namespace ChatBot.services.Static;
 
 public static class ServiceName {
     public const string MessageRandomizer = "Message Randomizer";
@@ -15,4 +15,6 @@ public static class ServiceName {
     public const string Translator = "Translator";
     public const string GameRequests = "Game Requests";
     public const string TgNotifications = "Notifications";
+    public const string StreamStateChecker = "Stream State Checker";
+    public const string ChatAds = "Chat Ads";
 }

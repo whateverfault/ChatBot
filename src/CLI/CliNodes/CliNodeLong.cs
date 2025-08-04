@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public delegate long LongGetter();
 public delegate void LongSetter(long value);
@@ -32,8 +32,13 @@ public class CliNodeLong : CliNode {
         
         Console.WriteLine($"Value: {_getter.Invoke()}");
         Console.Write("New Value: ");
-        var line = Console.ReadLine() ?? "0";
-        var index = long.Parse(string.IsNullOrWhiteSpace(line)? "0" : line);
-        _setter.Invoke(index);
+        
+        var line = Console.ReadLine();
+        if (string.IsNullOrEmpty(line)) {
+            return;
+        }
+        
+        if (!long.TryParse(line, out var value)) return;
+        _setter.Invoke(value);
     }
 }

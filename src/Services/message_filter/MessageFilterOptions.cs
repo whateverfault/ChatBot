@@ -1,12 +1,13 @@
-﻿using System.Text.RegularExpressions;
-using ChatBot.shared;
+﻿using ChatBot.shared;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
-namespace ChatBot.Services.message_filter;
+namespace ChatBot.services.message_filter;
 
 public class MessageFilterOptions : Options {
+    private readonly object _fileLock = new object();
+    
     private SaveData? _saveData;
     private List<Filter> Filters => _saveData!.Filters;
     
@@ -14,39 +15,22 @@ public class MessageFilterOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.State;
-
-
-    public override bool TryLoad() {
-        return JsonUtils.TryRead(OptionsPath, out _saveData);
-    }
+    
 
     public override void Load() {
         if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.SaveIssue);
             SetDefaults();
         }
     }
 
     public override void Save() {
-        JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        lock (_fileLock) {
+            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+        }
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                 [
-                                     new Filter(
-                                                "Level Requests",
-                                                @"\b\d{8,11}\b",
-                                                true
-                                                ),
-                                     new Filter(
-                                                "Special Symbols",
-                                                "^[!@~]+",
-                                                true
-                                                ),
-                                 ],
-                                 State.Disabled
-                                );
+        _saveData = new SaveData();
         Save();
     }
 
@@ -54,11 +38,7 @@ public class MessageFilterOptions : Options {
         _saveData!.State = state;
         Save();
     }
-
-    public override State GetState() {
-        return ServiceState;
-    }
-
+    
     public List<Filter> GetFilters() {
         return Filters;
     }

@@ -1,35 +1,31 @@
 ﻿using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.Services.telegram;
+namespace ChatBot.services.telegram;
 
 public class SaveData {
     [JsonProperty(PropertyName ="service_state")]
     public State ServiceState { get; set; }
 
     [JsonProperty(PropertyName ="bot_token")]
-    public string BotToken { get; set; } = null!;
+    public string BotToken { get; set; } = string.Empty;
 
     [JsonProperty(PropertyName ="chat_id")]
     public long ChatId { get; set; }
     
     [JsonProperty(PropertyName ="notification_prompt")]
-    public string NotificationPrompt { get; set; } = null!;
+    public string NotificationPrompt { get; set; } = string.Empty;
 
     [JsonProperty(PropertyName ="cooldown")]
     public long Cooldown { get; set; }
 
-    [JsonProperty(PropertyName ="last_streamed")]
-    public long LastStreamed { get; set; }
-
     [JsonProperty(PropertyName ="last_msg_id")]
     public int? LastMessageId { get; set; }
-    
-    [JsonProperty(PropertyName ="was_streaming")]
-    public bool WasStreaming { get; set; }
 
 
-    public SaveData(){}
+    public SaveData() {
+        NotificationPrompt = NotificationPrompt = "Стрим начался! {title}\n{link}";
+    }
     
     [JsonConstructor]
     public SaveData(
@@ -38,16 +34,12 @@ public class SaveData {
         [JsonProperty(PropertyName ="chat_id")] long chatId,
         [JsonProperty(PropertyName ="notification_prompt")] string notificationPrompt,
         [JsonProperty(PropertyName ="cooldown")] long cooldown,
-        [JsonProperty(PropertyName ="last_streamed")] long lastStreamed,
-        [JsonProperty(PropertyName ="last_msg_id")] int? lastMessageId,
-        [JsonProperty(PropertyName ="was_streaming")] bool wasStreaming) {
+        [JsonProperty(PropertyName ="last_msg_id")] int? lastMessageId) {
         ServiceState = serviceState;
         BotToken = botToken;
         ChatId = chatId;
         NotificationPrompt = notificationPrompt;
         Cooldown = cooldown;
-        LastStreamed = lastStreamed;
-        WasStreaming = wasStreaming;
         LastMessageId = lastMessageId;
     }
 }

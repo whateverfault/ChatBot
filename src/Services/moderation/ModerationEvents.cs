@@ -1,22 +1,37 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.message_filter;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.interfaces;
+using ChatBot.services.message_filter;
+using ChatBot.services.Static;
 
-namespace ChatBot.Services.moderation;
+namespace ChatBot.services.moderation;
 
 public class ModerationEvents : ServiceEvents {
-    private ModerationService _service = null!;
+    private ModerationService _moderationService = null!;
+    private MessageFilterService _messageFilterService = null!;
+    
+    public override bool Initialized { get; protected set; }
     
     
-    public override void Init(Service service, Bot bot) {
-        _service = (ModerationService)service;
+    public override void Init(Service service) {
+        _moderationService = (ModerationService)service;
+        _messageFilterService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) return;
+    protected override void Subscribe() {
+        if (Subscribed) {
+            return;
+        }
         base.Subscribe();
-        var regexService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        regexService.OnMessageFiltered += _service.HandleMessage;
+        
+        _messageFilterService.OnMessageFiltered += _moderationService.HandleMessage;
+    }
+
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
+        }
+        base.UnSubscribe();
+        
+        _messageFilterService.OnMessageFiltered -= _moderationService.HandleMessage;
     }
 }

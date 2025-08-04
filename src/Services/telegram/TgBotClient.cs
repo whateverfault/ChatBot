@@ -1,8 +1,8 @@
-﻿using ChatBot.Services.logger;
+﻿using ChatBot.services.logger;
 using ChatBot.utils.Telegram;
 using ChatBot.utils.Telegram.Response;
 
-namespace ChatBot.Services.telegram;
+namespace ChatBot.services.telegram;
 
 public class TgBotClient {
     private readonly string _botToken;

@@ -1,22 +1,37 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.chat_logs;
-using ChatBot.Services.interfaces;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.chat_logs;
+using ChatBot.services.interfaces;
+using ChatBot.services.Static;
 
-namespace ChatBot.Services.message_randomizer;
+namespace ChatBot.services.message_randomizer;
 
 public class MessageRandomizerEvents : ServiceEvents {
-    private MessageRandomizerService _service = null!;
+    private MessageRandomizerService _messageRandomizer = null!;
+    private ChatLogsService _chatLogs = null!;
 
-
-    public override void Init(Service service, Bot bot) {
-        _service = (MessageRandomizerService)service;
+    public override bool Initialized { get; protected set; }
+    
+    
+    public override void Init(Service service) {
+        _messageRandomizer = (MessageRandomizerService)service;
+        _chatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        base.Init(service);
     }
 
-    public override void Subscribe() {
-        if (subscribed) return;
+    protected override void Subscribe() {
+        if (Subscribed) {
+            return;
+        }
         base.Subscribe();
-        var chatLogsService = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
-        chatLogsService.OnLogsAppended += _service.HandleChatLog;
+        
+        _chatLogs.OnLogsAppended += _messageRandomizer.HandleChatLog;
+    }
+
+    protected override void UnSubscribe() {
+        if (!Subscribed) {
+            return;
+        }
+        base.UnSubscribe();
+        
+        _chatLogs.OnLogsAppended -= _messageRandomizer.HandleChatLog;
     }
 }

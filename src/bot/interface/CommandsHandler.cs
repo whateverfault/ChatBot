@@ -1,6 +1,6 @@
 ﻿using TwitchLib.Client.Events;
 
-namespace ChatBot.bot.interfaces;
+namespace ChatBot.bot.@interface;
 
 public abstract class CommandsHandler {
     public abstract void Handle(object? sender, OnChatCommandReceivedArgs args);

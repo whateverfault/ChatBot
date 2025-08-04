@@ -1,13 +1,11 @@
-﻿using ChatBot.Services.message_filter;
-using ChatBot.Services.moderation;
-using ChatBot.Services.Static;
+﻿using ChatBot.services.moderation;
+using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
-namespace ChatBot.CLI.CliNodes.Directories.Moderation;
+namespace ChatBot.cli.CliNodes.Directories.Moderation;
 
 public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
-    private readonly MessageFilterService _messageFilter;
     private readonly ModerationService _moderation;
     
     private readonly AddModActionHandler _addHandler;
@@ -47,7 +45,6 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                         )
                          );
 
-        _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
         _moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
 
         var nodesContent = _state.Data.Moderation.GetModActions();
@@ -69,19 +66,19 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
         _addHandler.Invoke(modAction);
     }
     
-    private void Remove(int index) {
+    private bool Remove(int index) {
         var modActions = _moderation.GetModActions();
 
         if (index < 0 || index > modActions.Count || index >= _content.Nodes.Count-2) {
-            return;
+            return false;
         }
 
         if (modActions[index].IsDefault) {
-            return;
+            return false;
         }
         
         _content.RemoveNode(index+2);
-        _removeHandler.Invoke(index);
+        return _removeHandler.Invoke(index);
     }
 
     private CliNodeStaticDirectory ModActionToNode(ModAction modAction) {
@@ -174,7 +171,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                                       new CliNodeEnum("State", modAction.GetStateAsInt, typeof(State),
                                                                       CliNodePermission.Default, modAction.StateNext),
                                                   ], modAction.GetName),
-                       _ => throw new ArgumentOutOfRangeException()
+                       _ => throw new ArgumentOutOfRangeException(),
                    };
         return node;
     }

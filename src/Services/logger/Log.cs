@@ -1,9 +1,9 @@
-﻿namespace ChatBot.Services.logger;
+﻿namespace ChatBot.services.logger;
 
 public enum LogLevel {
     Info,
     Error,
-    Warning
+    Warning,
 }
 
 public class Log {

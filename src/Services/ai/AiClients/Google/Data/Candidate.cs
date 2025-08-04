@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.Services.ai.AiClients.Google.Data;
+namespace ChatBot.services.ai.AiClients.Google.Data;
 
 public class Candidate {
     [JsonProperty("content")]

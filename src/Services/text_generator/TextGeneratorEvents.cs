@@ -1,8 +1,7 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.Services.interfaces;
+﻿using ChatBot.services.interfaces;
 
-namespace ChatBot.Services.text_generator;
+namespace ChatBot.services.text_generator;
 
 public class TextGeneratorEvents : ServiceEvents {
-    public override void Init(Service service, Bot bot) {}
+    public override bool Initialized { get; protected set; }
 }

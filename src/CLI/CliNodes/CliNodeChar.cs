@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public delegate char CharGetter();
 public delegate void CharSetter(char value);
@@ -32,6 +32,12 @@ public class CliNodeChar : CliNode {
         
         Console.WriteLine($"Value: {_getter.Invoke()}");
         Console.Write("New Value: ");
-        _setter.Invoke((char)Console.Read());
+        
+        var line = Console.ReadLine();
+        if (string.IsNullOrEmpty(line)) {
+            return;
+        }
+        
+        _setter.Invoke(line[0]);
     }
 }

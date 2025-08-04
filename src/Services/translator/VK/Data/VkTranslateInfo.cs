@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.Services.translator.VK.Data;
+namespace ChatBot.services.translator.VK.Data;
 
 public class VkTranslateInfo {
     [JsonProperty("texts")]

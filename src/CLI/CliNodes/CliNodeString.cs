@@ -1,4 +1,4 @@
-﻿namespace ChatBot.CLI.CliNodes;
+﻿namespace ChatBot.cli.CliNodes;
 
 public delegate string StringGetter();
 public delegate void StringSetter(string value);
@@ -29,9 +29,19 @@ public class CliNodeString : CliNode {
 
     public override void Activate(CliState state) {
         if (_permission == CliNodePermission.ReadOnly) return;
-        
+
         Console.WriteLine($"Value: {_getter.Invoke()}");
         Console.Write("New Value: ");
-        _setter.Invoke(Console.ReadLine() ?? "");
+
+        var line = Console.ReadLine();
+        if (string.IsNullOrEmpty(line)) {
+            return;
+        }
+
+        if (line.Equals("--")) {
+            line = string.Empty;
+        }
+
+        _setter.Invoke(line);
     }
 }

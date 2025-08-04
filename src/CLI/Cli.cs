@@ -1,7 +1,7 @@
-﻿namespace ChatBot.CLI;
+﻿namespace ChatBot.cli;
 
 public class Cli {
-    private readonly CliNodeHandler _nodeHandler;
+    private readonly CliNodeActivationHandler _nodeActivationHandler;
     private readonly CliRenderer _cliRenderer;
 
 
@@ -11,7 +11,7 @@ public class Cli {
         
         state.Bind(nodeSystem);
         
-        _nodeHandler = new CliNodeHandler(state);
+        _nodeActivationHandler = new CliNodeActivationHandler(state);
         _cliRenderer = new CliRenderer(state);
         
         nodeSystem.InitNodes();
@@ -22,6 +22,6 @@ public class Cli {
     }
 
     public void ActivateNode(int index) {
-        _nodeHandler.ActivateNode(index);
+        _nodeActivationHandler.ActivateNode(index);
     }
 }

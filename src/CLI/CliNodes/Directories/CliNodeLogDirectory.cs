@@ -1,10 +1,10 @@
-﻿using ChatBot.Services.logger;
+﻿using ChatBot.services.logger;
 
-namespace ChatBot.CLI.CliNodes.Directories;
+namespace ChatBot.cli.CliNodes.Directories;
 
 public enum LogType {
     NonTwitch,
-    Twitch
+    Twitch,
 }
 
 public class CliNodeLogDirectory : CliNodeDirectory {

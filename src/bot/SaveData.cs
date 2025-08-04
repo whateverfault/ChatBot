@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot;
 
-public class SaveData {
+public sealed class SaveData {
     [JsonProperty(PropertyName ="bot_state")]
     public State ServiceState { get; set; }
     [JsonProperty(PropertyName ="username")]
@@ -17,8 +17,8 @@ public class SaveData {
     [JsonProperty(PropertyName ="client_id")]
     public string? ClientId { get; set; }
 
-    
-    public SaveData(){}
+
+    public SaveData() {}
     
     public SaveData(
         [JsonProperty(PropertyName = "bot_state")] State serviceState,
@@ -26,8 +26,7 @@ public class SaveData {
         [JsonProperty(PropertyName = "channel")] string channel,
         [JsonProperty(PropertyName = "token")] string oAuth,
         [JsonProperty(PropertyName ="broadcaster_token")] string? broadcasterOAuth,
-        [JsonProperty(PropertyName = "client_id")] string clientId 
-        ) {
+        [JsonProperty(PropertyName = "client_id")] string clientId) {
         ServiceState = serviceState;
         Username = username;
         OAuth = oAuth;
