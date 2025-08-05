@@ -888,10 +888,6 @@ public class CliNodeSystem {
                                                                                  ]
                                                                                  ),
                                                       new CliNodeAction(
-                                                                        "Load",
-                                                                        _state.Data.Bot.Options.Load
-                                                                       ),
-                                                      new CliNodeAction(
                                                                         "Save",
                                                                         _state.Data.Bot.Options.Save
                                                                        ),

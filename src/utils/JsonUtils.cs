@@ -16,6 +16,10 @@ public static class JsonUtils {
 
 
     public static void CreateOld(string filename) {
+        if (!File.Exists(filename)) {
+            return;
+        }
+        
         using var sr = new StreamReader(filename);
         
         var json = sr.ReadToEnd();
@@ -45,13 +49,20 @@ public static class JsonUtils {
             }
         }
         catch (NullReferenceException) {
-            obj = new T();
+            HandleException();
+        }
+        catch (JsonSerializationException) {
+            HandleException();
+        }
 
+        return;
+
+        void HandleException() {
             CreateOld(filename);
-            WriteSafe(filename, Directories.ServiceDirectory, obj);
+            WriteSafe(filename, Directories.ServiceDirectory, new T());
             
             ErrorHandler.LogErrorMessageAndPrint(ErrorCode.SaveFileCorrupted, $"An error occured while reading one of your save files.\nDefault settings are restored.\nOld save file can be found at: {filename}.old\n \nPress Enter To Continue...");
-        }
+        } 
     }
 
     public static bool TryRead<T>(string fileName, out T? obj) where T : new() {
