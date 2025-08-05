@@ -36,6 +36,7 @@ public static class ChatCommandParser {
 
         commandMessage = GetCommandMessage(end, commandMessage).Trim();
         var argumentsAsList = commandMessage.Split(" ", StringSplitOptions.TrimEntries).ToList();
+        argumentsAsList.RemoveAll(x => x.Equals(""));
         
         return new ParsedChatCommand(
                                      commandIdentifier, 

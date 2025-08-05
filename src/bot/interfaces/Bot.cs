@@ -4,7 +4,7 @@ using ChatBot.shared.interfaces;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 
-namespace ChatBot.bot.@interface;
+namespace ChatBot.bot.interfaces;
 
 public abstract class Bot : Service {
     public abstract override Options Options { get; }

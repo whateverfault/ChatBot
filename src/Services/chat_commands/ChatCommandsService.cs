@@ -2,7 +2,6 @@
 using ChatBot.services.chat_commands.Data;
 using ChatBot.services.chat_commands.Parser.Data;
 using ChatBot.services.interfaces;
-using ChatBot.services.logger;
 using ChatBot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
@@ -11,8 +10,6 @@ using TwitchLib.Client.Interfaces;
 namespace ChatBot.services.chat_commands;
 
 public class ChatCommandsService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
     private static ITwitchClient? Client => Bot.GetClient();
     
@@ -39,11 +36,10 @@ public class ChatCommandsService : Service {
             if (Options.VerboseState == State.Enabled) {
                 Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Неизвестная комманда: {Options.CommandIdentifier}{parsedCommand.CommandText}");
             }
-        } catch (Exception e) {
+        } catch (Exception) {
             if (Options.VerboseState == State.Enabled) {
                 Client?.SendReply(parsedCommand.ChatMessage.Channel, parsedCommand.ChatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{parsedCommand.CommandText}.");
             }
-            _logger.Log(LogLevel.Error, $"Error while handling a command: {e}");
         }
     }
     

@@ -1,11 +1,14 @@
 ﻿using ChatBot.bot;
 using ChatBot.services.chat_commands.Parser;
 using ChatBot.services.interfaces;
+using ChatBot.services.logger;
+using ChatBot.services.Static;
 using TwitchLib.Client.Events;
 
 namespace ChatBot.services.chat_commands;
 
 public class ChatCommandsEvents : ServiceEvents {
+    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private ChatCommandsService _chatCommands = null!;
 
     public override bool Initialized { get; protected set; }
@@ -37,12 +40,23 @@ public class ChatCommandsEvents : ServiceEvents {
     }
 
     private void ParseCommandAndHandle(object? sender, OnMessageReceivedArgs args) {
-        var command = ChatCommandParser.Parse(args.ChatMessage);
+        try {
+            var command = ChatCommandParser.Parse(args.ChatMessage);
 
-        if (command == null) {
-            return;
+            if (command == null) {
+                _logger.Log(LogLevel.Error, "Chat Command Parser returned null.");
+                return;
+            }
+            
+            Task.Run(() => _chatCommands.HandleCommand(command))
+                .ContinueWith(t => {
+                                  if (t.IsFaulted) {
+                                      _logger.Log(LogLevel.Error, $"Command failed: {t.Exception}");
+                                  }
+                              });
         }
-
-        _chatCommands.HandleCommand(command);
+        catch (Exception e) {
+            _logger.Log(LogLevel.Error, $"Exception while parsing a command. {e}");
+        }
     }
 }

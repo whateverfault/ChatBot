@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.@interface;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.services.chat_logs;
 using ChatBot.services.interfaces;
 using ChatBot.services.logger;

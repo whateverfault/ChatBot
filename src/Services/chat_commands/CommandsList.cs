@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using ChatBot.bot;
-using ChatBot.bot.@interface;
+using ChatBot.bot.interfaces;
 using ChatBot.services.ai;
 using ChatBot.services.chat_ads;
 using ChatBot.services.chat_ads.Data;

@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.@interface;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.services.chat_commands;
 using ChatBot.services.logger;
 using ChatBot.services.Static;
@@ -19,16 +19,18 @@ namespace ChatBot.bot;
 public delegate void NoArgs();
 
 public class TwitchChatBot : Bot {
+    private static readonly LoggerService _messageLogger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static TwitchChatBot? _instance;
+    
     public static TwitchChatBot Instance => _instance ??= new TwitchChatBot();
     
-    private static readonly LoggerService _messageLogger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private readonly ILogger<TwitchClient> _logger = null!;
     private ITwitchClient? _client;
+    
+    private readonly object _startLock = new object();
     private bool _starting;
     private bool _initialized;
-    private bool _shouldReconnect = true;
-    private long _lastTimeTriedReconnect;
+    private bool _canReconnect = true;
 
 
     public override string Name => "Bot";
@@ -68,10 +70,12 @@ public class TwitchChatBot : Bot {
     
     public override async void Start() {
         try {
-            if (_starting) return;
+            lock (_startLock) {
+                if (_starting) return;
+                _starting = true;
+            }
             
             await Task.Run(() => {
-                               _starting = true;
                                if (!ValidateSave()) {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
                                    return;
@@ -83,17 +87,16 @@ public class TwitchChatBot : Bot {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
                                    return;
                                }
-                         
-                               _client.OnMessageReceived += OnMessageReceived;
-                               _client.OnDisconnected += Reconnect;
-                               _client.OnConnected += OnConnected;
-                               _client.OnLog += OnLog;
+
+                               SubscribeToEvents();
 
                                _messageLogger.Log(LogLevel.Info, $"Connecting to {Options.Channel}...");
                                if (!_client.Connect()) {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
                                }
-                               _starting = false;
+                               lock (_startLock) {
+                                   _starting = false;
+                               }
                            }
                           );
         }
@@ -106,17 +109,14 @@ public class TwitchChatBot : Bot {
         if (_client == null || !_initialized) {
             return;
         }
+        _canReconnect = false;
 
-        _client.OnMessageReceived -= OnMessageReceived;
-        _client.OnDisconnected -= Reconnect;
-        _client.OnConnected -= OnConnected;
-        _client.OnLog -= OnLog;
-        
-        _shouldReconnect = false;
+        UnsubscribeFromEvents();
         _client.Disconnect();
-        _shouldReconnect = true;
 
+        _canReconnect = true;
         _initialized = false;
+        
         _messageLogger.Log(LogLevel.Info, "Disconnected.");
     }
     
@@ -145,14 +145,28 @@ public class TwitchChatBot : Bot {
     }
     
     private void Reconnect(object? sender, OnDisconnectedEventArgs args) {
-        if (!_shouldReconnect) return;
+        if (!_canReconnect) return;
         
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        if (now - _lastTimeTriedReconnect < 60) return;
-        _lastTimeTriedReconnect = now;
-        
-        _messageLogger.Log(LogLevel.Info, "Reconnect attempted.");
-        _client?.Reconnect();
+        _messageLogger.Log(LogLevel.Warning, "Disconnected! Attempting reconnect...");
+        Task.Delay(5000).ContinueWith(_ => _client?.Reconnect());
+    }
+    
+    private void SubscribeToEvents() {
+        UnsubscribeFromEvents();
+    
+        _client!.OnMessageReceived += OnMessageReceived;
+        _client.OnDisconnected += Reconnect;
+        _client.OnConnected += OnConnected;
+        _client.OnLog += OnLog;
+    }
+
+    private void UnsubscribeFromEvents() {
+        if (_client == null) return;
+    
+        _client.OnMessageReceived -= OnMessageReceived;
+        _client.OnDisconnected -= Reconnect;
+        _client.OnConnected -= OnConnected;
+        _client.OnLog -= OnLog;
     }
     
     private bool ValidateSave() {

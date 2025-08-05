@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot;
-using ChatBot.bot.@interface;
+using ChatBot.bot.interfaces;
 using ChatBot.services.interfaces;
 using ChatBot.services.logger;
 using ChatBot.services.message_filter;
