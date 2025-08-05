@@ -32,7 +32,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching list levels data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching list levels data: {e}");
             return null;
         }
     }
@@ -41,14 +41,14 @@ public partial class AredlUtils {
         try {
             var levels = await ListLevels(logger);
             var result = levels?.data?.AsParallel()
-                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
             
             if (result != null) return result.ToList();
             logger?.Log(LogLevel.Error, "Such level does not exist");
             return null;
 
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e}");
             return null;
         }
     }
@@ -58,7 +58,7 @@ public partial class AredlUtils {
             var levels = await ListLevels(logger);
 
             var result = levels?.data?.AsParallel()
-                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
                 logger?.Log(LogLevel.Error, "Such level does not exist");
                 return null;
@@ -86,7 +86,7 @@ public partial class AredlUtils {
             logger?.Log(LogLevel.Error, "Such level does not exist");
             return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e}");
             return null;
         }
     }
@@ -108,7 +108,7 @@ public partial class AredlUtils {
             return null;
 
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by placement. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by placement. {e}");
             return null;
         }
     }
@@ -135,7 +135,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching list levels data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching list levels data: {e}");
             return null;
         }
     }
@@ -145,13 +145,13 @@ public partial class AredlUtils {
             var levels = await ListPlatformerLevels(logger);
 
             var result = levels?.data?.AsParallel()
-                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
             
             if (result != null) return result.ToList();
             logger?.Log(LogLevel.Error, "Such level does not exist");
             return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e}");
             return null;
         }
     }
@@ -161,7 +161,7 @@ public partial class AredlUtils {
             var levels = await ListPlatformerLevels(logger);
 
             var result = levels?.data?.AsParallel()
-                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[0..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                             .Where(levelInfo => levelInfo.name.Length >= name.Length && levelInfo.name[..name.Length].Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
                 logger?.Log(LogLevel.Error, "Such level does not exist");
                 return null;
@@ -189,7 +189,7 @@ public partial class AredlUtils {
             logger?.Log(LogLevel.Error, "Such level does not exist");
             return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by name. {e}");
             return null;
         }
     }
@@ -211,7 +211,7 @@ public partial class AredlUtils {
             return null;
 
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while searching level by placement. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while searching level by placement. {e}");
             return null;
         }
     }
@@ -242,7 +242,7 @@ public partial class AredlUtils {
             return null;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching user profile data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching user profile data: {e}");
             return null;
         }
     }
@@ -266,7 +266,7 @@ public partial class AredlUtils {
             return null;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching user record data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching user record data: {e}");
             return null;
         }
     }
@@ -297,7 +297,7 @@ public partial class AredlUtils {
             return null;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching platformer profile data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching platformer profile data: {e}");
             return null;
         }
     }
@@ -318,7 +318,7 @@ public partial class AredlUtils {
                             .FirstOrDefault(record => record.level.id == levelId);
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data: {e}");
             return null;
         }
     }
@@ -344,7 +344,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e}");
             return null;
         }
     }
@@ -370,7 +370,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e}");
             return null;
         }
     }
@@ -396,7 +396,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e}");
             return null;
         }
     }
@@ -422,7 +422,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching level records data: {e}");
             return null;
         }
     }
@@ -452,7 +452,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while listing clans info: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while listing clans info: {e}");
             return null;
         }
     }
@@ -477,7 +477,7 @@ public partial class AredlUtils {
             return filteredList[0];
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e}");
             return null;
         }
     }
@@ -503,7 +503,7 @@ public partial class AredlUtils {
             return result;
         }
         catch(Exception e){
-            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while fetching clan info: {e}");
             return null;
         }
     }

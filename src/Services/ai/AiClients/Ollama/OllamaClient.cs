@@ -31,7 +31,7 @@ public class OllamaClient : AiClient {
             var ollamaResponse = JsonConvert.DeserializeObject<OllamaResponse>(responseContent);
             return ollamaResponse?.Response ?? string.Empty;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while getting ollama response: {e.Message} ");
+            logger?.Log(LogLevel.Error, $"Error while getting ollama response: {e} ");
             return null;
         }
     }

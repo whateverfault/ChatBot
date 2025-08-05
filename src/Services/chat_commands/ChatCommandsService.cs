@@ -43,7 +43,7 @@ public class ChatCommandsService : Service {
             if (Options.VerboseState == State.Enabled) {
                 Client?.SendReply(parsedCommand.ChatMessage.Channel, parsedCommand.ChatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{parsedCommand.CommandText}.");
             }
-            _logger.Log(LogLevel.Error, $"Error while handling a command: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Error while handling a command: {e}");
         }
     }
     

@@ -60,7 +60,7 @@ public class VertexAiClient : AiClient {
             return vertexResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
         }
         catch (Exception e) {
-            logger?.Log(LogLevel.Error, e.Message);
+            logger?.Log(LogLevel.Error, e.ToString());
             return null;
         }
     }

@@ -39,6 +39,8 @@ public class TwitchChatBot : Bot {
     public event NoArgs? OnInitialized;
     
     
+    private TwitchChatBot(){}
+    
     private void InitConnection() {
         try {
             var credentials = new ConnectionCredentials(Options.Username, Options.OAuth);
@@ -64,34 +66,39 @@ public class TwitchChatBot : Bot {
         }
     }
     
-    public override void Start() {
-        if (_starting) return;
-
+    public override async void Start() {
         try {
-            Task.Run(() => {
-                         _starting = true;
-                         if (!ValidateSave()) {
-                             ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
-                             return;
-                         }
+            if (_starting) return;
+            
+            await Task.Run(() => {
+                               _starting = true;
+                               if (!ValidateSave()) {
+                                   ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
+                                   return;
+                               }
                      
-                         InitConnection();
-                         
-                         _client!.OnMessageReceived += OnMessageReceived;
-                         _client.OnDisconnected += Reconnect;
-                         _client.OnConnected += OnConnected;
-                         _client.OnLog += OnLog;
+                               InitConnection();
 
-                         _messageLogger.Log(LogLevel.Info, $"Connecting to {Options.Channel}...");
-                         if (!_client.Connect()) {
-                             ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
-                         }
-                         _starting = false;
-                     }
-                    );
+                               if (_client == null) {
+                                   ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
+                                   return;
+                               }
+                         
+                               _client.OnMessageReceived += OnMessageReceived;
+                               _client.OnDisconnected += Reconnect;
+                               _client.OnConnected += OnConnected;
+                               _client.OnLog += OnLog;
+
+                               _messageLogger.Log(LogLevel.Info, $"Connecting to {Options.Channel}...");
+                               if (!_client.Connect()) {
+                                   ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
+                               }
+                               _starting = false;
+                           }
+                          );
         }
         catch (Exception e) {
-            _messageLogger.Log(LogLevel.Error, $"Exception while connecting to {Options.Channel}. {e.Message}");
+            _messageLogger.Log(LogLevel.Error, $"Exception while connecting to {Options.Channel}. {e}");
         }
     }
 
@@ -100,10 +107,16 @@ public class TwitchChatBot : Bot {
             return;
         }
 
+        _client.OnMessageReceived -= OnMessageReceived;
+        _client.OnDisconnected -= Reconnect;
+        _client.OnConnected -= OnConnected;
+        _client.OnLog -= OnLog;
+        
         _shouldReconnect = false;
         _client.Disconnect();
         _shouldReconnect = true;
-        
+
+        _initialized = false;
         _messageLogger.Log(LogLevel.Info, "Disconnected.");
     }
     

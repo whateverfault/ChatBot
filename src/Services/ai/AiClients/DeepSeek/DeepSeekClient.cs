@@ -45,7 +45,7 @@ public class DeepSeekClient : AiClient {
             dynamic responseData = JsonConvert.DeserializeObject(responseJson)!;
             return responseData.choices[0].message.content;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error,  $"Caught an Exception. {e.Message}");
+            logger?.Log(LogLevel.Error,  $"Caught an Exception. {e}");
             return null;
         }
     }

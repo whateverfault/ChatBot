@@ -139,7 +139,7 @@ public static class ServiceManager {
                                                                              },
                                                                          };
         } catch (Exception e) {
-            Console.WriteLine($"Failed to initialize services: {e.Message}");
+            Console.WriteLine($"Failed to initialize services: {e}");
             throw new Exception($"Failed to initialize services: {e}");
         }
     }

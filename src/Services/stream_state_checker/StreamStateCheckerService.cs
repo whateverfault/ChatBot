@@ -57,7 +57,7 @@ public class StreamStateCheckerService : Service {
             OnStreamStateUpdate?.Invoke(Options.StreamState, streamData);
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e}");
         }
     }
 }

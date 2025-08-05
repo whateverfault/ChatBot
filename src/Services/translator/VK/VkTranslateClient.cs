@@ -52,7 +52,7 @@ public class VkTranslateClient {
             
             return responseData.Response.Text;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Exception: {e.Message}"); 
+            logger?.Log(LogLevel.Error, $"Exception: {e}"); 
             return null;
         }
     }

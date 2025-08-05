@@ -35,7 +35,7 @@ public class GameRequestsService : Service {
             var splitted = chatMessage.Message.Split(' ').ToList();
             await AddGameRequest(splitted, chatMessage);
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception: {e}");
         }
     }
 
@@ -43,7 +43,7 @@ public class GameRequestsService : Service {
         var gameNameSb = new StringBuilder();
 
         foreach (var arg in args) {
-            if (arg.Length >= 2 && arg[0..2].Contains("--")) {
+            if (arg.Length >= 2 && arg[..2].Contains("--")) {
                 break;
             }
 
@@ -83,7 +83,7 @@ public class GameRequestsService : Service {
             Client?.SendReply(chatMessage.Channel, chatMessage.Id, $"Игра {gameName} добавлена в очередь на {position} позицию.");
             return Task.CompletedTask;
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception: {e}");
             return Task.CompletedTask;
         }
     }

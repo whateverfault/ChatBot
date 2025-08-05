@@ -36,7 +36,7 @@ public class LevelRequestsService : Service {
             
             await LevelRequestsOptions.ModerationService.WarnUser(message, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e.Message}");
+            _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e}");
         }
     }
 

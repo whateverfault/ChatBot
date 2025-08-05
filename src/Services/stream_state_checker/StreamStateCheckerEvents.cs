@@ -63,7 +63,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
             }
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e}");
         }
     }
 }

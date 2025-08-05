@@ -51,7 +51,7 @@ public class GoogleTranslateClient {
                 JsonConvert.DeserializeObject<DetectLanguageResponse>(responseContent);
             return responseData;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while detecting a language. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while detecting a language. {e}");
             return null;
         }
     }
@@ -83,7 +83,7 @@ public class GoogleTranslateClient {
 
             return JsonConvert.DeserializeObject<TranslateTextResponse>(responseContent);
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while Translating. {e.Message}");
+            logger?.Log(LogLevel.Error, $"Error while Translating. {e}");
             return null;
         }
     }

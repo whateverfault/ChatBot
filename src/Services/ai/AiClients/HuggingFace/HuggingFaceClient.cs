@@ -38,7 +38,7 @@ public class HuggingFaceClient : AiClient {
                        message?.Choices?[0].Message?.Content;
         }
         catch (Exception e) {
-            logger?.Log(LogLevel.Error, e.Message);
+            logger?.Log(LogLevel.Error, e.ToString());
             return null;
         }
     }

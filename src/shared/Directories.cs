@@ -22,6 +22,6 @@ public static class Directories {
             return string.Empty;
         }
 
-        return Environment.ProcessPath[0..endIndex];
+        return Environment.ProcessPath[..endIndex];
     }
 }

@@ -32,7 +32,7 @@ public class TranslatorService : Service {
                    };
 
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Error while translating. {e.Message}");
+            _logger.Log(LogLevel.Error, $"Error while translating. {e}");
             return null;
         }
     }
@@ -83,7 +83,7 @@ public class TranslatorService : Service {
             _logger.Log(LogLevel.Error, $"Failed to detect language of '{text}'");
             return null;
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Error while detecting a language. {e.Message}");
+            _logger.Log(LogLevel.Error, $"Error while detecting a language. {e}");
             return null;
         }
     }

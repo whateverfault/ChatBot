@@ -49,7 +49,7 @@ public class ModerationService : Service {
             }
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"An exception occured while moderating a message. {e.Message}");
+            _logger.Log(LogLevel.Error, $"An exception occured while moderating a message. {e}");
         }
     }
 

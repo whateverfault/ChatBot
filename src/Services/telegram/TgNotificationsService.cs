@@ -30,7 +30,7 @@ public class TgNotificationsService : Service {
             _logger.Log(LogLevel.Info, $"Notification is sent. (id: {messageId})");
             return messageId;
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while sending a telegram notification message: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while sending a telegram notification message: {e}");
             return null;
         }
     }
@@ -40,7 +40,7 @@ public class TgNotificationsService : Service {
             _logger.Log(LogLevel.Info, $"Deleted a previous notification message. (id: {messageId})");
             return await _tgBotClient.DeleteMessageAsync(messageId, logger: _logger);
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while deleting a telegram message: {e.Message}");
+            _logger.Log(LogLevel.Error, $"Exception while deleting a telegram message: {e}");
         }
         return false;
     }
