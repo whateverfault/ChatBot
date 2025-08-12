@@ -1,4 +1,4 @@
-﻿using ChatBot.services.message_filter;
+﻿using ChatBot.bot.services.message_filter;
 
 namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
 

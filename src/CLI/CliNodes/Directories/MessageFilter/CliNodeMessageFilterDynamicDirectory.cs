@@ -1,5 +1,5 @@
-﻿using ChatBot.services.message_filter;
-using ChatBot.services.Static;
+﻿using ChatBot.bot.services.message_filter;
+using ChatBot.bot.services.Static;
 
 namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
 

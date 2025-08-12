@@ -1,21 +1,16 @@
-﻿using ChatBot.services.logger;
+﻿using ChatBot.bot.services.logger;
 
 namespace ChatBot.cli.CliNodes.Directories;
 
-public enum LogType {
-    NonTwitch,
-    Twitch,
-}
-
 public class CliNodeLogDirectory : CliNodeDirectory {
-    private CliState _state;
+    private readonly CliState _state;
     
     protected override string Text { get; }
 
     public override List<CliNode> Nodes { get; }
 
 
-    public CliNodeLogDirectory(string text, bool hasBackOption, CliState state, LoggerService loggerService, LogType logType) {
+    public CliNodeLogDirectory(string text, bool hasBackOption, CliState state, LoggerService loggerService) {
         Text = text;
         Nodes = [
                     new CliNodeAction(
@@ -29,12 +24,7 @@ public class CliNodeLogDirectory : CliNodeDirectory {
                                    ),
                 ];
 
-        if (logType == LogType.NonTwitch) {
-            loggerService.OnLog += HandleLog;
-        } else if (logType == LogType.Twitch) {
-            loggerService.OnTwitchLog += HandleLog;
-        }
-
+        loggerService.OnLog += HandleLog;
         _state = state;
     }
 

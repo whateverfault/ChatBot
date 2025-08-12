@@ -1,14 +1,14 @@
-﻿using ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.services.ai;
+using ChatBot.bot.services.level_requests;
+using ChatBot.bot.services.Static;
+using ChatBot.bot.services.translator;
+using ChatBot.cli.CliNodes;
 using ChatBot.cli.CliNodes.Client;
 using ChatBot.cli.CliNodes.Directories;
 using ChatBot.cli.CliNodes.Directories.ChatAds;
 using ChatBot.cli.CliNodes.Directories.ChatCommands;
 using ChatBot.cli.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.CliNodes.Directories.Moderation;
-using ChatBot.services.ai;
-using ChatBot.services.level_requests;
-using ChatBot.services.Static;
-using ChatBot.services.translator;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
 
@@ -342,16 +342,8 @@ public class CliNodeSystem {
                                                                                "Non-Twitch Logs",
                                                                                true,
                                                                                _state,
-                                                                               _state.Data.Logger,
-                                                                               LogType.NonTwitch
+                                                                               _state.Data.Logger
                                                                                ),
-                                                       new CliNodeLogDirectory(
-                                                                               "Twitch Logs",
-                                                                               true,
-                                                                               _state,
-                                                                               _state.Data.Logger,
-                                                                               LogType.Twitch
-                                                                              ),
                                                        new CliNodeEnum(
                                                                        "Service State",
                                                                        _state.Data.Logger.GetServiceStateAsInt,

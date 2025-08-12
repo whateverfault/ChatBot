@@ -1,4 +1,4 @@
-﻿using TwitchLib.Client.Models;
+﻿using ChatBot.api.client.data;
 
 namespace ChatBot.shared.Handlers;
 

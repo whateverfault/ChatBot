@@ -1,15 +1,14 @@
-﻿using ChatBot.services.interfaces;
+﻿using ChatBot.api.client;
+using ChatBot.api.client.data;
+using ChatBot.bot.services.interfaces;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Interfaces;
 
 namespace ChatBot.bot.interfaces;
 
 public abstract class Bot : Service {
     public abstract override Options Options { get; }
-    public abstract event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
-    public abstract event EventHandler<OnLogArgs>? OnLog;
+    public abstract event EventHandler<ChatMessage>? OnMessageReceived;
 
 
     public abstract void Start();

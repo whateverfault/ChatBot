@@ -9,11 +9,11 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="TwitchLib" Version="3.5.3"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="src\utils\Twitch\" />
+      <Folder Include="src\api\" />
+      <Folder Include="src\api\event_sub\subscription_data\subscription\" />
     </ItemGroup>
 
 </Project>

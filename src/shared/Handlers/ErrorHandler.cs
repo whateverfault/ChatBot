@@ -1,7 +1,7 @@
-﻿using ChatBot.services.logger;
-using ChatBot.services.Static;
-using TwitchLib.Client.Interfaces;
-using TwitchLib.Client.Models;
+﻿using ChatBot.api.client;
+using ChatBot.api.client.data;
+using ChatBot.bot.services.logger;
+using ChatBot.bot.services.Static;
 
 namespace ChatBot.shared.Handlers;
 
@@ -71,7 +71,7 @@ public static class ErrorHandler {
         }
         
         LogError(error);
-        client?.SendReply(message.Channel, message.Id, _twitchErrorMessages[(int)error]);
+        client?.SendReply(message.Id, _twitchErrorMessages[(int)error]);
         return true;
     }
 

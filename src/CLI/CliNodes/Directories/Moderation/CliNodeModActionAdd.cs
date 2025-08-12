@@ -1,4 +1,4 @@
-﻿using ChatBot.services.moderation;
+﻿using ChatBot.bot.services.moderation;
 using ChatBot.shared.Handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.Moderation;

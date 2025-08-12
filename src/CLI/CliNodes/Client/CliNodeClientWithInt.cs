@@ -1,12 +1,12 @@
-﻿using ChatBot.shared.Handlers;
-using TwitchLib.Client.Interfaces;
+﻿using ChatBot.api.client;
+using ChatBot.shared.Handlers;
 
 namespace ChatBot.cli.CliNodes.Client;
 
 public class CliNodeClientWithInt : CliNode {
     private readonly ClientHandler _clientHandler;
     private readonly IntGetter _getter;
-    private ITwitchClient? _client = null!;
+    private ITwitchClient? _client;
     private string _channel = null!;
     
     protected override string Text { get; }

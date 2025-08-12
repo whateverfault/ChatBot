@@ -1,5 +1,6 @@
 ﻿using System.Text;
-using ChatBot.services.logger;
+using ChatBot.api.client;
+using ChatBot.bot.services.logger;
 using ChatBot.utils.Telegram.Response;
 using Newtonsoft.Json;
 

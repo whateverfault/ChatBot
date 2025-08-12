@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using ChatBot.services.logger;
+using ChatBot.api.client;
+using ChatBot.bot.services.logger;
 using ChatBot.utils.GD.AREDL.Data;
 using ChatBot.utils.GD.AREDL.Responses;
 using Newtonsoft.Json;
@@ -251,7 +252,7 @@ public partial class AredlUtils {
         try {
             var levelRecords = await ListUserRecords(userId, logger);
             if (levelRecords?.records.Count+levelRecords?.verified.Count < 1) {
-                logger?.Log(LogLevel.Error, $"Error while fetching user record data.");
+                logger?.Log(LogLevel.Error, "Error while fetching user record data.");
                 return null;
             }
             
@@ -306,7 +307,7 @@ public partial class AredlUtils {
         try {
             var levelRecords = await ListUserPlatformerRecords(userId, logger);
             if (levelRecords?.records.Count+levelRecords?.verified.Count < 1) {
-                logger?.Log(LogLevel.Error, $"Error while fetching user platformer record data.");
+                logger?.Log(LogLevel.Error, "Error while fetching user platformer record data.");
                 return null;
             }
 
@@ -432,7 +433,7 @@ public partial class AredlUtils {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Get,
-                                     RequestUri = new Uri($"https://api.aredl.net/v2/api/aredl/leaderboard/clans"),
+                                     RequestUri = new Uri("https://api.aredl.net/v2/api/aredl/leaderboard/clans"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);

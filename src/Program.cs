@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using ChatBot.bot;
+using ChatBot.bot.services.Static;
 using ChatBot.cli;
-using ChatBot.services.Static;
 
 namespace ChatBot;
 
@@ -26,11 +26,10 @@ internal static class Program {
 
         var bot = TwitchChatBot.Instance;
         
-        ServiceManager.InitServices();
+        ServiceManager.LoadServices();
         _cli = new Cli(new CliData());
         
         if (AutoInit) {
-            bot.Options.Load();
             bot.Start();
         }
         

@@ -1,18 +1,13 @@
-﻿using ChatBot.bot.interfaces;
-using ChatBot.services.chat_commands;
-using ChatBot.services.logger;
-using ChatBot.services.Static;
+﻿using ChatBot.api.client;
+using ChatBot.api.client.credentials;
+using ChatBot.api.client.data;
+using ChatBot.api.event_sub;
+using ChatBot.bot.interfaces;
+using ChatBot.bot.services.chat_commands;
+using ChatBot.bot.services.logger;
+using ChatBot.bot.services.Static;
 using ChatBot.shared.Handlers;
 using ChatBot.shared.interfaces;
-using Microsoft.Extensions.Logging;
-using TwitchLib.Client;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Interfaces;
-using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Events;
-using TwitchLib.Communication.Models;
-using LogLevel = ChatBot.services.logger.LogLevel;
 
 namespace ChatBot.bot;
 
@@ -24,7 +19,6 @@ public class TwitchChatBot : Bot {
     
     public static TwitchChatBot Instance => _instance ??= new TwitchChatBot();
     
-    private readonly ILogger<TwitchClient> _logger = null!;
     private ITwitchClient? _client;
     
     private readonly object _startLock = new object();
@@ -36,8 +30,7 @@ public class TwitchChatBot : Bot {
     public override string Name => "Bot";
     public override ChatBotOptions Options { get; } = new ChatBotOptions();
     
-    public override event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
-    public override event EventHandler<OnLogArgs>? OnLog;
+    public override event EventHandler<ChatMessage>? OnMessageReceived;
     public event NoArgs? OnInitialized;
     
     
@@ -45,23 +38,21 @@ public class TwitchChatBot : Bot {
     
     private void InitConnection() {
         try {
-            var credentials = new ConnectionCredentials(Options.Username, Options.OAuth);
-            var clientOptions = new ClientOptions {
-                                                      MessagesAllowedInPeriod = 750,
-                                                      ThrottlingPeriod = TimeSpan.FromSeconds(30),
-                                                  };
-            var customClient = new WebSocketClient(clientOptions);
+            if (!ValidateSave()) {
+                ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
+                return;
+            }
+
+            var credentials = new ConnectionCredentials(Options.Username!, Options.Channel!, Options.OAuth!);
+            var websocket = new TwitchEventSubWebSocket();
 
             Stop();
             
-            _client = new TwitchClient(customClient, logger: _logger);
-            _client.Initialize(
-                               credentials, 
-                               Options.Channel,
-                               ' ',
-                               ' ');
-            
-            _client.AddChatCommandIdentifier(((ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands)).Options.CommandIdentifier);
+            _client = new TwitchClient(websocket);
+            _client.Initialize(credentials);
+
+            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+            _client.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
             _initialized = true;
         } catch (Exception) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
@@ -76,11 +67,7 @@ public class TwitchChatBot : Bot {
             }
             
             await Task.Run(() => {
-                               if (!ValidateSave()) {
-                                   ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
-                                   return;
-                               }
-                     
+                               _messageLogger.Log(LogLevel.Info, $"Connecting to {Options.Channel}...");
                                InitConnection();
 
                                if (_client == null) {
@@ -89,11 +76,7 @@ public class TwitchChatBot : Bot {
                                }
 
                                SubscribeToEvents();
-
-                               _messageLogger.Log(LogLevel.Info, $"Connecting to {Options.Channel}...");
-                               if (!_client.Connect()) {
-                                   ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
-                               }
+                               ServiceManager.InitServices();
                                lock (_startLock) {
                                    _starting = false;
                                }
@@ -137,17 +120,17 @@ public class TwitchChatBot : Bot {
         return _client;
     }
 
-    private void OnConnected(object? sender, OnConnectedArgs args) {
+    private void OnConnected(object? sender, EventArgs e) {
         _messageLogger.Log(LogLevel.Info, $"Connected to {Options.Channel}");
         _messageLogger.Log(LogLevel.Info, $"Bot Username: {Options.Username}");
         
         OnInitialized?.Invoke();
     }
     
-    private void Reconnect(object? sender, OnDisconnectedEventArgs args) {
+    private void Reconnect(object? sender, string message) {
         if (!_canReconnect) return;
         
-        _messageLogger.Log(LogLevel.Warning, "Disconnected! Attempting reconnect...");
+        _messageLogger.Log(LogLevel.Warning, $"{message} Attempting reconnect...");
         Task.Delay(5000).ContinueWith(_ => _client?.Reconnect());
     }
     
@@ -157,7 +140,6 @@ public class TwitchChatBot : Bot {
         _client!.OnMessageReceived += OnMessageReceived;
         _client.OnDisconnected += Reconnect;
         _client.OnConnected += OnConnected;
-        _client.OnLog += OnLog;
     }
 
     private void UnsubscribeFromEvents() {
@@ -166,7 +148,6 @@ public class TwitchChatBot : Bot {
         _client.OnMessageReceived -= OnMessageReceived;
         _client.OnDisconnected -= Reconnect;
         _client.OnConnected -= OnConnected;
-        _client.OnLog -= OnLog;
     }
     
     private bool ValidateSave() {
