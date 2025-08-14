@@ -19,10 +19,10 @@ public class MessageRandomizerService : Service {
 
     public void HandleChatLog(ChatMessage message) {
         if (Options.ServiceState == State.Disabled) return;
-        HandleCounter(Client, message.Channel);
+        HandleCounter();
     }
 
-    public void HandleCounter(ITwitchClient? client, string channel) {
+    public void HandleCounter() {
         if (Options.ServiceState == State.Disabled) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ServiceDisabled);
             return;
@@ -41,7 +41,7 @@ public class MessageRandomizerService : Service {
         if (ErrorHandler.LogErrorAndPrint(err)) {
             return;
         }
-        client?.SendMessage(message!.Msg);
+        Client?.SendMessage(message!.Msg);
     }
 
     private ErrorCode Generate(out Message? message) {
@@ -68,12 +68,12 @@ public class MessageRandomizerService : Service {
         return ErrorCode.None;
     }
 
-    public void GenerateAndSend(ITwitchClient? client, string channel) {
+    public void GenerateAndSend() {
         var err = Generate(out var message);
         if (ErrorHandler.LogError(err)
             || message == null) return;
         
-        client?.SendMessage(message.Msg);
+        Client?.SendMessage(message.Msg);
     }
 
     public ErrorCode GetLastGeneratedMessage(out Message? message) {

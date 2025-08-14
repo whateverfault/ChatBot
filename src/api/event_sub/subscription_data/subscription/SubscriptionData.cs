@@ -2,8 +2,7 @@
 
 namespace ChatBot.api.event_sub.subscription_data.subscription;
 
-public class SubscriptionData
-{
+public class SubscriptionData {
     [JsonProperty("id")]
     public string Id { get; set; }
 
@@ -12,4 +11,15 @@ public class SubscriptionData
 
     [JsonProperty("type")]
     public string Type { get; set; }
+    
+    
+    [JsonConstructor]
+    public SubscriptionData(
+        [JsonProperty("id")] string id,
+        [JsonProperty("status")] string status,
+        [JsonProperty("type")]string type) {
+        Id = id;
+        Status = status;
+        Type = type;
+    }
 }

@@ -15,10 +15,6 @@ public abstract class Bot : Service {
 
     public abstract void Stop();
 
-    public abstract void Enable();
-
-    public abstract void Disable();
-
     public abstract ErrorCode TryGetClient(out ITwitchClient? client);
 
     public abstract ITwitchClient? GetClient();

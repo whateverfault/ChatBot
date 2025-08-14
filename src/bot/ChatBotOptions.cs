@@ -1,4 +1,6 @@
-﻿using ChatBot.shared;
+﻿using ChatBot.api.client;
+using ChatBot.api.client.credentials;
+using ChatBot.shared;
 using ChatBot.shared.interfaces;
 using ChatBot.utils;
 
@@ -12,12 +14,11 @@ public class ChatBotOptions : Options {
     protected override string Name => "chat_bot";
     protected override string OptionsPath => Path.Combine($"{Directories.DataDirectory}/{Name}", $"{Name}_opt.json");
 
-    public override State ServiceState => _saveData!.ServiceState;
-    public string? Username => _saveData!.Username;
-    public string? OAuth => _saveData!.OAuth;
-    public string? BroadcasterOAuth => _saveData!.BroadcasterOAuth;
-    public string? Channel => _saveData!.Channel;
-    public string? ClientId => _saveData!.ClientId;
+    public ITwitchClient? Client { get; private set; }
+    
+    public override State ServiceState => State.Enabled;
+
+    public ConnectionCredentials Credentials => _saveData!.Credentials;
     
 
     public override void Load() {
@@ -37,57 +38,28 @@ public class ChatBotOptions : Options {
         }
     }
 
-    public override void SetState(State state) {
-        _saveData!.ServiceState = state;
-        Save();
-    }
+    public override void SetState(State state) {}
 
     public override State GetState() {
         return ServiceState;
     }
 
-    public void SetUsername(string username) {
-        _saveData!.Username = username;
+    public void UpdateClient(ITwitchClient client) {
+        Client = client;
+    }
+
+    public void UpdateCredentials() {
+        if (Client?.Credentials == null) return;
+        SetCredentials(Client.Credentials);
+    }
+    
+    public void SetCredentials(ConnectionCredentials credentials) {
+        _saveData!.Credentials = credentials;
         Save();
     }
     
-    public void SetChannel(string channel) {
-        _saveData!.Channel = channel;
+    public void SetCredentials(FullCredentials credentials) {
+        _saveData!.Credentials = ConnectionCredentials.FromFullCredentials(credentials);
         Save();
-    }
-    
-    public void SetOAuth(string token) {
-        _saveData!.OAuth = token;
-        Save();
-    }
-    
-    public void SetBroadcasterOAuth(string token) {
-        _saveData!.BroadcasterOAuth = token;
-        Save();
-    }
-    
-    public void SetClientId(string clientId) {
-        _saveData!.ClientId = clientId;
-        Save();
-    }
-    
-    public string GetUsername() {
-        return Username ?? "Empty";
-    }
-    
-    public string GetChannel() {
-        return Channel ?? "Empty";
-    }
-    
-    public string GetOAuth() {
-        return OAuth ?? "Empty";
-    }
-    
-    public string GetBroadcasterOAuth() {
-        return BroadcasterOAuth ?? "Empty";
-    }
-    
-    public string GetClientId() {
-        return ClientId ?? "Empty";
     }
 }

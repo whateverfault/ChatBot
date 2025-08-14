@@ -36,28 +36,30 @@ public class TwitchClient : ITwitchClient {
     }
 
     public async Task Initialize(FullCredentials credentials) {
-        await Initialize(new ConnectionCredentials(credentials.Username, credentials.Channel, credentials.OAuth));
+        await Initialize(new ConnectionCredentials(credentials.Username, credentials.Channel, credentials.Oauth));
     }
     
     public async Task Initialize(ConnectionCredentials credentials) {
         try {
-            var validateResponse = await Requests.ValidateOauth(credentials.OAuth, OnError);
+            var validateResponse = await Requests.ValidateOauth(credentials.Oauth, OnError);
 
             if (validateResponse == null) {
                 return;
             }
 
             var channelInfo = await Requests.GetUserInfo(
-                                                                 credentials.Channel,
-                                                                 credentials.OAuth,
-                                                                 validateResponse.ClientId,
-                                                                 OnError);
+                                                         credentials.Channel,
+                                                         credentials.Oauth,
+                                                         validateResponse.ClientId,
+                                                         OnError
+                                                         );
             if (channelInfo == null) return;
             
             Credentials = new FullCredentials(
-                                              credentials.Username,
+                                              validateResponse.Login,
                                               credentials.Channel,
-                                              credentials.OAuth,
+                                              credentials.Oauth,
+                                              credentials.ChannelOauth,
                                               validateResponse.ClientId,
                                               validateResponse.UserId,
                                               channelInfo.Id
@@ -137,6 +139,47 @@ public class TwitchClient : ITwitchClient {
         return _commandParser.SetCommandIdentifier(identifier);
     }
 
+    public async Task UpdateChannel(string username) {
+        var userId = await ValidateUser(username, OnError);
+        if (userId == null) return;
+        
+        Credentials?.UpdateChannel(username);
+        Credentials?.UpdateChannel(userId);
+    }
+    
+    public async Task UpdateOauth(string oauth) {
+        var response = await Requests.ValidateOauth(oauth, OnError);
+        if (response == null) return;
+        
+        Credentials?.UpdateOauth(oauth);
+        Credentials?.UpdateUsername(response.Login);
+        Credentials?.UpdateUserId(response.UserId);
+        Credentials?.UpdateClientId(response.ClientId);
+    }
+
+    public async Task UpdateChannelOauth(string oauth) {
+        var response = await Requests.ValidateOauth(oauth, OnError);
+        if (response == null) return;
+        
+        Credentials?.UpdateChannelOauth(oauth);
+        Credentials?.UpdateChannel(response.Login);
+        Credentials?.UpdateChannelId(response.UserId);
+    }
+    
+    private async Task<string?> ValidateUser(string username, EventHandler<string>? errorCallback = null) {
+        if (Credentials == null) {
+            errorCallback?.Invoke(this, "Cannot update a username before initializing a client.");
+            return null;
+        }
+        
+        var userId = await Requests.GetUserId(username, Credentials);
+        if (userId == null) {
+            errorCallback?.Invoke(this, "User doesn't exist.");
+        }
+
+        return userId;
+    }
+    
     private void HandleChatMessage(object? sender, ChatMessageEvent? chatMessageEvent) {
         if (chatMessageEvent == null) return;
                                                 

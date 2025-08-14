@@ -25,4 +25,10 @@ public interface ITwitchClient {
     public Task SendReply(string replyId, string message);
 
     public bool SetCommandIdentifier(char identifier);
+
+    public Task UpdateChannel(string username);
+
+    public Task UpdateOauth(string oauth);
+
+    public Task UpdateChannelOauth(string oauth);
 }

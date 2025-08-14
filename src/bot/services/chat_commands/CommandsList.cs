@@ -990,7 +990,7 @@ public static class CommandsList {
             ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"Клип создан - https://www.twitch.tv/{_bot.Options.Channel}/clip/{clipId}");
+        await client.SendReply(chatMessage.Id, $"Клип создан - https://www.twitch.tv/{client.Credentials.Channel}/clip/{clipId}");
     }
     
     private static Task Rizz(ChatCmdArgs cmdArgs) {
@@ -1347,7 +1347,7 @@ public static class CommandsList {
             return Task.CompletedTask;
         }
                     
-        messageRandomizer.GenerateAndSend(client, chatMessage.Channel);
+        messageRandomizer.GenerateAndSend();
         return Task.CompletedTask;
     }
 

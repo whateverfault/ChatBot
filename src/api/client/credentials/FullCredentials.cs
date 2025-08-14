@@ -10,10 +10,10 @@ public class FullCredentials {
     public string Channel { get; private set; }
 
     [JsonProperty("oauth")]
-    public string OAuth { get; private set; }
+    public string Oauth { get; private set; }
     
     [JsonProperty("channel_oauth")]
-    public string ChannelOAuth { get; private set; }
+    public string? ChannelOauth { get; private set; }
     
     [JsonProperty("client_id")]
     public string ClientId { get; private set; }
@@ -28,7 +28,8 @@ public class FullCredentials {
     public FullCredentials() {
         Username = string.Empty;
         Channel = string.Empty;
-        OAuth = string.Empty;
+        Oauth = string.Empty;
+        ChannelOauth = string.Empty;
         ClientId = string.Empty;
         UserId = string.Empty;
         ChannelId = string.Empty;
@@ -37,13 +38,15 @@ public class FullCredentials {
     public FullCredentials(
         [JsonProperty("username")] string username,
         [JsonProperty("channel")] string channel,
-        [JsonProperty("oauth")] string oAuth,
+        [JsonProperty("oauth")] string oauth,
+        [JsonProperty("channel_oauth")] string? channelOauth,
         [JsonProperty("client_id")] string clientId,
         [JsonProperty("user_id")] string userId,
         [JsonProperty("channel_id")] string channelId) {
         Username = username;
         Channel = channel;
-        OAuth = oAuth;
+        Oauth = oauth;
+        ChannelOauth = channelOauth;
         ClientId = clientId;
         UserId = userId;
         ChannelId = channelId;
@@ -58,7 +61,11 @@ public class FullCredentials {
     }
     
     public void UpdateOauth(string oauth) {
-        OAuth = oauth;
+        Oauth = oauth;
+    }
+    
+    public void UpdateChannelOauth(string oauth) {
+        ChannelOauth = oauth;
     }
     
     public void UpdateClientId(string clientId) {

@@ -2,7 +2,6 @@
 using System.Text;
 using ChatBot.api.client;
 using ChatBot.api.client.credentials;
-using ChatBot.api.event_sub.subscription_data;
 using ChatBot.api.event_sub.subscription_data.subscription;
 using ChatBot.api.shared.requests.data;
 using ChatBot.api.shared.requests.data.ChatSubscriptionRequest;
@@ -91,7 +90,7 @@ public static class Requests {
             
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+                new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             _httpClient.DefaultRequestHeaders.Add("Client-Id", credentials.ClientId);
 
             var request = new SendMessagePayload(credentials.ChannelId,
@@ -125,7 +124,7 @@ public static class Requests {
             
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+                new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             _httpClient.DefaultRequestHeaders.Add("Client-Id", credentials.ClientId);
 
             var request = new SendReplyPayload(credentials.ChannelId,
@@ -154,7 +153,7 @@ public static class Requests {
     public static async Task<ChatSubscriptionPayload?> SubscribeToChannelChat(string? sessionId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
             _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             _httpClient.DefaultRequestHeaders.Add("Client-Id", credentials.ClientId);
 
             var subscription = new ChatSubscriptionPayload(
@@ -192,7 +191,7 @@ public static class Requests {
     public static async Task UnsubscribeFromChannelChat(string subscriptionId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
             _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             _httpClient.DefaultRequestHeaders.Add("Client-Id", credentials.ClientId);
 
             var response = await _httpClient.DeleteAsync($"https://api.twitch.tv/helix/eventsub/subscriptions?id={subscriptionId}");
@@ -209,18 +208,18 @@ public static class Requests {
     
     public static async Task BanUser(string username, string message, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var userId = await GetUserId(username, credentials.OAuth, credentials.ClientId, callback);
+            var userId = await GetUserId(username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
             
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return;
             
-            var botId = await GetUserId(credentials.Username, credentials.OAuth, credentials.ClientId, callback);
+            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (botId == null) return;
             
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             
             var request = new
                           {
@@ -249,18 +248,18 @@ public static class Requests {
     
         public static async Task TimeoutUserHelix(string username, string message, TimeSpan durationSeconds, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var userId = await GetUserId(username, credentials.OAuth, credentials.ClientId, callback);
+            var userId = await GetUserId(username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
             
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return;
             
-            var botId = await GetUserId(credentials.Username, credentials.OAuth, credentials.ClientId, callback);
+            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (botId == null) return;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             
             var request = new
                           {
@@ -280,7 +279,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
 
@@ -300,18 +299,18 @@ public static class Requests {
     
     public static async Task DeleteMessage(ChatMessage message, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var userId = await GetUserId(message.Username, credentials.OAuth, credentials.ClientId, callback);
+            var userId = await GetUserId(message.Username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
             
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return;
             
-            var botId = await GetUserId(credentials.Username, credentials.OAuth, credentials.ClientId, callback);
+            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (botId == null) return;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             
             var requestUri = $"https://api.twitch.tv/helix/moderation/chat?broadcaster_id={channelId}&moderator_id={botId}&message_id={message.Id}&user_id={userId}";
             var requestMessage = new HttpRequestMessage
@@ -321,7 +320,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
             var response = await _httpClient.SendAsync(requestMessage);
@@ -340,15 +339,15 @@ public static class Requests {
     
     public static async Task<TimeSpan?> GetFollowageHelix(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var userId = await GetUserId(credentials.Username, credentials.OAuth, credentials.ClientId, callback);
+            var userId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return null;
             
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             
             var requestMessage = new HttpRequestMessage
             {
@@ -357,7 +356,7 @@ public static class Requests {
                 Headers =
                 {
                     { "Client-ID", credentials.ClientId },
-                    { "Authorization", $"Bearer {credentials.OAuth}" },
+                    { "Authorization", $"Bearer {credentials.Oauth}" },
                 },
             };
 
@@ -389,12 +388,12 @@ public static class Requests {
     
     public static async Task<bool> UpdateChannelInfo(string newTitle, string newGameId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return false;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
 
             var requestBody = new 
                               {
@@ -410,7 +409,7 @@ public static class Requests {
                                                             Headers =
                                                             {
                                                                 { "Client-ID", credentials.ClientId },
-                                                                { "Authorization", $"Bearer {credentials.ChannelOAuth}" },
+                                                                { "Authorization", $"Bearer {credentials.ChannelOauth}" },
                                                             },
                                                         };
 
@@ -432,12 +431,12 @@ public static class Requests {
 
     public static async Task<ChannelInfo?> GetChannelInfo(FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
 
             var requestMessage = new HttpRequestMessage
                                  {
@@ -446,7 +445,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
 
@@ -472,7 +471,7 @@ public static class Requests {
     public static async Task<string?> FindGameId(string searchQuery, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
 
             var exactMatch = await SearchSingleGame(searchQuery, credentials);
             if (exactMatch != null) return exactMatch.Id;
@@ -485,7 +484,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
 
@@ -511,7 +510,7 @@ public static class Requests {
     private static async Task<GameData?> SearchSingleGame(string gameName, FullCredentials credentials) {
         try {
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
 
             var encodedGameName = Uri.EscapeDataString(gameName);
             var requestMessage = new HttpRequestMessage
@@ -521,7 +520,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
 
@@ -562,12 +561,12 @@ public static class Requests {
     
     public static async Task<bool> SetChannelRewardState(string rewardId, bool state, FullCredentials credentials, EventHandler<string>? callback = null) { 
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return false;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
 
             var requestBody = new 
                               {
@@ -583,7 +582,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.ChannelOAuth}" },
+                                         { "Authorization", $"Bearer {credentials.ChannelOauth}" },
                                      },
                                  };
 
@@ -614,12 +613,12 @@ public static class Requests {
     bool skipQueue = false, 
     EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
 
             var requestBody = new 
                               {
@@ -663,12 +662,12 @@ public static class Requests {
     
     public static async Task<bool> DeleteChannelReward(string rewardId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return false;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
 
             var requestMessage = new HttpRequestMessage
                                  {
@@ -694,12 +693,12 @@ public static class Requests {
     
     public static async Task<bool> SendWhisper(string userId, string message, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var botId = await GetUserId(credentials.Username, credentials.OAuth, credentials.ClientId, callback);
+            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (botId == null) return false;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
 
             var requestBody = new { 
                                       message,
@@ -731,12 +730,12 @@ public static class Requests {
     
     public static async Task<string?> CreateClip(FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
 
             var requestMessage = new HttpRequestMessage
                                  {
@@ -745,7 +744,7 @@ public static class Requests {
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
-                                         { "Authorization", $"Bearer {credentials.OAuth}" },
+                                         { "Authorization", $"Bearer {credentials.Oauth}" },
                                      },
                                  };
 
@@ -772,12 +771,12 @@ public static class Requests {
     }
     public static async Task<StreamResponse?> GetStreams(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.OAuth, credentials.ClientId, callback);
+            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
             if (channelId == null) return null;
             
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.OAuth);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
         
             var response = await _httpClient.GetAsync($"https://api.twitch.tv/helix/streams?user_id={channelId}");
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -811,7 +810,7 @@ public static class Requests {
     }
     
     public static async Task<string?> GetUserId(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
-        var userInfo = await GetUserInfo(username, credentials.OAuth, credentials.ClientId);
+        var userInfo = await GetUserInfo(username, credentials.Oauth, credentials.ClientId);
         if (userInfo == null) {
             callback?.Invoke(null, $"Couldn't get info of user '{username}'");
             return null;

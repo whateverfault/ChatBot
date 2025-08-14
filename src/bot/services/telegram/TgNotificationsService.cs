@@ -47,6 +47,7 @@ public class TgNotificationsService : Service {
     
     private string ProcessPrompt(string prompt, string streamTitle) {
         var random = Random.Shared;
+        var client = Bot.GetClient();
         
         var replacements = new Dictionary<string, string> {
                                                               {
@@ -55,7 +56,7 @@ public class TgNotificationsService : Service {
                                                               },
                                                               {
                                                                   "{link}",
-                                                                  $"{Constants.BaseTwitchUrl}{Bot.Options.Channel}?v={random.Next(int.MinValue, int.MaxValue)}"
+                                                                  $"{Constants.BaseTwitchUrl}{client?.Credentials?.Channel}?v={random.Next(int.MinValue, int.MaxValue)}"
                                                               },
                                                               {
                                                                   "\\n",

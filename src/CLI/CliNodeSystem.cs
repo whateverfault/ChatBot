@@ -3,7 +3,6 @@ using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.translator;
 using ChatBot.cli.CliNodes;
-using ChatBot.cli.CliNodes.Client;
 using ChatBot.cli.CliNodes.Directories;
 using ChatBot.cli.CliNodes.Directories.ChatAds;
 using ChatBot.cli.CliNodes.Directories.ChatCommands;
@@ -71,15 +70,14 @@ public class CliNodeSystem {
                                                                           _state.Data.MessageRandomizer.Options.GetRandomValue,
                                                                           CliNodePermission.ReadOnly
                                                                           ),
-                                                           new CliNodeClientWithInt(
-                                                                                    "Increase Counter",
-                                                                                    _state.Data.MessageRandomizer.HandleCounter,
-                                                                                    _state.Data.MessageRandomizer.GetCounter
-                                                                                    ),
-                                                           new CliNodeClient(
+                                                           new CliNodeCounter(
+                                                                              "Increase Counter",
+                                                                              _state.Data.MessageRandomizer.GetCounter,
+                                                                              _state.Data.MessageRandomizer.HandleCounter
+                                                                             ),
+                                                           new CliNodeAction(
                                                                              "Generate Message",
-                                                                             _state.Data.MessageRandomizer.GenerateAndSend,
-                                                                             _state
+                                                                             _state.Data.MessageRandomizer.GenerateAndSend
                                                                             ),
                                                            new CliNodeEnum(
                                                                            "Counter Randomness",
@@ -843,16 +841,10 @@ public class CliNodeSystem {
                                                   true,
                                                   [
                                                       new CliNodeString(
-                                                                        "Bot Username",
-                                                                        _state.Data.Bot.Options.GetUsername,
-                                                                        CliNodePermission.Default,
-                                                                        _state.Data.Bot.Options.SetUsername
-                                                                        ),
-                                                      new CliNodeString(
                                                                         "Channel",
-                                                                        _state.Data.Bot.Options.GetChannel,
+                                                                        _state.Data.Bot.GetChannel,
                                                                         CliNodePermission.Default,
-                                                                        _state.Data.Bot.Options.SetChannel
+                                                                        _state.Data.Bot.SetChannel
                                                                        ),
                                                       new CliNodeStaticDirectory(
                                                                                  "Secret",
@@ -861,21 +853,15 @@ public class CliNodeSystem {
                                                                                  [
                                                                                      new CliNodeString(
                                                                                           "OAuth",
-                                                                                          _state.Data.Bot.Options.GetOAuth,
+                                                                                          _state.Data.Bot.GetOauth,
                                                                                           CliNodePermission.Default,
-                                                                                          _state.Data.Bot.Options.SetOAuth
+                                                                                          _state.Data.Bot.SetOauth
                                                                                          ),
                                                                                      new CliNodeString(
                                                                                           "Broadcaster OAuth",
-                                                                                          _state.Data.Bot.Options.GetBroadcasterOAuth,
+                                                                                          _state.Data.Bot.GetChannelOauth,
                                                                                           CliNodePermission.Default,
-                                                                                          _state.Data.Bot.Options.SetBroadcasterOAuth
-                                                                                         ),
-                                                                                     new CliNodeString(
-                                                                                          "ClientId",
-                                                                                          _state.Data.Bot.Options.GetClientId,
-                                                                                          CliNodePermission.Default,
-                                                                                          _state.Data.Bot.Options.SetClientId
+                                                                                          _state.Data.Bot.SetChannelOauth
                                                                                          ),
                                                                                  ]
                                                                                  ),
