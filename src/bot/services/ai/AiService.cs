@@ -6,7 +6,7 @@ using ChatBot.bot.services.ai.AiClients.Ollama;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.ai;
 

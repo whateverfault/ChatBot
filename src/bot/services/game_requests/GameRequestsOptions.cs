@@ -1,7 +1,7 @@
 ﻿using ChatBot.bot.services.game_requests.Data;
-using ChatBot.shared;
-using ChatBot.shared.interfaces;
-using ChatBot.utils;
+using ChatBot.bot.shared;
+using ChatBot.bot.shared.interfaces;
+using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.game_requests;
 

@@ -2,8 +2,8 @@
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
-using ChatBot.shared;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared;
+using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_logs;
 
@@ -18,7 +18,7 @@ public class ChatLogsService : Service {
     public void HandleMessage(ChatMessage chatMessage, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
-        if (Constants.excludeUsersIds.Contains(chatMessage.UserId)) return;
+        if (Constants.ExcludeUsersIds.Contains(chatMessage.UserId)) return;
         
         var msg = new Message(chatMessage.Text, chatMessage.Username);
         Options.AddLog(msg);

@@ -1,5 +1,4 @@
 ﻿using ChatBot.api.client.credentials;
-using ChatBot.shared.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot;

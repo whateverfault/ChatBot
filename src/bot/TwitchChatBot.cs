@@ -6,7 +6,7 @@ using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.shared.Handlers;
+using ChatBot.bot.shared.Handlers;
 
 namespace ChatBot.bot;
 

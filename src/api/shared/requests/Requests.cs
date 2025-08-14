@@ -211,12 +211,6 @@ public static class Requests {
             var userId = await GetUserId(username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
             
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return;
-            
-            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
-            if (botId == null) return;
-            
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
@@ -231,7 +225,7 @@ public static class Requests {
                           };
 
             var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={channelId}&moderator_id={botId}", content);
+            var response = await _httpClient.PostAsync($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={credentials.ChannelId}&moderator_id={credentials.UserId}", content);
 
             if (response.IsSuccessStatusCode) {
                 Console.WriteLine();
@@ -250,12 +244,6 @@ public static class Requests {
         try {
             var userId = await GetUserId(username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
-            
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return;
-            
-            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
-            if (botId == null) return;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
@@ -274,7 +262,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Post,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={channelId}&moderator_id={botId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={credentials.ChannelId}&moderator_id={credentials.UserId}"),
                                      Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"),
                                      Headers =
                                      {
@@ -301,18 +289,12 @@ public static class Requests {
         try {
             var userId = await GetUserId(message.Username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return;
-            
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return;
-            
-            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
-            if (botId == null) return;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
             
-            var requestUri = $"https://api.twitch.tv/helix/moderation/chat?broadcaster_id={channelId}&moderator_id={botId}&message_id={message.Id}&user_id={userId}";
+            var requestUri = $"https://api.twitch.tv/helix/moderation/chat?broadcaster_id={credentials.ChannelId}&moderator_id={credentials.UserId}&message_id={message.Id}&user_id={userId}";
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Delete,
@@ -341,9 +323,6 @@ public static class Requests {
         try {
             var userId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return null;
-            
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
@@ -352,7 +331,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://api.twitch.tv/helix/channels/followers?user_id={userId}&broadcaster_id={channelId}"),
+                RequestUri = new Uri($"https://api.twitch.tv/helix/channels/followers?user_id={userId}&broadcaster_id={credentials.ChannelId}"),
                 Headers =
                 {
                     { "Client-ID", credentials.ClientId },
@@ -388,9 +367,6 @@ public static class Requests {
     
     public static async Task<bool> UpdateChannelInfo(string newTitle, string newGameId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return false;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
@@ -404,7 +380,7 @@ public static class Requests {
 
             var requestMessage = new HttpRequestMessage {
                                                             Method = HttpMethod.Patch,
-                                                            RequestUri = new Uri($"https://api.twitch.tv/helix/channels?broadcaster_id={channelId}"),
+                                                            RequestUri = new Uri($"https://api.twitch.tv/helix/channels?broadcaster_id={credentials.ChannelId}"),
                                                             Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                                             Headers =
                                                             {
@@ -431,9 +407,6 @@ public static class Requests {
 
     public static async Task<ChannelInfo?> GetChannelInfo(FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return null;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
@@ -441,7 +414,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Get,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channels?broadcaster_id={channelId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channels?broadcaster_id={credentials.ChannelId}"),
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
@@ -561,9 +534,6 @@ public static class Requests {
     
     public static async Task<bool> SetChannelRewardState(string rewardId, bool state, FullCredentials credentials, EventHandler<string>? callback = null) { 
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return false;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
@@ -577,7 +547,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage 
                                  {
                                      Method = HttpMethod.Patch,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={channelId}&id={rewardId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={credentials.ChannelId}&id={rewardId}"),
                                      Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                      Headers =
                                      {
@@ -613,9 +583,6 @@ public static class Requests {
     bool skipQueue = false, 
     EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return null;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
@@ -636,7 +603,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Post,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={channelId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={credentials.ChannelId}"),
                                      Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                  };
 
@@ -662,9 +629,6 @@ public static class Requests {
     
     public static async Task<bool> DeleteChannelReward(string rewardId, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return false;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.ChannelOauth);
@@ -672,7 +636,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Delete,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={channelId}&id={rewardId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id={credentials.ChannelId}&id={rewardId}"),
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
@@ -693,9 +657,6 @@ public static class Requests {
     
     public static async Task<bool> SendWhisper(string userId, string message, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var botId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
-            if (botId == null) return false;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
@@ -709,7 +670,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Post,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/whispers?from_user_id={botId}&to_user_id={userId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/whispers?from_user_id={credentials.UserId}&to_user_id={userId}"),
                                      Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
                                  };
 
@@ -730,9 +691,6 @@ public static class Requests {
     
     public static async Task<string?> CreateClip(FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return null;
-
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
@@ -740,7 +698,7 @@ public static class Requests {
             var requestMessage = new HttpRequestMessage
                                  {
                                      Method = HttpMethod.Post,
-                                     RequestUri = new Uri($"https://api.twitch.tv/helix/clips?broadcaster_id={channelId}"),
+                                     RequestUri = new Uri($"https://api.twitch.tv/helix/clips?broadcaster_id={credentials.ChannelId}"),
                                      Headers =
                                      {
                                          { "Client-ID", credentials.ClientId },
@@ -771,14 +729,11 @@ public static class Requests {
     }
     public static async Task<StreamResponse?> GetStreams(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var channelId = await GetUserId(credentials.Channel, credentials.Oauth, credentials.ClientId, callback);
-            if (channelId == null) return null;
-            
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Client-ID", credentials.ClientId);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.Oauth);
         
-            var response = await _httpClient.GetAsync($"https://api.twitch.tv/helix/streams?user_id={channelId}");
+            var response = await _httpClient.GetAsync($"https://api.twitch.tv/helix/streams?user_id={credentials.ChannelId}");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {

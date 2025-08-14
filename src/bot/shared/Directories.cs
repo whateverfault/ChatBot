@@ -1,4 +1,4 @@
-﻿namespace ChatBot.shared;
+﻿namespace ChatBot.bot.shared;
 
 public static class Directories {
     private static string _dataDir = "default_data";

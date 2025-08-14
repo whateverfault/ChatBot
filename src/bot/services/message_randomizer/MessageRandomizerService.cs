@@ -4,8 +4,8 @@ using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.message_randomizer;
 

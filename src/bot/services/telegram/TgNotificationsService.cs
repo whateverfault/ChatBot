@@ -3,7 +3,7 @@ using ChatBot.api.shared.requests.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.shared;
+using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.telegram;
 

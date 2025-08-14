@@ -1,4 +1,4 @@
-﻿namespace ChatBot.utils.GD.AREDL.Data;
+﻿namespace ChatBot.bot.utils.GD.AREDL.Data;
 
 public class LevelCreatorInfo {
     public string id;

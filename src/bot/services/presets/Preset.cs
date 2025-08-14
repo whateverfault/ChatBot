@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.services.Static;
-using ChatBot.shared;
+using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.presets;
 

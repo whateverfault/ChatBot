@@ -1,7 +1,7 @@
-﻿using ChatBot.utils.Telegram.Response.Data;
+﻿using ChatBot.bot.utils.Telegram.Response.Data;
 using Newtonsoft.Json;
 
-namespace ChatBot.utils.Telegram.Response;
+namespace ChatBot.bot.utils.Telegram.Response;
 
 public class SendMessageResponse {
     [JsonProperty("ok")]

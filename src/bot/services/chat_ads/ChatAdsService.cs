@@ -2,7 +2,7 @@
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_ads;
 

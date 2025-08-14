@@ -1,11 +1,11 @@
 ﻿using System.Text.RegularExpressions;
 using ChatBot.api.client;
 using ChatBot.bot.services.logger;
-using ChatBot.utils.GD.AREDL.Data;
-using ChatBot.utils.GD.AREDL.Responses;
+using ChatBot.bot.utils.GD.AREDL.Data;
+using ChatBot.bot.utils.GD.AREDL.Responses;
 using Newtonsoft.Json;
 
-namespace ChatBot.utils.GD.AREDL;
+namespace ChatBot.bot.utils.GD.AREDL;
 
 public partial class AredlUtils {
     private static readonly HttpClient _httpClient = new HttpClient();

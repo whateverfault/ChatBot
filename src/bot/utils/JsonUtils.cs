@@ -1,9 +1,9 @@
-﻿using ChatBot.shared;
-using ChatBot.shared.Handlers;
+﻿using ChatBot.bot.shared;
+using ChatBot.bot.shared.Handlers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace ChatBot.utils;
+namespace ChatBot.bot.utils;
 
 public static class JsonUtils {
     private static readonly JsonSerializerSettings _options

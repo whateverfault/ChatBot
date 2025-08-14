@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.utils.GD.AREDL.Data;
+namespace ChatBot.bot.utils.GD.AREDL.Data;
 
 public class HardestInfo {
     public string id;

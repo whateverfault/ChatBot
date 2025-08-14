@@ -1,8 +1,8 @@
 ﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.utils.GD.AREDL;
-using ChatBot.utils.GD.AREDL.Data;
+using ChatBot.bot.utils.GD.AREDL.Data;
+using AredlUtils = ChatBot.bot.utils.GD.AREDL.AredlUtils;
 
 namespace ChatBot.bot.services.demon_list;
 

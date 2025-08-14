@@ -1,10 +1,10 @@
 ﻿using System.Text;
 using ChatBot.api.client;
 using ChatBot.bot.services.logger;
-using ChatBot.utils.Telegram.Response;
+using ChatBot.bot.utils.Telegram.Response;
 using Newtonsoft.Json;
 
-namespace ChatBot.utils.Telegram;
+namespace ChatBot.bot.utils.Telegram;
 
 public static class TelegramUtils {
     private static readonly HttpClient _httpClient = new HttpClient();

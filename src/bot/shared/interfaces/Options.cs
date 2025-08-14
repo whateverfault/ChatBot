@@ -1,4 +1,4 @@
-﻿namespace ChatBot.shared.interfaces;
+﻿namespace ChatBot.bot.shared.interfaces;
 
 public enum State {
     Disabled,

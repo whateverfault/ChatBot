@@ -1,6 +1,6 @@
 ﻿using ChatBot.bot.services.Static;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_commands.Data;
 

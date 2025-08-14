@@ -1,6 +1,6 @@
 ﻿using ChatBot.bot.services.logger;
-using ChatBot.utils.Telegram;
-using ChatBot.utils.Telegram.Response;
+using ChatBot.bot.utils.Telegram;
+using ChatBot.bot.utils.Telegram.Response;
 
 namespace ChatBot.bot.services.telegram;
 

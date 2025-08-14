@@ -1,7 +1,7 @@
-﻿using ChatBot.utils.GD.AREDL.Data;
+﻿using ChatBot.bot.utils.GD.AREDL.Data;
 using Newtonsoft.Json;
 
-namespace ChatBot.utils.GD.AREDL.Responses;
+namespace ChatBot.bot.utils.GD.AREDL.Responses;
 
 public class GetClanResponse {
     public List<ClanInfo?> data;

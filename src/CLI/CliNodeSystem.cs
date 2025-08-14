@@ -2,14 +2,14 @@
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.translator;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
 using ChatBot.cli.CliNodes;
 using ChatBot.cli.CliNodes.Directories;
 using ChatBot.cli.CliNodes.Directories.ChatAds;
 using ChatBot.cli.CliNodes.Directories.ChatCommands;
 using ChatBot.cli.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.CliNodes.Directories.Moderation;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
 
 namespace ChatBot.cli;
 

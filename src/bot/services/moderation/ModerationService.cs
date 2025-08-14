@@ -6,8 +6,8 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

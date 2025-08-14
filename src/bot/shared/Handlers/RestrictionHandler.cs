@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.client.data;
 
-namespace ChatBot.shared.Handlers;
+namespace ChatBot.bot.shared.Handlers;
 
 public enum Restriction {
     DevOnly,

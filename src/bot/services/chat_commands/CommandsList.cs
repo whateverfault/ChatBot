@@ -14,10 +14,10 @@ using ChatBot.bot.services.Static;
 using ChatBot.bot.services.telegram;
 using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
-using ChatBot.utils;
-using ChatBot.utils.GD.AREDL;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
+using ChatBot.bot.utils;
+using AredlUtils = ChatBot.bot.utils.GD.AREDL.AredlUtils;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -607,7 +607,7 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       58,
-                                                      "change-cmd-cooldown",
+                                                      "change-chat-ad-cooldown",
                                                       "<id>;<new_cooldown>(in secs)",
                                                       "изменить перезарядку чат-рекламы.",
                                                       ChangeChatAdCooldown,
@@ -2249,12 +2249,8 @@ public static class CommandsList {
             return;
         }
 
-        if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return;
-        }
-        
-        if (!int.TryParse(args[0], out var index)) {
+        if (args.Length < 2
+         || !int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
@@ -2286,18 +2282,15 @@ public static class CommandsList {
             return;
         }
 
-        if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return;
-        }
-        
-        if (!int.TryParse(args[0], out var index)) {
+        if (args.Length < 2
+         || !int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         --index;
-        if (index < 0 || index >= chatAds.Count) {
+        if (index < 0
+         || index >= chatAds.Count) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
@@ -2321,23 +2314,16 @@ public static class CommandsList {
             return;
         }
 
-        if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return;
-        }
-        
-        if (!int.TryParse(args[0], out var index)) {
+        if (args.Length < 2
+         || !int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         --index;
-        if (index < 0 || index >= chatAds.Count) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return;
-        }
-        
-        if (!int.TryParse(args[0], out var cooldown)) {
+        if (index < 0 
+         || index >= chatAds.Count 
+         || !int.TryParse(args[1], out var cooldown)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }

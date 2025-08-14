@@ -3,7 +3,7 @@ using ChatBot.api.client.data;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 
-namespace ChatBot.shared.Handlers;
+namespace ChatBot.bot.shared.Handlers;
 
 public enum ErrorCode {
     InvalidInput,

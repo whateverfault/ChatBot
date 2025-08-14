@@ -1,4 +1,4 @@
-﻿namespace ChatBot.utils;
+﻿namespace ChatBot.bot.utils;
 
 public static class Declensioner {
     public static string Years(int years) {

@@ -3,8 +3,8 @@ using ChatBot.api.client.data;
 using ChatBot.api.shared.requests;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.shared.Handlers;
-using ChatBot.shared.interfaces;
+using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.moderation;
