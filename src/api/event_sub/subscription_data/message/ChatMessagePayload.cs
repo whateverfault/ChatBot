@@ -9,4 +9,13 @@ public class ChatMessagePayload {
 
     [JsonProperty("event")]
     public ChatMessageEvent Event { get; set; }
+    
+    
+    [JsonConstructor]
+    public ChatMessagePayload(
+        [JsonProperty("subscription")] SubscriptionData subscription,
+        [JsonProperty("event")] ChatMessageEvent e) {
+        Subscription = subscription;
+        Event = e;
+    }
 }

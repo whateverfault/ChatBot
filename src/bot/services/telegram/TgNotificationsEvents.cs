@@ -8,14 +8,14 @@ namespace ChatBot.bot.services.telegram;
 
 public class TgNotificationsEvents : ServiceEvents {
     private TgNotificationsService _tgNotifications = null!;
-    private StreamStateCheckerService _streamStateCheckerService = null!;
+    private StreamStateCheckerService _streamStateChecker = null!;
 
     public override bool Initialized { get; protected set; }
     
 
     public override void Init(Service service) {
         _tgNotifications = (TgNotificationsService)service;
-        _streamStateCheckerService = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
         base.Init(service);
     }
 
@@ -24,7 +24,7 @@ public class TgNotificationsEvents : ServiceEvents {
             return;
         }
         base.Subscribe();
-        _streamStateCheckerService.OnStreamStateChangedAsync += SendNotificationWrapper;
+        _streamStateChecker.OnStreamStateChangedAsync += SendNotificationWrapper;
     }
 
     protected override void UnSubscribe() {
@@ -33,7 +33,7 @@ public class TgNotificationsEvents : ServiceEvents {
         }
         base.UnSubscribe();
         
-        _streamStateCheckerService.OnStreamStateChangedAsync -= SendNotificationWrapper;
+        _streamStateChecker.OnStreamStateChangedAsync -= SendNotificationWrapper;
     }
     
     private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {

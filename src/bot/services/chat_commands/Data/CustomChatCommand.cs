@@ -97,6 +97,7 @@ public sealed class CustomChatCommand : ChatCommand {
             client?.SendReply(chatMessage.Id, command.Output);
         }
         else {
+            if (chatArgs.Parsed.ArgumentsAsList.Count != 0) return Task.CompletedTask;
             client?.SendMessage(command.Output);
         }
         return Task.CompletedTask;

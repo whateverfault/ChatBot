@@ -53,7 +53,7 @@ public class GameRequestsService : Service {
         }
         
         index = args.IndexOf("--user");
-        var requester = chatMessage.Text;
+        var requester = chatMessage.Username;
         if (index >= 0 && index < args.Count-1) {
             requester = args[index+1];
         }

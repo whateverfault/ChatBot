@@ -181,7 +181,9 @@ public class TwitchClient : ITwitchClient {
     }
     
     private void HandleChatMessage(object? sender, ChatMessageEvent? chatMessageEvent) {
-        if (chatMessageEvent == null) return;
+        if (chatMessageEvent == null
+            || Credentials == null
+            || chatMessageEvent.UserId.Equals(Credentials.UserId)) return;
                                                 
         OnMessageReceived?.Invoke(
                                   this,

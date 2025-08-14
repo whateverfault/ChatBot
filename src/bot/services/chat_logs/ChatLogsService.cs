@@ -18,7 +18,6 @@ public class ChatLogsService : Service {
     public void HandleMessage(ChatMessage chatMessage, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
-        //TODO unhardcode this feature
         if (Constants.excludeUsersIds.Contains(chatMessage.UserId)) return;
         
         var msg = new Message(chatMessage.Text, chatMessage.Username);
@@ -27,10 +26,6 @@ public class ChatLogsService : Service {
     }
     
     public List<Message> GetLogs() {
-        return Options.Logs;
-    }
-
-    public void AddLog(Message message) {
-        Options.Logs.Add(message);
+        return Options.GetLogs();
     }
 }

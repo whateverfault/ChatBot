@@ -1,4 +1,5 @@
-﻿using ChatBot.api.event_sub.subscription_data.message;
+﻿using System.Text;
+using ChatBot.api.event_sub.subscription_data.message;
 
 namespace ChatBot.api.client.data;
 
@@ -28,7 +29,7 @@ public class ChatMessage {
     public bool IsSubscriber { get; }
     
     
-    public ChatMessage(
+    private ChatMessage(
         string channelId,
         string channel,
         string userId,
@@ -56,15 +57,16 @@ public class ChatMessage {
     }
 
     public static ChatMessage Create(ChatMessageEvent e) {
-        var message = string.Empty;
+        var message = new StringBuilder();
 
         foreach (var fragment in e.Message.Fragments) {
-            if (fragment.Type != "text") continue;
+            if (fragment.Type == "mention") continue;
 
-            message = fragment.Text
-                              .Replace($"{(char)56128}", "")
-                              .Replace($"{(char)56320}", "")
-                              .Trim();
+            var processed = fragment.Text
+                                    .Replace($"{(char)56128}", "")
+                                    .Replace($"{(char)56320}", "")
+                                    .Trim();
+            message.Append($"{processed} ");
         }
         
         ParseBadges(e.Badges, out var isBroadcaster, out var isModerator, out var isVip, out var isSubscriber);
@@ -75,7 +77,7 @@ public class ChatMessage {
                                    e.UserId,
                                    e.User, 
                                    e.MessageId,
-                                   message,
+                                   message.ToString(),
                                    e.Reply,
                                    e.RewardId,
                                    isBroadcaster,

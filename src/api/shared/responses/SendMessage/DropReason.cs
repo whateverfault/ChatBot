@@ -8,4 +8,13 @@ public class DropReason {
     
     [JsonProperty("message")]
     public string Message { get; private set; }
+    
+    
+    [JsonConstructor]
+    public DropReason(
+        [JsonProperty("code")] string code,
+        [JsonProperty("message")] string message) {
+        Code = code;
+        Message = message;
+    }
 }

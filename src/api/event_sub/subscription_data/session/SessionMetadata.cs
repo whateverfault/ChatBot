@@ -11,4 +11,15 @@ public class SessionMetadata {
 
     [JsonProperty("subscription_type")]
     public string SubscriptionType { get; set; }
+    
+    
+    [JsonConstructor]
+    public SessionMetadata(
+        [JsonProperty("message_id")] string messageId,
+        [JsonProperty("message_type")] string messageType,
+        [JsonProperty("subscription_type")] string subscriptionType) {
+        MessageId = messageId;
+        MessageType = messageType;
+        SubscriptionType = subscriptionType;
+    }
 }

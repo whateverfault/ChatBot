@@ -73,7 +73,7 @@ public class FullCredentials {
     }
     
     public void UpdateUserId(string userId) {
-        userId = userId;
+        UserId = userId;
     }
     
     public void UpdateChannelId(string channelId) {

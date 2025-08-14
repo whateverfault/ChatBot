@@ -6,4 +6,11 @@ namespace ChatBot.api.event_sub.subscription_data.subscription;
 public class ChatSubscriptionData {
     [JsonProperty("data")]
     public ChatSubscriptionPayload[] Data { get; set; } 
+    
+    
+    [JsonConstructor]
+    public ChatSubscriptionData(
+        [JsonProperty("data")] ChatSubscriptionPayload[] data) {
+        Data = data;
+    }
 }

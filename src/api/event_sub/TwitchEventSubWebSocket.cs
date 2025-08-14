@@ -1,6 +1,5 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
-using ChatBot.api.event_sub.subscription_data;
 using ChatBot.api.event_sub.subscription_data.message;
 using ChatBot.api.event_sub.subscription_data.session;
 using Newtonsoft.Json;

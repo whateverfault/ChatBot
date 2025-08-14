@@ -8,4 +8,13 @@ public class EventSubMessage<TMetadata, TPayload>  {
 
     [JsonProperty("payload")]
     public TPayload Payload { get; set; }
+    
+    
+    [JsonConstructor]
+    public EventSubMessage(
+        [JsonProperty("metadata")] TMetadata metadata,
+        [JsonProperty("payload")] TPayload payload) {
+        Metadata = metadata;
+        Payload = payload;
+    }
 }

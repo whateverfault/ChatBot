@@ -40,7 +40,6 @@ public class ChatLogsOptions : Options {
 
     public void AddLog(Message message) {
         Logs.Add(message);
-        Save();
     }
     
     public List<Message> GetLogs() {

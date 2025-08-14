@@ -8,4 +8,13 @@ public class ChatMessageFragment {
     
     [JsonProperty("text")]
     public string Text { get; set; }
+    
+    
+    [JsonConstructor]
+    public ChatMessageFragment(
+        [JsonProperty("type")] string type,
+        [JsonProperty("text")] string text) {
+        Type = type;
+        Text = text;
+    }
 }

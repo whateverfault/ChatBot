@@ -11,4 +11,15 @@ public class SessionData {
 
     [JsonProperty("keepalive_timeout_seconds")]
     public int? KeepaliveTimeoutSeconds { get; set; }
+    
+    
+    [JsonConstructor]
+    public SessionData(
+        [JsonProperty("status")] string status,
+        [JsonProperty("id")] string? id = null,
+        [JsonProperty("keepalive_timeout_seconds")] int? timeout = null) {
+        Id = id;
+        Status = status;
+        KeepaliveTimeoutSeconds = timeout;
+    }
 }
