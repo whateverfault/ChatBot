@@ -24,7 +24,7 @@ public class ChatAdsEvents : ServiceEvents {
         }
         base.Subscribe();
         
-        _streamStateChecker.OnStreamStateUpdate += _chatAds.SendAdsIfNeeded;
+        _streamStateChecker.OnStreamStateUpdate += _chatAds.HandleChatAdsSending;
     }
     
     protected override void UnSubscribe() {
@@ -33,6 +33,6 @@ public class ChatAdsEvents : ServiceEvents {
         }
         base.UnSubscribe();
         
-        _streamStateChecker.OnStreamStateUpdate -= _chatAds.SendAdsIfNeeded;
+        _streamStateChecker.OnStreamStateUpdate -= _chatAds.HandleChatAdsSending;
     }
 }

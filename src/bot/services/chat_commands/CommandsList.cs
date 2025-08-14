@@ -576,7 +576,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       54,
                                                       "add-chat-ad",
-                                                      "<name>;<output>;<cooldown>",
+                                                      "<name>;<output>;<cooldown>(in secs)",
                                                       "добавить чат-рекламу.",
                                                       AddChatAd,
                                                       Restriction.DevBroad
@@ -608,7 +608,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       58,
                                                       "change-cmd-cooldown",
-                                                      "<id>;<new_cooldown>",
+                                                      "<id>;<new_cooldown>(in secs)",
                                                       "изменить перезарядку чат-рекламы.",
                                                       ChangeChatAdCooldown,
                                                       Restriction.DevBroad
@@ -2171,7 +2171,6 @@ public static class CommandsList {
 
     private static async Task ListChatAds(ChatCmdArgs cmdArgs) {
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
-
         var chatAds = chatAdsService.Options.GetChatAds();
         
         var output = new List<string>();
@@ -2183,19 +2182,21 @@ public static class CommandsList {
         await SendPagedReply(output, cmdArgs);
     }
 
-    private static Task AddChatAd(ChatCmdArgs cmdArgs) {
+    private static async Task AddChatAd(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
         
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
         if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
-            return Task.CompletedTask;
+            return;
         }
         
         if (args.Length < 3) {
             ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         var name = args[0];
@@ -2203,128 +2204,148 @@ public static class CommandsList {
         
         if (!long.TryParse(args[2], out var cooldown)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         var chatAd = new ChatAd(name, output, cooldown);
         chatAdsService.Options.AddChatAd(chatAd);
 
-        return Task.CompletedTask;
+        await client.SendReply(chatMessage.Id, $"Чат-реклама с названием {chatAd.GetName()} добавлена успешно.");
     }
     
-    private static Task RemoveChatAd(ChatCmdArgs cmdArgs) {
+    private static async Task RemoveChatAd(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
         
         var error = ParseIntArg(cmdArgs, out var indexToRemove);
         if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
-            return Task.CompletedTask;
+            return;
         }
-
-        chatAdsService.Options.RemoveChatAd(indexToRemove);
-        return Task.CompletedTask;
+        --indexToRemove;
+        
+        var name = chatAdsService.Options.GetChatAds()[indexToRemove].GetName();
+        var result = chatAdsService.Options.RemoveChatAd(indexToRemove);
+        if (!result) {
+            await client.SendReply(chatMessage.Id, $"Не удалось удалить чат-рекламу с айди {indexToRemove+1}.");
+            return;
+        }
+        
+        await client.SendReply(chatMessage.Id, $"Чат-реклама с названием {name} удалена успешно.");
     }
 
-    private static Task ChangeChatAdName(ChatCmdArgs cmdArgs) {
+    private static async Task ChangeChatAdName(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
         var chatAds = chatAdsService.Options.GetChatAds();
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
         if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
-            return Task.CompletedTask;
+            return;
         }
 
         if (args.Length < 2) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
         
         if (!int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         --index;
         if (index < 0 || index >= chatAds.Count) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         var chatAd = chatAds[index];
+
+        var oldName = chatAd.GetName();
         chatAd.SetName(args[1]);
-        return Task.CompletedTask;
+        
+        await client.SendReply(chatMessage.Id, $"Название чат-рекламы {oldName} изменено на {chatAd.GetName()}.");
     }
     
-    private static Task ChangeChatAdOutput(ChatCmdArgs cmdArgs) {
+    private static async Task ChangeChatAdOutput(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
         var chatAds = chatAdsService.Options.GetChatAds();
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
         if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
-            return Task.CompletedTask;
+            return;
         }
 
         if (args.Length < 2) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
         
         if (!int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         --index;
         if (index < 0 || index >= chatAds.Count) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         var chatAd = chatAds[index];
         chatAd.SetOutput(args[1]);
-        return Task.CompletedTask;
+        
+        await client.SendReply(chatMessage.Id, $"Вывод чат-рекламы {chatAd.GetName()} изменен на {chatAd.GetOutput()}.");
     }
     
-    private static Task ChangeChatAdCooldown(ChatCmdArgs cmdArgs) {
+    private static async Task ChangeChatAdCooldown(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
         var chatAdsService = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
         var chatAds = chatAdsService.Options.GetChatAds();
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
         if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
-            return Task.CompletedTask;
+            return;
         }
 
         if (args.Length < 2) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
         
         if (!int.TryParse(args[0], out var index)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         --index;
         if (index < 0 || index >= chatAds.Count) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
         
         if (!int.TryParse(args[0], out var cooldown)) {
             ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-            return Task.CompletedTask;
+            return;
         }
 
         var chatAd = chatAds[index];
         chatAd.SetCooldown(cooldown);
-        return Task.CompletedTask;
+        
+        await client.SendReply(chatMessage.Id, $"Перезарядка чат-рекламы {chatAd.GetName()} изменена на {chatAd.GetCooldown()}.");
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
@@ -2349,6 +2370,12 @@ public static class CommandsList {
             int.TryParse(args[index+1], out page);
         }
 
+        if (args.Count > 0 
+         && index < 0 
+         && int.TryParse(args[0], out var tempPage)) {
+            page = tempPage;
+        }
+        
         var pages = Page.CalculatePages(reply);
 
         if (page < pages[0]) {
