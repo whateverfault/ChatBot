@@ -3,7 +3,7 @@ using ChatBot.bot.shared.Handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatCommands;
 
-public delegate void AddChatCmdHandler(ChatCommand chatCmd);
+public delegate void AddChatCmdHandler(CustomChatCommand chatCmd);
 
 public class CliNodeChatCmdAdd : CliNode {
     private readonly AddChatCmdHandler _add;

@@ -47,12 +47,12 @@ public class VkTranslateClient {
             var responseData = 
                 JsonConvert.DeserializeObject<VkTranslateResponse>(responseContent);
 
-            if (responseData?.Response == null) {
-                logger?.Log(LogLevel.Error, "API returned a bad response.");
-                return null;
+            if (responseData?.Response != null) {
+                return responseData.Response.Text;
             }
-            
-            return responseData.Response.Text;
+
+            logger?.Log(LogLevel.Error, "API returned a bad response.");
+            return null;
         } catch (Exception e) {
             logger?.Log(LogLevel.Error, $"Exception: {e}"); 
             return null;

@@ -38,17 +38,20 @@ public class MessageFilterOptions : Options {
         Save();
     }
     
-    public List<Filter> GetFilters() {
-        return Filters;
-    }
-    
     public void AddFilter(Filter filter) {
         Filters.Add(filter);
         Save();
     }
 
-    public void RemovePattern(int index) {
+    public bool RemoveFilter(int index) {
+        if (index < 0 || index >= Filters.Count) return false;
+        
         Filters.RemoveAt(index);
         Save();
+        return true;
+    }
+
+    public List<Filter> GetFilters() {
+        return Filters;
     }
 }

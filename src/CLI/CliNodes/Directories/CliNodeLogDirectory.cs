@@ -7,23 +7,31 @@ public class CliNodeLogDirectory : CliNodeDirectory {
     
     protected override string Text { get; }
 
-    public override List<CliNode> Nodes { get; }
+    public sealed override List<CliNode> Nodes { get; }
 
 
     public CliNodeLogDirectory(string text, bool hasBackOption, CliState state, LoggerService loggerService) {
         Text = text;
-        Nodes = [
-                    new CliNodeAction(
-                                      "Back",
-                                      state.NodeSystem.DirectoryBack),
-                    new CliNodeText(
-                                    "-----------------------------------",
-                                    false,
-                                    true,
-                                    1
-                                   ),
-                ];
+        Nodes = [];
 
+        if (hasBackOption) {
+            Nodes.Add(
+                      new CliNodeAction(
+                                        "Back",
+                                        state.NodeSystem.DirectoryBack
+                                        )
+                      );
+        }
+        
+        Nodes.Add(
+                  new CliNodeText(
+                                  "-----------------------------------",
+                                  false,
+                                  true,
+                                  1
+                                 )
+                  );
+        
         loggerService.OnLog += HandleLog;
         _state = state;
     }

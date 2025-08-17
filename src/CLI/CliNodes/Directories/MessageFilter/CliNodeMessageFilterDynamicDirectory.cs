@@ -19,12 +19,11 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
 
     public CliNodeMessageFilterDynamicDirectory(
         string text,
-        AddFilterHandler addHandler,
-        RemoveHandler removeHandler,
-        CliState state,
-        List<Filter> filters) {
-        _addHandler = addHandler;
-        _removeHandler = removeHandler;
+        string addText,
+        string removeText,
+        CliState state) {
+        _addHandler = state.Data.MessageFilter.AddFilter;
+        _removeHandler = state.Data.MessageFilter.RemoveFilter;
         _state = state;
         Text = text;
 
@@ -37,37 +36,41 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
                                               );
         
         _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        
+
+        var filters = _state.Data.MessageFilter.GetFilters();
         foreach (var filter in filters) {
             _content.AddNode(FilterToNode(filter));
         }
 
         Nodes = [
                     new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodeFilterAdd($"Add {text}", Add),
-                    new CliNodeRemove($"Remove {text}", Remove),
+                    new CliNodeFilterAdd(addText, Add),
+                    new CliNodeRemove(removeText, Remove),
                     _content,
                 ];
+
+        _state.Data.MessageFilter.OnFilterAdded += (_, filter) => { 
+                                                       _content.AddNode(FilterToNode(filter));
+                                                   };
+        
+        _state.Data.MessageFilter.OnFilterRemoved += (_, index) => { 
+                                                         _content.RemoveNode(index+2);
+                                                   };
     }
 
     private void Add(Filter filter) {
-        _content.AddNode(FilterToNode(filter));
         _addHandler.Invoke(filter);
     }
 
     private bool Remove(int index) {
         var filters = _messageFilter.GetFilters();
 
-        if (index < 0 || index > filters.Count || index >= _content.Nodes.Count-2) {
+        if (index < 0 || index >= _content.Nodes.Count-2) {
             return false;
         }
 
-        if (filters[index].IsDefault) {
-            return false;
-        }
-        
-        _content.RemoveNode(index+2);
-        return _removeHandler.Invoke(index);
+        return !filters[index].IsDefault 
+            && _removeHandler.Invoke(index);
     }
 
     private CliNodeStaticDirectory FilterToNode(Filter filter) {

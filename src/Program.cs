@@ -47,13 +47,14 @@ internal static class Program {
         while (true) {
             switch (_forcedToRender) {
                 case false when !Console.KeyAvailable:
+                    Thread.Sleep(50);
                     continue;
                 case false:
                     int.TryParse(Console.ReadLine() ?? "0", out var index);
                     _cli.ActivateNode(index);
                     break;
-            }
-
+            } 
+            
             Console.Clear();
             _cli.RenderNodes();
             _forcedToRender = false;

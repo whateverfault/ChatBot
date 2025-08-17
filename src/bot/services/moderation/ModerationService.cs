@@ -29,7 +29,10 @@ public class ModerationService : Service {
     public override string Name => ServiceName.Moderation;
     public override ModerationOptions Options { get; } = new ModerationOptions();
 
-
+    public EventHandler<ModAction>? OnModActionAdded;
+    public EventHandler<int>? OnModActionRemoved;
+    
+    
     public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
         try {
             if (Options.ServiceState == State.Disabled) return;
@@ -78,23 +81,16 @@ public class ModerationService : Service {
     
     public void AddModAction(ModAction action) {
         Options.AddModAction(action);
+        OnModActionAdded?.Invoke(this, action);
     }
 
     public bool RemoveModAction(int index) {
-        return Options.RemoveModAction(index);
+        var result = Options.RemoveModAction(index);
+        if (result) OnModActionRemoved?.Invoke(this, index);
+        return result;
     }
 
     public List<ModAction> GetModActions() {
         return Options.ModerationActions;
-    }
-    
-    public bool GetModAction(int index, out ModAction? modAction) {
-        modAction = null;
-        if (index < 0 || index >= Options.ModerationActions.Count) {
-            return false;
-        }
-
-        modAction = Options.ModerationActions[index];
-        return true;
     }
 }

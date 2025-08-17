@@ -19,14 +19,11 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
         string text,
         string addText,
         string removeText,
-        AddChatCmdHandler addHandler,
-        RemoveHandler removeHandler,
-        List<CustomChatCommand> commands,
         CliState state) {
         Text = text;
         _state = state;
-        _addHandler = addHandler;
-        _removeHandler = removeHandler;
+        _addHandler = state.Data.ChatCommands.AddChatCmd;
+        _removeHandler = state.Data.ChatCommands.RemoveChatCmd;
 
         _content = new CliNodeStaticDirectory(
                                               "Content",
@@ -44,6 +41,7 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                         )
                          );
 
+        var commands = _state.Data.ChatCommands.GetCustomChatCommands();
         foreach (var cmd in commands) {
             _content.AddNode(CommandToNode(cmd));
         }
@@ -54,15 +52,17 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                     new CliNodeRemove(removeText, Remove),
                     _content,
                 ];
+
+        _state.Data.ChatCommands.OnChatCommandAdded += (_, chatCmd) => {
+                                                           _content.AddNode(CommandToNode(chatCmd));
+                                                       };
+
+        _state.Data.ChatCommands.OnChatCommandRemoved += (_, index) => {
+                                                             _content.RemoveNode(index+2);
+                                                         };
     }
     
-    private void Add(ChatCommand chatCmd) {
-        if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
-
-        var cmd = (CustomChatCommand)chatCmd;
-        var node = CommandToNode(cmd);
-        
-        _content.AddNode(node);
+    private void Add(CustomChatCommand chatCmd) {
         _addHandler.Invoke(chatCmd);
     }
     
@@ -71,10 +71,9 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
             return false;
         }
         
-        _content.RemoveNode(index+2);
         return _removeHandler.Invoke(index);
     }
-
+    
     private CliNodeStaticDirectory CommandToNode(CustomChatCommand cmd) {
         var node = new CliNodeStaticDirectory(
                                               cmd.Name,

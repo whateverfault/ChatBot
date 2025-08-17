@@ -152,9 +152,6 @@ public class CliNodeSystem {
                                                              "Ads",
                                                              "Add Chat Ad",
                                                              "Remove Chat Ad",
-                                                             _state.Data.ChatAds.Options.AddChatAd,
-                                                             _state.Data.ChatAds.Options.RemoveChatAd,
-                                                             _state.Data.ChatAds.Options.GetChatAds(),
                                                              _state
                                                             ),
                                                         new CliNodeEnum(
@@ -173,7 +170,7 @@ public class CliNodeSystem {
                                                      true,
                                                      []
                                                      );
-        foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds!) {
+        foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds) {
             if (string.IsNullOrEmpty(cmd.Name)) continue;
             defaultCmds.AddNode(
                                 new CliNodeStaticDirectory(
@@ -245,9 +242,6 @@ public class CliNodeSystem {
                                                                                               "Custom Commands",
                                                                                               "Add Custom Command",
                                                                                               "Remove Custom Command",
-                                                                                              _state.Data.ChatCommands.Options.AddChatCmd,
-                                                                                              _state.Data.ChatCommands.Options.RemoveChatCmd,
-                                                                                              _state.Data.ChatCommands.Options.GetCustomCommands(),
                                                                                               _state
                                                                                               ),
                                                           chatAdsDir,
@@ -310,10 +304,9 @@ public class CliNodeSystem {
         
         var globalPatterns = new CliNodeMessageFilterDynamicDirectory(
                                                                       "Global Filters",
-                                                                      _state.Data.MessageFilter.AddFilter,
-                                                                      _state.Data.MessageFilter.RemovePattern,
-                                                                      _state,
-                                                                      _state.Data.MessageFilter.GetFilters()
+                                                                      "Add Filter",
+                                                                      "Remove Filter",
+                                                                      _state
                                                                      );
         
         var messageFilterDir = new CliNodeStaticDirectory(

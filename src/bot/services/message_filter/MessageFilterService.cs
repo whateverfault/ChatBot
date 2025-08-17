@@ -18,9 +18,12 @@ public class MessageFilterService : Service {
     public override MessageFilterOptions Options { get; } = new MessageFilterOptions();
     public event MessageHandler? OnMessageFiltered;
 
+    public EventHandler<Filter>? OnFilterAdded;
+    public EventHandler<int>? OnFilterRemoved;
+    
 
     public void HandleMessage(object? sender, ChatMessage chatMessage) {
-        var filters = Options.GetFilters();
+        var filters = GetFilters();
         var status = FilterStatus.NotMatch;
         var index = 0;
 
@@ -38,22 +41,20 @@ public class MessageFilterService : Service {
 
     public void AddFilter(Filter filter) {
         Options.AddFilter(filter);
+        OnFilterAdded?.Invoke(this, filter);
+    }
+
+    public bool RemoveFilter(int index) {
+        var result = Options.RemoveFilter(index);
+        if (result) OnFilterRemoved?.Invoke(this, index);
+        
+        return result;
     }
 
     public List<Filter> GetFilters() {
         return Options.GetFilters();
     }
-
-    public bool RemovePattern(int index) {
-        var patterns = Options.GetFilters();
-        if (index > patterns.Count || index < 0) {
-            return false;
-        }
-
-        Options.RemovePattern(index);
-        return true;
-    }
-
+    
     public override State GetServiceState() {
         return Options.GetState();
     }

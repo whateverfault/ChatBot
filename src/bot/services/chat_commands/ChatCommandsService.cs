@@ -17,9 +17,14 @@ public class ChatCommandsService : Service {
     public override string Name => ServiceName.ChatCommands;
     public override ChatCommandsOptions Options { get; } = new ChatCommandsOptions();
 
+    public EventHandler<CustomChatCommand>? OnChatCommandAdded;
+    public EventHandler<int>? OnChatCommandRemoved;
+    
 
     public async void HandleCommand(object? sender, Command parsedCommand) {
         try {
+            if (Options.ServiceState == State.Disabled) return;
+            
             var cmdName = parsedCommand.CommandText;
             var chatMessage = parsedCommand.ChatMessage;
             var chatArgs = new ChatCmdArgs(parsedCommand);
@@ -104,8 +109,11 @@ public class ChatCommandsService : Service {
     
     public void SetCommandIdentifier(char identifier) {
         if (Client == null) return;
-        
-        Client.SetCommandIdentifier(identifier);
+
+        if (!Client.SetCommandIdentifier(identifier)) {
+            ErrorHandler.LogErrorMessageAndPrint(ErrorCode.InvalidInput, $"Cannot set '{identifier}' as a command identifier.");
+            return;
+        }
         Options.SetCommandIdentifier(identifier);
     }
 
@@ -125,5 +133,20 @@ public class ChatCommandsService : Service {
         if (CommandsList.DefaultsCommands.Count != Options.DefaultCmds.Count) {
             CommandsList.SetDefaults();
         }
+    }
+
+    public void AddChatCmd(CustomChatCommand chatCmd) {
+        Options.AddChatCmd(chatCmd);
+        OnChatCommandAdded?.Invoke(this, chatCmd);
+    }
+    
+    public bool RemoveChatCmd(int index) {
+        var result = Options.RemoveChatCmd(index);
+        if (result) OnChatCommandRemoved?.Invoke(this, index);
+        return result;
+    }
+
+    public List<CustomChatCommand> GetCustomChatCommands() {
+        return Options.GetCustomCommands();
     }
 }

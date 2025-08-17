@@ -48,9 +48,8 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
         _moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
 
         var nodesContent = _state.Data.Moderation.GetModActions();
-        
-        foreach (var node in nodesContent.Select(ModActionToNode)) {
-            _content.AddNode(node);
+        foreach (var node in nodesContent) {
+            _content.AddNode(ModActionToNode(node));
         }
 
         Nodes = [
@@ -59,26 +58,29 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                     new CliNodeRemove(removeText, Remove),
                     _content,
                 ];
+
+        _state.Data.Moderation.OnModActionAdded += (_, modAction) => {
+                                                       _content.AddNode(ModActionToNode(modAction));
+                                                   };
+        
+        _state.Data.Moderation.OnModActionRemoved += (_, index) => {
+                                                         _content.RemoveNode(index+2);
+                                                   };
     }
     
     private void Add(ModAction modAction) {
-        _content.AddNode(ModActionToNode(modAction));
         _addHandler.Invoke(modAction);
     }
     
     private bool Remove(int index) {
         var modActions = _moderation.GetModActions();
 
-        if (index < 0 || index > modActions.Count || index >= _content.Nodes.Count-2) {
+        if (index < 0 || index >= _content.Nodes.Count-2) {
             return false;
         }
 
-        if (modActions[index].IsDefault) {
-            return false;
-        }
-        
-        _content.RemoveNode(index+2);
-        return _removeHandler.Invoke(index);
+        return !modActions[index].IsDefault 
+            && _removeHandler.Invoke(index);
     }
 
     private CliNodeStaticDirectory ModActionToNode(ModAction modAction) {

@@ -25,6 +25,7 @@ public class TgNotificationsEvents : ServiceEvents {
         }
         base.Subscribe();
         _streamStateChecker.OnStreamStateChangedAsync += SendNotificationWrapper;
+        _streamStateChecker.OnStreamStateUpdateAsync += DeleteNotificationWrapper;
     }
 
     protected override void UnSubscribe() {
@@ -34,6 +35,7 @@ public class TgNotificationsEvents : ServiceEvents {
         base.UnSubscribe();
         
         _streamStateChecker.OnStreamStateChangedAsync -= SendNotificationWrapper;
+        _streamStateChecker.OnStreamStateUpdateAsync -= DeleteNotificationWrapper;
     }
     
     private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
@@ -44,12 +46,17 @@ public class TgNotificationsEvents : ServiceEvents {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         if (now - streamState.LastOnline < _tgNotifications.GetCooldown()) return;
         
+        var messageId = await _tgNotifications.SendNotification(data);
+        _tgNotifications.Options.SetLastMessageId(messageId);
+    }
+
+    private async Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
+        if (streamState.WasOnline || streamState.OfflineTime < _tgNotifications.GetCooldown()) return;
+        
         var lastMessageId = _tgNotifications.Options.LastMessageId;
         if (lastMessageId.HasValue) {
             await _tgNotifications.DeleteNotification(lastMessageId.Value);
+            _tgNotifications.Options.SetLastMessageId(null);
         }
-        
-        var messageId = await _tgNotifications.SendNotification(data);
-        _tgNotifications.Options.SetLastMessageId(messageId);
     }
 }

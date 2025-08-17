@@ -2086,7 +2086,7 @@ public static class CommandsList {
                                         cmdPrompt,
                                         Restriction.Everyone);
         
-        _chatCmds.Options.AddChatCmd(cmd);
+        _chatCmds.AddChatCmd(cmd);
         await client.SendReply(chatMessage.Id, $"Новая команда '{cmd.Name}' добавлена успешно.");
     }
 
@@ -2208,7 +2208,7 @@ public static class CommandsList {
         }
 
         var chatAd = new ChatAd(name, output, cooldown);
-        chatAdsService.Options.AddChatAd(chatAd);
+        chatAdsService.AddChatAd(chatAd);
 
         await client.SendReply(chatMessage.Id, $"Чат-реклама с названием {chatAd.GetName()} добавлена успешно.");
     }
@@ -2227,7 +2227,7 @@ public static class CommandsList {
         --indexToRemove;
         
         var name = chatAdsService.Options.GetChatAds()[indexToRemove].GetName();
-        var result = chatAdsService.Options.RemoveChatAd(indexToRemove);
+        var result = chatAdsService.RemoveChatAd(indexToRemove);
         if (!result) {
             await client.SendReply(chatMessage.Id, $"Не удалось удалить чат-рекламу с айди {indexToRemove+1}.");
             return;

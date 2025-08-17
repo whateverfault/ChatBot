@@ -18,14 +18,11 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
         string text,
         string addText,
         string removeText,
-        AddChatAdHandler addHandler,
-        RemoveHandler removeHandler,
-        List<ChatAd> chatAds,
         CliState state) {
         Text = text;
         _state = state;
-        _addHandler = addHandler;
-        _removeHandler = removeHandler;
+        _addHandler = _state.Data.ChatAds.AddChatAd;
+        _removeHandler = _state.Data.ChatAds.RemoveChatAd;
 
         _content = new CliNodeStaticDirectory(
                                               "Content",
@@ -43,6 +40,7 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
                                         )
                          );
 
+        var chatAds = _state.Data.ChatAds.GetChatAds();
         foreach (var cmd in chatAds) {
             _content.AddNode(ChatAdToNode(cmd));
         }
@@ -53,12 +51,17 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
                     new CliNodeRemove(removeText, Remove),
                     _content,
                 ];
+
+        _state.Data.ChatAds.OnChatAdAdded += (_, chatAd) => {
+                                                 _content.AddNode(ChatAdToNode(chatAd));
+                                             };
+        
+        _state.Data.ChatAds.OnChatAdRemoved += (_, index) => { 
+                                                   _content.RemoveNode(index+2);
+                                             };
     }
     
     private void Add(ChatAd chatAd) {
-        var node = ChatAdToNode(chatAd);
-        
-        _content.AddNode(node);
         _addHandler.Invoke(chatAd);
     }
     
@@ -67,10 +70,9 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
             return false;
         }
         
-        _content.RemoveNode(index+2);
         return _removeHandler.Invoke(index);
     }
-
+    
     private CliNodeStaticDirectory ChatAdToNode(ChatAd chatAd) {
         var node = new CliNodeStaticDirectory(
                                               chatAd.GetName(),

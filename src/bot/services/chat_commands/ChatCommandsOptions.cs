@@ -93,11 +93,8 @@ public class ChatCommandsOptions : Options {
         Save();
     }
     
-    public void AddChatCmd(ChatCommand chatCmd) {
-        if (chatCmd.GetType() != typeof(CustomChatCommand)) return;
-        
-        var cmd = (CustomChatCommand)chatCmd;
-        CustomCmds.Add(cmd);
+    public void AddChatCmd(CustomChatCommand chatCmd) {
+        CustomCmds.Add(chatCmd);
         Save();
     }
 

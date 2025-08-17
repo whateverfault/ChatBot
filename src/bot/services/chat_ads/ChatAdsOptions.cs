@@ -14,7 +14,7 @@ public class ChatAdsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
-    public List<ChatAd> ChatAds => _saveData!.ChatAds;
+    private List<ChatAd> ChatAds => _saveData!.ChatAds;
     
     
     public override void Load() {
