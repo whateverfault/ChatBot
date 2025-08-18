@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.shared.requests;
-using ChatBot.api.twitch.shared.requests.data;
+using ChatBot.api.twitch.helix;
+using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
@@ -32,7 +32,7 @@ public class StreamStateCheckerService : Service {
             
             var lastCheckedWasOnline = Options.StreamState.WasOnline;
             
-            var streamResponse = await TwitchRequests.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
+            var streamResponse = await Helix.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
                                                                _logger.Log(LogLevel.Error, message);
                                                            });
             if (streamResponse == null || streamResponse.Data.Count == 0) {

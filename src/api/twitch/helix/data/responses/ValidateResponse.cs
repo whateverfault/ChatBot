@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.twitch.shared.responses;
+namespace ChatBot.api.twitch.helix.data.responses;
 
 public class ValidateResponse {
     [JsonProperty("client_id")]

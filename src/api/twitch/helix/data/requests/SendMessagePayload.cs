@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.twitch.shared.requests.data;
+namespace ChatBot.api.twitch.helix.data.requests;
 
 public class SendMessagePayload {
     [JsonProperty("broadcaster_id")]

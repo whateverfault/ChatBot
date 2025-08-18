@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
-using ChatBot.api.twitch.shared.requests;
+using ChatBot.api.twitch.helix;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
@@ -124,11 +124,11 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.Ban: {
-                await TwitchRequests.BanUser(chatMessage.Username, ModeratorComment, client.Credentials);
+                await Helix.BanUser(chatMessage.Username, ModeratorComment, client.Credentials);
                 break;
             }
             case ModerationActionType.Timeout: {
-                await TwitchRequests.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
+                await Helix.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
                                                       _logger.Log(LogLevel.Error, message);
                                                   });
                 break;
@@ -143,7 +143,7 @@ public class ModAction {
         
         if (Type == ModerationActionType.Warn) {
             await client.SendReply(chatMessage.Id, ModeratorComment);
-            await TwitchRequests.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
+            await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
                                                                             _logger.Log(LogLevel.Error, callback);
                                                                         });
             return;
@@ -171,7 +171,7 @@ public class ModAction {
         user.GiveWarn();
         await client.SendMessage($"@{chatMessage.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
-            await TwitchRequests.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
+            await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
                                                                             _logger.Log(LogLevel.Error, callback);
                                                                         });
             return;
@@ -179,14 +179,14 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                await TwitchRequests.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
+                await Helix.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
                                              _logger.Log(LogLevel.Error, callback);
                                          });
                 _options.RemoveWarnedUser(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
-                await TwitchRequests.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
+                await Helix.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
                                                       _logger.Log(LogLevel.Error, callback);
                                                   });
                 _options.RemoveWarnedUser(userIndex);

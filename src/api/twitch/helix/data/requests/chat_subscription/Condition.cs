@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.twitch.shared.requests.data.ChatSubscriptionRequest;
+namespace ChatBot.api.twitch.helix.data.requests.chat_subscription;
 
 public class Condition {
     [JsonProperty("broadcaster_user_id")]

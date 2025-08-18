@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.twitch.shared.responses.SendMessage;
+namespace ChatBot.api.twitch.helix.data.responses.SendMessage;
 
 public class SendMessageResponse {
     [JsonProperty("data")]

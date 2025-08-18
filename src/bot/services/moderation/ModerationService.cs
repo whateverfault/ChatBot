@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
-using ChatBot.api.twitch.shared.requests;
+using ChatBot.api.twitch.helix;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
@@ -67,7 +67,7 @@ public class ModerationService : Service {
         var client = Bot.GetClient();
         if (client?.Credentials == null) return;
 
-        var userId = await TwitchRequests.GetUserId(message.Username, client.Credentials);
+        var userId = await Helix.GetUserId(message.Username, client.Credentials);
         if (userId == null) return;    
         
         var modAction = Options.ModerationActions[patternIndex];

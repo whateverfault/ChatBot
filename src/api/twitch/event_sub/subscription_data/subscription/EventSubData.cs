@@ -1,4 +1,4 @@
-﻿using ChatBot.api.twitch.shared.requests.data.ChatSubscriptionRequest;
+﻿using ChatBot.api.twitch.helix.data.requests.chat_subscription;
 using Newtonsoft.Json;
 
 namespace ChatBot.api.twitch.event_sub.subscription_data.subscription;

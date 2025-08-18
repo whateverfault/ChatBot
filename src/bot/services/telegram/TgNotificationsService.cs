@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.telegram;
 using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.shared.requests.data;
+using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
@@ -12,7 +12,7 @@ public class TgNotificationsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
 
-    private TelegramBotClient _botClient = null!;
+    private TelegramBotClient? _botClient;
     
     public override string Name => ServiceName.TgNotifications;
     public override TgNotificationsOptions Options { get; } = new TgNotificationsOptions();
@@ -21,7 +21,7 @@ public class TgNotificationsService : Service {
     public async Task<int?> SendNotification(StreamData? data) {
         try {
             var processed = ProcessPrompt(Options.NotificationPrompt, data!.Title);
-            var response = await _botClient.SendMessageAsync(processed, (_, message) => {
+            var response = await _botClient!.SendMessageAsync(processed, (_, message) => {
                                                                          _logger.Log(LogLevel.Error, message);
                                                                      });
 
@@ -41,7 +41,7 @@ public class TgNotificationsService : Service {
     public async Task<bool> DeleteNotification(int messageId) {
         try {
             _logger.Log(LogLevel.Info, $"Deleted a previous notification message. (id: {messageId})");
-            return await _botClient.DeleteMessageAsync(messageId, (_, message) => {
+            return await _botClient!.DeleteMessageAsync(messageId, (_, message) => {
                                                                               _logger.Log(LogLevel.Error, message);
                                                                           });
         } catch (Exception e) {
@@ -78,12 +78,12 @@ public class TgNotificationsService : Service {
 
     public void SetBotToken(string token) {
         Options.SetBotToken(token);
-        _botClient.UpdateToken(Options.BotToken);
+        _botClient?.UpdateToken(Options.BotToken);
     }
     
     public void SetChatId(long chatId) {
         Options.SetChatId(chatId);
-        _botClient.UpdateChatId(Options.ChatId);
+        _botClient?.UpdateChatId(Options.ChatId);
     }
     
     public void SetNotificationPrompt(string prompt) {

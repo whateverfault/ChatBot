@@ -3,17 +3,17 @@ using System.Text;
 using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub.subscription_data.subscription;
-using ChatBot.api.twitch.shared.requests.data;
-using ChatBot.api.twitch.shared.requests.data.ChatSubscriptionRequest;
-using ChatBot.api.twitch.shared.responses;
-using ChatBot.api.twitch.shared.responses.GetUserInfo;
-using ChatBot.api.twitch.shared.responses.SendMessage;
+using ChatBot.api.twitch.helix.data.requests;
+using ChatBot.api.twitch.helix.data.requests.chat_subscription;
+using ChatBot.api.twitch.helix.data.responses;
+using ChatBot.api.twitch.helix.data.responses.GetUserInfo;
+using ChatBot.api.twitch.helix.data.responses.SendMessage;
 using Newtonsoft.Json;
 using ChatMessage = ChatBot.api.twitch.client.data.ChatMessage;
 
-namespace ChatBot.api.twitch.shared.requests;
+namespace ChatBot.api.twitch.helix;
 
-public static class TwitchRequests {
+public static class Helix {
     private static readonly HttpClient _httpClient = new HttpClient();
 
 
@@ -321,9 +321,9 @@ public static class TwitchRequests {
         }
     }
     
-    public static async Task<TimeSpan?> GetFollowageHelix(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
+    public static async Task<TimeSpan?> GetFollowage(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
-            var userId = await GetUserId(credentials.Username, credentials.Oauth, credentials.ClientId, callback);
+            var userId = await GetUserId(username, credentials.Oauth, credentials.ClientId, callback);
             if (userId == null) return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
@@ -346,14 +346,15 @@ public static class TwitchRequests {
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var followData = JsonConvert.DeserializeObject<FollowResponse>(responseContent);
-                
-                if (followData?.Data?.Count > 0) {
-                    var followDate = followData.Data[0].FollowedAt;
-                    var followDuration = DateTime.UtcNow - followDate;
-                    callback?.Invoke(LogLevel.Info, $"{username} has been following since {followDate} ({followDuration.TotalDays} days)");
-                    return followDuration;
+
+                if (followData?.Data is not { Count: > 0, }) {
+                    callback?.Invoke(LogLevel.Info, $"{username} is not followed on {credentials.Channel}");
+                    return null;
                 }
-                callback?.Invoke(LogLevel.Info, $"{username} is not following {credentials.Channel}");
+
+                var followDate = followData.Data[0].FollowedAt;
+                var followDuration = DateTime.UtcNow - followDate;
+                return followDuration;
             }
             else {
                 var responseContent = await response.Content.ReadAsStringAsync();

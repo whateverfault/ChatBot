@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using ChatBot.api.aredl;
 using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.shared.requests;
+using ChatBot.api.twitch.helix;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
@@ -718,7 +718,7 @@ public static class CommandsList {
                 break;
             }
             case State.Enabled: {
-                var result = await TwitchRequests.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
+                var result = await Helix.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
                                                           (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
@@ -910,7 +910,7 @@ public static class CommandsList {
                 switch (args[0]) {
                     case "off": {
                         reqState = ReqState.Off;
-                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -923,7 +923,7 @@ public static class CommandsList {
                     }
                     case "points": {
                         reqState = ReqState.Points;
-                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
+                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -935,7 +935,7 @@ public static class CommandsList {
                     }
                     case "on": {
                         reqState = ReqState.On;
-                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -985,7 +985,7 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
-        var clipId = await TwitchRequests.CreateClip(client.Credentials, (_, message) => {
+        var clipId = await Helix.CreateClip(client.Credentials, (_, message) => {
                                                                          _logger.Log(LogLevel.Error, message);
                                                                      });
 
@@ -1020,7 +1020,7 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         
@@ -1040,7 +1040,7 @@ public static class CommandsList {
             return;
         }
 
-        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1051,7 +1051,7 @@ public static class CommandsList {
             titleSb.Append($"{arg} ");
         }
 
-        var result = await TwitchRequests.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
+        var result = await Helix.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
@@ -1074,7 +1074,7 @@ public static class CommandsList {
             username = args[0];
         }
 
-        var followage = await TwitchRequests.GetFollowageHelix(username, client.Credentials, (_, message) => {
+        var followage = await Helix.GetFollowage(username, client.Credentials, (_, message) => {
                                                                _logger.Log(LogLevel.Error, message);
                                                            });
         if (followage == null) {
@@ -1116,7 +1116,7 @@ public static class CommandsList {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
-        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         var chatMessage = cmdArgs.Parsed.ChatMessage;
@@ -1136,7 +1136,7 @@ public static class CommandsList {
             return;
         }
         
-        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1150,19 +1150,19 @@ public static class CommandsList {
             gameSb.Append($"{args[i]} ");
         }
 
-        var gameId = await TwitchRequests.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
+        var gameId = await Helix.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
         if (gameId == null) return;
         
-        var result = await TwitchRequests.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
+        var result = await Helix.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
             await client.SendReply(chatMessage.Id, "Не удалось изменить категорию");
             return;
         }
-        channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
+        channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                               _logger.Log(LogLevel.Error, message);
                                                                           });
         await client.SendReply(chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
@@ -1935,7 +1935,7 @@ public static class CommandsList {
             }
         }
 
-        var rewardId = await TwitchRequests.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
+        var rewardId = await Helix.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
@@ -1959,7 +1959,7 @@ public static class CommandsList {
         }
 
         var rewardId = args[0];
-        var result = await TwitchRequests.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
+        var result = await Helix.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
         if (!result) {
@@ -2396,7 +2396,7 @@ public static class CommandsList {
                 break;
             }
             case true: {
-                var result = await TwitchRequests.SendWhisper(chatMessage.UserId, message.ToString(), client.Credentials, (_, callback) => {
+                var result = await Helix.SendWhisper(chatMessage.UserId, message.ToString(), client.Credentials, (_, callback) => {
                                                               _logger.Log(LogLevel.Error, callback);
                                                           });
                 if (!result) {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.twitch.shared.responses.GetUserInfo;
+namespace ChatBot.api.twitch.helix.data.responses.GetUserInfo;
 
 public class GetUserInfoResponse {
     [JsonProperty("data")]

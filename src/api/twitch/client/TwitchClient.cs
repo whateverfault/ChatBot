@@ -3,7 +3,7 @@ using ChatBot.api.twitch.client.commands.data;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub;
 using ChatBot.api.twitch.event_sub.subscription_data.events.chat_message;
-using ChatBot.api.twitch.shared.requests;
+using ChatBot.api.twitch.helix;
 using ChatMessage = ChatBot.api.twitch.client.data.ChatMessage;
 
 namespace ChatBot.api.twitch.client;
@@ -39,13 +39,13 @@ public class TwitchClient : ITwitchClient {
     
     public async Task Initialize(ConnectionCredentials credentials) {
         try {
-            var validateResponse = await TwitchRequests.ValidateOauth(credentials.Oauth, OnError);
+            var validateResponse = await Helix.ValidateOauth(credentials.Oauth, OnError);
 
             if (validateResponse == null) {
                 return;
             }
 
-            var channelInfo = await TwitchRequests.GetUserInfo(
+            var channelInfo = await Helix.GetUserInfo(
                                                          credentials.Channel,
                                                          credentials.Oauth,
                                                          validateResponse.ClientId,
@@ -69,7 +69,7 @@ public class TwitchClient : ITwitchClient {
         
             async void SubscribeToChat(object? sender, EventArgs e) {
                 try {
-                    var result = await TwitchRequests.SubscribeToChannelChat(_websocket.SessionId, Credentials, OnError);
+                    var result = await Helix.SubscribeToChannelChat(_websocket.SessionId, Credentials, OnError);
                     if (result?.Id == null) return;
                 
                     _websocket.SetSubscriptionId(result.Id);
@@ -102,7 +102,7 @@ public class TwitchClient : ITwitchClient {
             return;
         }
         
-        await TwitchRequests.EventSubUnSubscribe(
+        await Helix.EventSubUnSubscribe(
                                            _websocket.SubscriptionId, 
                                            Credentials,
                                            OnError
@@ -117,7 +117,7 @@ public class TwitchClient : ITwitchClient {
             return;
         }
         
-        await TwitchRequests.SendMessage(
+        await Helix.SendMessage(
                                    message, 
                                    Credentials, 
                                    OnError
@@ -130,7 +130,7 @@ public class TwitchClient : ITwitchClient {
             return;
         }
         
-        await TwitchRequests.SendReply(
+        await Helix.SendReply(
                                  message,
                                  replyId,
                                  Credentials,
@@ -151,7 +151,7 @@ public class TwitchClient : ITwitchClient {
     }
     
     public async Task UpdateOauth(string oauth) {
-        var response = await TwitchRequests.ValidateOauth(oauth, OnError);
+        var response = await Helix.ValidateOauth(oauth, OnError);
         if (response == null) return;
         
         Credentials?.UpdateOauth(oauth);
@@ -161,7 +161,7 @@ public class TwitchClient : ITwitchClient {
     }
 
     public async Task UpdateChannelOauth(string oauth) {
-        var response = await TwitchRequests.ValidateOauth(oauth, OnError);
+        var response = await Helix.ValidateOauth(oauth, OnError);
         if (response == null) return;
         
         Credentials?.UpdateChannelOauth(oauth);
@@ -175,7 +175,7 @@ public class TwitchClient : ITwitchClient {
             return null;
         }
         
-        var userId = await TwitchRequests.GetUserId(username, Credentials);
+        var userId = await Helix.GetUserId(username, Credentials);
         if (userId == null) {
             errorCallback?.Invoke(this, "User doesn't exist.");
         }

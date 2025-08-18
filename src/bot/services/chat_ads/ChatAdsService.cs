@@ -1,4 +1,4 @@
-﻿using ChatBot.api.twitch.shared.requests.data;
+﻿using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.bot.services.chat_ads.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
