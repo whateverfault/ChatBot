@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.shared.Handlers;
+﻿using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories;
 

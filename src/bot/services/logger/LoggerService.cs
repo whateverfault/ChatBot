@@ -1,4 +1,4 @@
-﻿using ChatBot.api.client;
+﻿using ChatBot.api.twitch.client;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.interfaces;

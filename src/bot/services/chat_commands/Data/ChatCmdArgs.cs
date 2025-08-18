@@ -1,4 +1,4 @@
-﻿using ChatBot.api.client.commands.data;
+﻿using ChatBot.api.twitch.client.commands.data;
 
 namespace ChatBot.bot.services.chat_commands.Data;
 

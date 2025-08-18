@@ -1,7 +1,7 @@
-﻿using ChatBot.bot.services.stream_state_checker.Data;
+﻿using ChatBot.api.json;
+using ChatBot.bot.services.stream_state_checker.Data;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.stream_state_checker;
 
@@ -19,14 +19,14 @@ public class StreamStateCheckerOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
         }
     }
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
         }
     }
     

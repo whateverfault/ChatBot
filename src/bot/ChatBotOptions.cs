@@ -1,8 +1,8 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.credentials;
+﻿using ChatBot.api.json;
+using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.credentials;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot;
 
@@ -22,7 +22,7 @@ public class ChatBotOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
         }
     }
@@ -34,7 +34,7 @@ public class ChatBotOptions : Options {
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.DataDirectory, Name), _saveData);
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.DataDirectory, Name), _saveData);
         }
     }
 

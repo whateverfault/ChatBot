@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.services.moderation;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.Moderation;
 
@@ -17,17 +17,20 @@ public class CliNodeModActionAdd : CliNode {
     }
     
     public override void Activate(CliState state) {
-        var duration = 1;
-        var warnCount = 1;
+        const int duration = 1;
+        const int warnCount = 1;
         var modComment = string.Empty;
 
         Console.Write("Name: ");
-        var name = Console.ReadLine() ?? "Empty";
+        var name = Console.ReadLine();
+        if (string.IsNullOrEmpty(name)) return;
         
         var modActionType = AskModerationActionType();
         
         Console.Write("Global Filter Index: ");
-        var line = Console.ReadLine() ?? "1";
+        var line = Console.ReadLine();
+        if (string.IsNullOrEmpty(line)) return;
+        
         var index = int.Parse(string.IsNullOrWhiteSpace(line)? "1" : line)-1;
         
         var filters = state.Data.MessageFilter.GetFilters();

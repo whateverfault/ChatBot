@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.services.chat_commands.Data;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatCommands;
 
@@ -20,9 +20,13 @@ public class CliNodeChatCmdAdd : CliNode {
     
     public override void Activate(CliState state) {
         Console.Write("Command Name: ");
-        var name = Console.ReadLine() ?? "--";
+        var name = Console.ReadLine();
+        if (string.IsNullOrEmpty(name)) return;
+        
         Console.Write("Chat Output: ");
-        var output = Console.ReadLine() ?? "--";
+        var output = Console.ReadLine();
+        if (string.IsNullOrEmpty(output)) return;
+        
         var chatCmd = new CustomChatCommand(
                                             _id++,
                                             name,

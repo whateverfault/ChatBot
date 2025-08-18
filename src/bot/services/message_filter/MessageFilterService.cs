@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using ChatBot.api.client.data;
+using ChatBot.api.twitch.client.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.interfaces;
@@ -18,8 +18,8 @@ public class MessageFilterService : Service {
     public override MessageFilterOptions Options { get; } = new MessageFilterOptions();
     public event MessageHandler? OnMessageFiltered;
 
-    public EventHandler<Filter>? OnFilterAdded;
-    public EventHandler<int>? OnFilterRemoved;
+    public event EventHandler<Filter>? OnFilterAdded;
+    public event EventHandler<int>? OnFilterRemoved;
     
 
     public void HandleMessage(object? sender, ChatMessage chatMessage) {

@@ -1,7 +1,7 @@
-﻿using ChatBot.bot.services.game_requests.Data;
+﻿using ChatBot.api.json;
+using ChatBot.bot.services.game_requests.Data;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.game_requests;
 
@@ -22,17 +22,17 @@ public class GameRequestsOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
-        } if (!JsonUtils.TryRead(GameRequestsPath, out _gameRequests!)) {
+        } if (!Json.TryRead(GameRequestsPath, out _gameRequests!)) {
             SetDefaults();
         }
     }
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
-            JsonUtils.WriteSafe(GameRequestsPath, Path.Combine(Directories.ServiceDirectory, Name), _gameRequests);
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+            Json.WriteSafe(GameRequestsPath, Path.Combine(Directories.ServiceDirectory, Name), _gameRequests);
         }
     }
 

@@ -10,17 +10,17 @@ internal static class Program {
 
     private static bool _forcedToRender;
 
-    public static bool AutoInit { get; private set; }
-
 
     private static void Main(string[] args) {
+        var autoInit = false;
+        
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
 
         foreach (var arg in args) {
-            AutoInit = arg switch {
+            autoInit = arg switch {
                            "--auto-init" => true,
-                           _             => AutoInit,
+                           _             => autoInit,
                        };
         }
 
@@ -29,7 +29,7 @@ internal static class Program {
         ServiceManager.LoadServices();
         _cli = new Cli(new CliData());
         
-        if (AutoInit) {
+        if (autoInit) {
             bot.Start();
         }
         

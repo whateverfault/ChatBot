@@ -1,12 +1,11 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.credentials;
-using ChatBot.api.client.data;
-using ChatBot.api.event_sub;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.credentials;
+using ChatBot.api.twitch.client.data;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.bot;
 
@@ -33,18 +32,19 @@ public class TwitchChatBot : Bot {
     
     private TwitchChatBot(){}
     
-    private void InitConnection() {
+    private async Task InitConnection() {
         try {
             if (!ValidateSave()) {
                 ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
                 return;
             }
             
-            var websocket = new TwitchEventSubWebSocket();
             Stop();
             
-            Options.UpdateClient(new TwitchClient(websocket));
-            Options.Client?.Initialize(Options.Credentials);
+            Options.UpdateClient(new TwitchClient());
+            if (Options.Client == null) return;
+            
+            await Options.Client.Initialize(Options.Credentials);
 
             var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
             Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
@@ -61,11 +61,11 @@ public class TwitchChatBot : Bot {
                 _starting = true;
             }
             
-            await Task.Run(() => {
+            await Task.Run(async () => {
                                _logger.Log(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
-                               InitConnection();
+                               await InitConnection();
 
-                               if (Options.Client == null) {
+                               if (Options.Client?.Credentials == null) {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
                                    return;
                                }
@@ -116,7 +116,7 @@ public class TwitchChatBot : Bot {
 
     public async void SetChannel(string username) {
         try {
-            if (Options.Client == null) {
+            if (Options.Client?.Credentials == null) {
                 Options.SetCredentials(
                                        new ConnectionCredentials
                                            (
@@ -128,13 +128,7 @@ public class TwitchChatBot : Bot {
                 return;
             }
             
-            var task = Options.Client?.UpdateChannel(username);
-            if (task == null) {
-                _logger.Log(LogLevel.Error, "Couldn't update a channel.");
-                return;
-            }
-
-            await task;
+            await Options.Client.UpdateChannel(username);
             Options.UpdateCredentials();
         }
         catch (Exception e) {
@@ -151,7 +145,7 @@ public class TwitchChatBot : Bot {
 
     public async void SetOauth(string oauth) {
         try {
-            if (Options.Client == null) {
+            if (Options.Client?.Credentials == null) {
                 Options.SetCredentials(
                                        new ConnectionCredentials
                                            (
@@ -180,7 +174,7 @@ public class TwitchChatBot : Bot {
 
     public async void SetChannelOauth(string oauth) {
         try {
-            if (Options.Client == null) {
+            if (Options.Client?.Credentials == null) {
                 Options.SetCredentials(
                                        new ConnectionCredentials
                                            (

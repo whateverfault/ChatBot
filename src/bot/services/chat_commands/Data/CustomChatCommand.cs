@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.shared.Handlers;
+﻿using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 using Newtonsoft.Json;
 

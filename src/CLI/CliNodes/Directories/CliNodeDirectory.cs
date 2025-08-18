@@ -1,7 +1,7 @@
 ﻿namespace ChatBot.cli.CliNodes.Directories;
 
 public abstract class CliNodeDirectory : CliNode {
-    protected override string Text { get; } = null!;
+    protected override string Text => string.Empty;
 
     public abstract List<CliNode> Nodes { get; }
     

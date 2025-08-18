@@ -17,11 +17,13 @@ public class CliNodeFilterAdd : CliNode {
     
     public override void Activate(CliState state) {
         Console.Write("Enter Name: ");
-        var name = Console.ReadLine() ?? "Empty";
+        var name = Console.ReadLine();
+        if (string.IsNullOrEmpty(name)) return;
         
         Console.Write("Enter Pattern: ");
-        var pattern = Console.ReadLine() ?? "Empty";
-
+        var pattern = Console.ReadLine();
+        if (string.IsNullOrEmpty(pattern)) return;
+        
         var filter = new Filter(name, pattern);
         _addHandler.Invoke(filter);
     }

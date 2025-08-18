@@ -1,6 +1,6 @@
-﻿using ChatBot.bot.shared;
+﻿using ChatBot.api.json;
+using ChatBot.bot.shared;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.presets;
 
@@ -18,14 +18,16 @@ public class PresetsOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
         }
+
+        ValidatePresets();
     }
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Directories.ConfigDirectory, _saveData);
+            Json.WriteSafe(OptionsPath, Directories.ConfigDirectory, _saveData);
         }
     }
 
@@ -61,5 +63,29 @@ public class PresetsOptions : Options {
         Presets.RemoveAt(index);
         Save();
         return true;
+    }
+
+    public int GetNextId() {
+        var max = -1;
+        foreach (var preset in Presets) {
+            if (preset.Id > max) max = preset.Id;
+        }
+
+        return ++max;
+    }
+
+    private void ValidatePresets() {
+        var lastId = -1;
+        var invalid = false;
+        
+        foreach (var preset in Presets) {
+            if (preset.Id <= lastId) {
+                invalid = true;
+                preset.ReassignId(lastId+1);
+            }
+            lastId = preset.Id;
+        }
+        
+        if (invalid) Save();
     }
 }

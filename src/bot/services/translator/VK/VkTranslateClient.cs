@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.api.client;
+using ChatBot.api.twitch.client;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.translator.VK.Response;
 using Newtonsoft.Json;

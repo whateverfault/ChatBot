@@ -1,9 +1,9 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.data;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.data;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 
-namespace ChatBot.bot.shared.Handlers;
+namespace ChatBot.bot.shared.handlers;
 
 public enum ErrorCode {
     InvalidInput,
@@ -20,7 +20,6 @@ public enum ErrorCode {
     RequestFailed,
     TranslationFailed,
     ConnectionFailed,
-    SaveFileCorrupted,
     None,
 }
 
@@ -42,7 +41,6 @@ public static class ErrorHandler {
                                                                   "Request Failed.",
                                                                   "Translation failed.",
                                                                   "Connection failed.",
-                                                                  "Failed to load a corrupted save file. Save has been regenerated.",
                                                               ];
 
 
@@ -61,7 +59,6 @@ public static class ErrorHandler {
                                                                 "Запрос не удался.",
                                                                 "Не удалось перевести.",
                                                                 "Не удалось подключиться к сети.",
-                                                                "Не удалось загрузить поврежденный файл настроек. Файл был перегенерирован с настройками по-умолчанию.",
                                                             ];
     
     

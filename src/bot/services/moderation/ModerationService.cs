@@ -1,12 +1,12 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.data;
-using ChatBot.api.shared.requests;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.data;
+using ChatBot.api.twitch.shared.requests;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -29,8 +29,8 @@ public class ModerationService : Service {
     public override string Name => ServiceName.Moderation;
     public override ModerationOptions Options { get; } = new ModerationOptions();
 
-    public EventHandler<ModAction>? OnModActionAdded;
-    public EventHandler<int>? OnModActionRemoved;
+    public event EventHandler<ModAction>? OnModActionAdded;
+    public event EventHandler<int>? OnModActionRemoved;
     
     
     public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
@@ -67,7 +67,7 @@ public class ModerationService : Service {
         var client = Bot.GetClient();
         if (client?.Credentials == null) return;
 
-        var userId = await Requests.GetUserId(message.Username, client.Credentials);
+        var userId = await TwitchRequests.GetUserId(message.Username, client.Credentials);
         if (userId == null) return;    
         
         var modAction = Options.ModerationActions[patternIndex];

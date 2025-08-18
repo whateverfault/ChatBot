@@ -12,8 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="src\api\" />
-      <Folder Include="src\api\event_sub\subscription_data\subscription\" />
+      <Folder Include="src\api\twitch\" />
     </ItemGroup>
 
 </Project>

@@ -17,14 +17,16 @@ public class CliNodeChatAdAdd : CliNode {
     
     public override void Activate(CliState state) {
         Console.Write("Ad Name: ");
-        var name = Console.ReadLine() ?? "--";
+        var name = Console.ReadLine();
+        if (string.IsNullOrEmpty(name)) return;
         
         Console.Write("Ad Output: ");
-        var output = Console.ReadLine() ?? "--";
+        var output = Console.ReadLine();
+        if (string.IsNullOrEmpty(output)) return;
         
         Console.Write("Ad Cooldown: ");
         if (!long.TryParse(Console.ReadLine(), out var cooldown)) {
-            cooldown = -1;
+            return;
         }
         
         var chatCmd = new ChatAd(name, output, cooldown);

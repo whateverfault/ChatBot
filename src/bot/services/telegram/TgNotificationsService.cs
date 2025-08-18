@@ -1,5 +1,6 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.shared.requests.data;
+﻿using ChatBot.api.telegram;
+using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.shared.requests.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
@@ -11,7 +12,7 @@ public class TgNotificationsService : Service {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
 
-    private TgBotClient _tgBotClient = null!;
+    private TelegramBotClient _botClient = null!;
     
     public override string Name => ServiceName.TgNotifications;
     public override TgNotificationsOptions Options { get; } = new TgNotificationsOptions();
@@ -20,7 +21,9 @@ public class TgNotificationsService : Service {
     public async Task<int?> SendNotification(StreamData? data) {
         try {
             var processed = ProcessPrompt(Options.NotificationPrompt, data!.Title);
-            var response = await _tgBotClient.SendMessageAsync(processed, logger: _logger);
+            var response = await _botClient.SendMessageAsync(processed, (_, message) => {
+                                                                         _logger.Log(LogLevel.Error, message);
+                                                                     });
 
             if (response is not { Ok: true, }) {
                 return null;
@@ -38,7 +41,9 @@ public class TgNotificationsService : Service {
     public async Task<bool> DeleteNotification(int messageId) {
         try {
             _logger.Log(LogLevel.Info, $"Deleted a previous notification message. (id: {messageId})");
-            return await _tgBotClient.DeleteMessageAsync(messageId, logger: _logger);
+            return await _botClient.DeleteMessageAsync(messageId, (_, message) => {
+                                                                              _logger.Log(LogLevel.Error, message);
+                                                                          });
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception while deleting a telegram message: {e}");
         }
@@ -73,12 +78,12 @@ public class TgNotificationsService : Service {
 
     public void SetBotToken(string token) {
         Options.SetBotToken(token);
-        _tgBotClient = new TgBotClient(Options.BotToken, Options.ChatId);
+        _botClient.UpdateToken(Options.BotToken);
     }
     
     public void SetChatId(long chatId) {
         Options.SetChatId(chatId);
-        _tgBotClient = new TgBotClient(Options.BotToken, Options.ChatId);
+        _botClient.UpdateChatId(Options.ChatId);
     }
     
     public void SetNotificationPrompt(string prompt) {
@@ -104,6 +109,6 @@ public class TgNotificationsService : Service {
     public override void Init() {
         base.Init();
         
-        _tgBotClient = new TgBotClient(Options.BotToken, Options.ChatId);
+        _botClient = new TelegramBotClient(Options.BotToken, Options.ChatId);
     }
 }

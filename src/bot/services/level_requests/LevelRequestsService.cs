@@ -1,10 +1,10 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.data;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.level_requests;
@@ -22,20 +22,20 @@ public class LevelRequestsService : Service {
     public override LevelRequestsOptions Options { get; } = new LevelRequestsOptions();
 
 
-    public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
+    public async void HandleMessage(ChatMessage chatMessage, FilterStatus status, int patternIndex) {
         try {
             if (Options.ServiceState == State.Disabled) return;
             if (Options.PatternIndex != patternIndex) return;
             if (status == FilterStatus.NotMatch) return;
-            if (RestrictionHandler.Handle(Options.Restriction, message)) return;
+            if (chatMessage.Fits(Options.Restriction)) return;
             
             switch (Options.ReqState) {
                 case ReqState.On:
-                case ReqState.Points when Options.RewardId.Equals(message.RewardId):
+                case ReqState.Points when Options.RewardId.Equals(chatMessage.RewardId):
                     return;
             }
             
-            await LevelRequestsOptions.ModerationService.WarnUser(message, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
+            await LevelRequestsOptions.ModerationService.WarnUser(chatMessage, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e}");
         }

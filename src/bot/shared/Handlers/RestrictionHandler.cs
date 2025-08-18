@@ -1,6 +1,6 @@
-﻿using ChatBot.api.client.data;
+﻿using ChatBot.api.twitch.client.data;
 
-namespace ChatBot.bot.shared.Handlers;
+namespace ChatBot.bot.shared.handlers;
 
 public enum Restriction {
     DevOnly,
@@ -14,7 +14,7 @@ public enum Restriction {
 }
 
 public static class RestrictionHandler {
-    public static bool Handle(Restriction restriction, ChatMessage message) {
+    public static bool Fits(this ChatMessage message, Restriction restriction) {
         return restriction switch {
                    Restriction.DevOnly     => message.UserId == Constants.DevUserId,
                    Restriction.Broadcaster => message.IsBroadcaster,

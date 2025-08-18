@@ -1,9 +1,9 @@
-﻿using ChatBot.api.client;
-using ChatBot.api.client.commands.data;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.client.commands.data;
 using ChatBot.bot.services.chat_commands.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -17,8 +17,8 @@ public class ChatCommandsService : Service {
     public override string Name => ServiceName.ChatCommands;
     public override ChatCommandsOptions Options { get; } = new ChatCommandsOptions();
 
-    public EventHandler<CustomChatCommand>? OnChatCommandAdded;
-    public EventHandler<int>? OnChatCommandRemoved;
+    public event EventHandler<CustomChatCommand>? OnChatCommandAdded;
+    public event EventHandler<int>? OnChatCommandRemoved;
     
 
     public async void HandleCommand(object? sender, Command parsedCommand) {
@@ -51,7 +51,7 @@ public class ChatCommandsService : Service {
         var chatMessage = args.Parsed.ChatMessage;
 
         foreach (var cmd in cmds) {
-            if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+            if (!chatMessage.Fits(cmd.Restriction)) continue;
             
             if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
              && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
@@ -60,7 +60,7 @@ public class ChatCommandsService : Service {
                .Any(defaultCmd =>
                         string.Equals(defaultCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
                      && defaultCmd.Restriction < cmd.Restriction
-                     && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))
+                     && chatMessage.Fits(defaultCmd.Restriction))
                ) continue;
 
             if (cmd.State == State.Disabled) return Task.FromResult(false);

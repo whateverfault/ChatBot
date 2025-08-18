@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
-using ChatBot.cli.CliNodes.Directories;
 
 namespace ChatBot.bot.services.presets;
 
@@ -8,32 +7,29 @@ public class PresetsService : Service {
     public override string Name => ServiceName.Presets;
     public override PresetsOptions Options { get; } = new PresetsOptions();
 
-
-    public void AddPreset(string name, bool hasComment, string comment) {
-        var preset = new Preset(name);
+    public event EventHandler<Preset>? OnPresetAdded;
+    public event EventHandler<int>? OnPresetRemoved;
+    
+    
+    public void AddPreset(string name) {
+        var preset = new Preset(name, Options.GetNextId());
         preset.Create();
         
         Options.AddPreset(preset);
         Options.SetCurrentPreset(Options.Presets.Count-1);
+        OnPresetAdded?.Invoke(this, preset);
     }
 
     public bool RemovePreset(int index) {
-        return Options.RemovePreset(index);
+        var result =  Options.RemovePreset(index);
+        OnPresetRemoved?.Invoke(this, index);
+        return result;
     }
 
-    public List<Content> GetPresetsAsContent() {
-        return Options
-           .Presets
-           .Select(preset => new Content(preset.Name, false, ""))
-           .ToList();
+    public List<Preset> GetPresets() {
+        return Options.Presets;
     }
-
-    public Preset? GetPreset(int index) {
-        if (index < 0 || index >= Options.Presets.Count) return null;
-        
-        return Options.Presets[index];
-    }
-
+    
     public bool SetCurrentPreset(int index) {
         if (index < 0 || index >= Options.Presets.Count) return false;
         
@@ -44,7 +40,7 @@ public class PresetsService : Service {
 
     public override void Init() {
         base.Init();
-        
-        Options.Presets[Options.CurrentPreset].Load();
+
+        SetCurrentPreset(Options.CurrentPreset);
     }
 }

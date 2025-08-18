@@ -1,6 +1,7 @@
 ﻿using System.Text;
-using ChatBot.api.client;
-using ChatBot.api.shared.requests;
+using ChatBot.api.aredl;
+using ChatBot.api.twitch.client;
+using ChatBot.api.twitch.shared.requests;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
@@ -14,10 +15,9 @@ using ChatBot.bot.services.Static;
 using ChatBot.bot.services.telegram;
 using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
-using AredlUtils = ChatBot.bot.utils.GD.AREDL.AredlUtils;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -627,12 +627,12 @@ public static class CommandsList {
         var cmds = new List<string>();
 
         foreach (var cmd in _chatCmds.Options.DefaultCmds) {
-            if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+            if (!chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.DefaultCmds
                          .Any(defaultCmd =>
                                   defaultCmd.Name.Equals(cmd.Name)
                                && defaultCmd.Restriction < cmd.Restriction
-                               && RestrictionHandler.Handle(defaultCmd.Restriction, chatMessage))){
+                               && chatMessage.Fits(defaultCmd.Restriction))){
                 continue;
             }
             
@@ -667,12 +667,12 @@ public static class CommandsList {
         var cmds = new List<string>();
         
         foreach (var cmd in _chatCmds.Options.CustomCmds) {
-            if (!RestrictionHandler.Handle(cmd.Restriction, chatMessage)) continue;
+            if (!chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.CustomCmds
                          .Any(customCmd =>
                                   customCmd.Name.Equals(cmd.Name)
                                && customCmd.Restriction < cmd.Restriction
-                               && RestrictionHandler.Handle(customCmd.Restriction, chatMessage))){
+                               && chatMessage.Fits(customCmd.Restriction))){
                 continue;
             }
             
@@ -718,7 +718,7 @@ public static class CommandsList {
                 break;
             }
             case State.Enabled: {
-                var result = await Requests.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
+                var result = await TwitchRequests.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
                                                           (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
@@ -849,17 +849,20 @@ public static class CommandsList {
             chatCommands.Options.VerboseState == State.Enabled ?
                 "Shiza":
                 "ZACHTO";
-        if (!RestrictionHandler.Handle(Restriction.DevMod, chatMessage) || args.Count < 1) {
-            await client.SendReply(chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
-            return;
-        }
+        
+        switch (args.Count) {
+            case < 1:
+                await client.SendReply(chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
+                return;
+            case > 0: {
+                if (args[0] == "on") {
+                    chatCommands.Options.SetVerboseState(State.Enabled);
+                }
+                if (args[0] == "off") {
+                    chatCommands.Options.SetVerboseState(State.Disabled);
+                }
 
-        if (args.Count > 0) {
-            if (args[0] == "on") {
-                chatCommands.Options.SetVerboseState(State.Enabled);
-            }
-            if (args[0] == "off") {
-                chatCommands.Options.SetVerboseState(State.Disabled);
+                break;
             }
         }
 
@@ -907,7 +910,7 @@ public static class CommandsList {
                 switch (args[0]) {
                     case "off": {
                         reqState = ReqState.Off;
-                        var result = await Requests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -920,7 +923,7 @@ public static class CommandsList {
                     }
                     case "points": {
                         reqState = ReqState.Points;
-                        var result = await Requests.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
+                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -932,7 +935,7 @@ public static class CommandsList {
                     }
                     case "on": {
                         reqState = ReqState.On;
-                        var result = await Requests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                        var result = await TwitchRequests.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -982,7 +985,7 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
-        var clipId = await Requests.CreateClip(client.Credentials, (_, message) => {
+        var clipId = await TwitchRequests.CreateClip(client.Credentials, (_, message) => {
                                                                          _logger.Log(LogLevel.Error, message);
                                                                      });
 
@@ -1017,7 +1020,7 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var channelInfo = await Requests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         
@@ -1037,7 +1040,7 @@ public static class CommandsList {
             return;
         }
 
-        var channelInfo = await Requests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1048,7 +1051,7 @@ public static class CommandsList {
             titleSb.Append($"{arg} ");
         }
 
-        var result = await Requests.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
+        var result = await TwitchRequests.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
@@ -1071,7 +1074,7 @@ public static class CommandsList {
             username = args[0];
         }
 
-        var followage = await Requests.GetFollowageHelix(username, client.Credentials, (_, message) => {
+        var followage = await TwitchRequests.GetFollowageHelix(username, client.Credentials, (_, message) => {
                                                                _logger.Log(LogLevel.Error, message);
                                                            });
         if (followage == null) {
@@ -1113,7 +1116,7 @@ public static class CommandsList {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
-        var channelInfo = await Requests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         var chatMessage = cmdArgs.Parsed.ChatMessage;
@@ -1133,7 +1136,7 @@ public static class CommandsList {
             return;
         }
         
-        var channelInfo = await Requests.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1147,19 +1150,19 @@ public static class CommandsList {
             gameSb.Append($"{args[i]} ");
         }
 
-        var gameId = await Requests.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
+        var gameId = await TwitchRequests.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
         if (gameId == null) return;
         
-        var result = await Requests.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
+        var result = await TwitchRequests.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
             await client.SendReply(chatMessage.Id, "Не удалось изменить категорию");
             return;
         }
-        channelInfo = await Requests.GetChannelInfo(client.Credentials, (_, message) => {
+        channelInfo = await TwitchRequests.GetChannelInfo(client.Credentials, (_, message) => {
                                                                               _logger.Log(LogLevel.Error, message);
                                                                           });
         await client.SendReply(chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
@@ -1568,7 +1571,7 @@ public static class CommandsList {
         }
                     
         if (args.Count < 1) {
-            var levels = await AredlUtils.ListLevels();
+            var levels = await Aredl.ListLevels();
             if (levels == null || levels.data?.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
                     ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
@@ -1622,7 +1625,7 @@ public static class CommandsList {
         }
                     
         if (args.Count < 1) {
-            var levels = await AredlUtils.ListLevels();
+            var levels = await Aredl.ListLevels();
             if (levels == null || levels.data?.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
                     await client.SendReply(chatMessage.Id, "Что-то пошло не так.");
@@ -1932,7 +1935,7 @@ public static class CommandsList {
             }
         }
 
-        var rewardId = await Requests.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
+        var rewardId = await TwitchRequests.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
@@ -1956,7 +1959,7 @@ public static class CommandsList {
         }
 
         var rewardId = args[0];
-        var result = await Requests.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
+        var result = await TwitchRequests.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
         if (!result) {
@@ -2393,7 +2396,7 @@ public static class CommandsList {
                 break;
             }
             case true: {
-                var result = await Requests.SendWhisper(chatMessage.UserId, message.ToString(), client.Credentials, (_, callback) => {
+                var result = await TwitchRequests.SendWhisper(chatMessage.UserId, message.ToString(), client.Credentials, (_, callback) => {
                                                               _logger.Log(LogLevel.Error, callback);
                                                           });
                 if (!result) {

@@ -1,8 +1,7 @@
-﻿using ChatBot.bot.services.chat_commands.Data;
+﻿using ChatBot.api.json;
+using ChatBot.bot.services.chat_commands.Data;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.Handlers;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.chat_commands;
 
@@ -31,20 +30,20 @@ public class ChatCommandsOptions : Options {
     
     
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
-        } if (!JsonUtils.TryRead(DefaultCmdsPath, out _defaultCmds!)) {
+        } if (!Json.TryRead(DefaultCmdsPath, out _defaultCmds!)) {
             SetDefaults();
-        } if (!JsonUtils.TryRead(CustomCmdsPath, out _customCmds!)) {
+        } if (!Json.TryRead(CustomCmdsPath, out _customCmds!)) {
             SetDefaults();
         }
     }
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
-            JsonUtils.WriteSafe(DefaultCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _defaultCmds);
-            JsonUtils.WriteSafe(CustomCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _customCmds);
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+            Json.WriteSafe(DefaultCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _defaultCmds);
+            Json.WriteSafe(CustomCmdsPath, Path.Combine(Directories.ServiceDirectory, Name), _customCmds);
         }
     }
 
@@ -121,8 +120,7 @@ public class ChatCommandsOptions : Options {
     }
     
     public void SetDefaultCmds(List<DefaultChatCommand> cmds) {
-        JsonUtils.CreateOld(DefaultCmdsPath);
-        ErrorHandler.LogErrorMessageAndPrint(ErrorCode.SaveFileCorrupted, $"List of default commands is restored to the defaults.\nOld save file can be found at: {DefaultCmdsPath}.old.\n \nPress Enter To Continue...");
+        Json.CreateOld(DefaultCmdsPath);
         
         _defaultCmds = cmds;
         Save();

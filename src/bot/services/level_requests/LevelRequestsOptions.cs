@@ -1,9 +1,9 @@
-﻿using ChatBot.bot.services.moderation;
+﻿using ChatBot.api.json;
+using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.level_requests;
 
@@ -24,14 +24,14 @@ public class LevelRequestsOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
         }
     }
 
     public override void Save() {
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), _saveData);
         }
     }
 

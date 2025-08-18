@@ -1,6 +1,6 @@
-﻿using ChatBot.bot.shared;
+﻿using ChatBot.api.json;
+using ChatBot.bot.shared;
 using ChatBot.bot.shared.interfaces;
-using ChatBot.bot.utils;
 
 namespace ChatBot.bot.services.logger;
 
@@ -15,7 +15,7 @@ public class LoggerOptions : Options {
     
 
     public override void Load() {
-        if (!JsonUtils.TryRead(OptionsPath, out _saveData!)) {
+        if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
         }
     }
@@ -26,7 +26,7 @@ public class LoggerOptions : Options {
         }
         
         lock (_fileLock) {
-            JsonUtils.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), new SaveData(_saveData));
+            Json.WriteSafe(OptionsPath, Path.Combine(Directories.ServiceDirectory, Name), new SaveData(_saveData));
         }
     }
 

@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using ChatBot.api.client;
+using ChatBot.api.twitch.client;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.text_generator;

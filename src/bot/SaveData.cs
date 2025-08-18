@@ -1,4 +1,4 @@
-﻿using ChatBot.api.client.credentials;
+﻿using ChatBot.api.twitch.client.credentials;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot;

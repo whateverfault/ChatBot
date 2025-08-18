@@ -1,4 +1,4 @@
-﻿using ChatBot.api.client.data;
+﻿using ChatBot.api.twitch.client.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;

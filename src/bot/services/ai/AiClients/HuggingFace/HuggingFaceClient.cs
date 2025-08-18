@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using ChatBot.api.client;
+using ChatBot.api.twitch.client;
 using ChatBot.bot.services.ai.AiClients.interfaces;
 using ChatBot.bot.services.logger;
 using Newtonsoft.Json;

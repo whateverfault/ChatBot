@@ -1,4 +1,4 @@
-﻿using ChatBot.api.shared.requests.data;
+﻿using ChatBot.api.twitch.shared.requests.data;
 using ChatBot.bot.services.chat_ads.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
@@ -11,8 +11,8 @@ public class ChatAdsService : Service {
     public override string Name => ServiceName.ChatAds;
     public override ChatAdsOptions Options { get; } = new ChatAdsOptions();
 
-    public EventHandler<ChatAd>? OnChatAdAdded;
-    public EventHandler<int>? OnChatAdRemoved;
+    public event EventHandler<ChatAd>? OnChatAdAdded;
+    public event EventHandler<int>? OnChatAdRemoved;
     
 
     public void HandleChatAdsSending(StreamState streamState, StreamData? streamData) {

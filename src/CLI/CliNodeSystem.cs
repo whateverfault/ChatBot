@@ -2,7 +2,7 @@
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.translator;
-using ChatBot.bot.shared.Handlers;
+using ChatBot.bot.shared.handlers;
 using ChatBot.bot.shared.interfaces;
 using ChatBot.cli.CliNodes;
 using ChatBot.cli.CliNodes.Directories;
@@ -10,6 +10,7 @@ using ChatBot.cli.CliNodes.Directories.ChatAds;
 using ChatBot.cli.CliNodes.Directories.ChatCommands;
 using ChatBot.cli.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.CliNodes.Directories.Moderation;
+using ChatBot.cli.CliNodes.Directories.Presets;
 
 namespace ChatBot.cli;
 
@@ -785,16 +786,12 @@ public class CliNodeSystem {
                                                                      CliNodePermission.Default,
                                                                      _state.Data.Presets.SetCurrentPreset
                                                                      ),
-                                                    new CliNodeDynamicDirectory(
-                                                                                "Presets",
-                                                                                "Add Preset",
-                                                                                "Remove Preset",
-                                                                                _state.Data.Presets.AddPreset,
-                                                                                _state.Data.Presets.RemovePreset,
-                                                                                _state.Data.Presets.GetPresetsAsContent(),
-                                                                                _state,
-                                                                                false
-                                                                                ),
+                                                    new CliNodeDynamicPresetsDirectory(
+                                                                         "Presets",
+                                                                         "Add Preset",
+                                                                         "Remove Preset",
+                                                                         _state
+                                                                        ),
                                                     ]
                                                     );
 
@@ -865,17 +862,30 @@ public class CliNodeSystem {
                                                   ]
                                                  );
 
+        var botDir = new CliNodeStaticDirectory(
+                                                "Bot",
+                                                _state,
+                                                true,
+                                                [
+                                                    loginDir,
+                                                    new CliNodeAction(
+                                                                      "Initialize",
+                                                                      _state.Data.Bot.Start
+                                                                     ),
+                                                    new CliNodeAction(
+                                                                      "Stop",
+                                                                      _state.Data.Bot.Stop
+                                                                     ),
+                                                ]
+                                                );
+        
         var rootDir = new CliNodeStaticDirectory(
                                                  "Root",
                                                  _state,
                                                  false,
                                                  [
-                                                     loginDir,
-                                                     new CliNodeAction(
-                                                                       "Initialize",
-                                                                       _state.Data.Bot.Start
-                                                                      ),
                                                      presetsDir,
+                                                     botDir,
                                                      servicesDir,
                                                  ]);
 
