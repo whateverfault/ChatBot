@@ -147,7 +147,7 @@ public class TwitchClient : ITwitchClient {
         if (userId == null) return;
         
         Credentials?.UpdateChannel(username);
-        Credentials?.UpdateChannel(userId);
+        Credentials?.UpdateChannelId(userId);
     }
     
     public async Task UpdateOauth(string oauth) {
