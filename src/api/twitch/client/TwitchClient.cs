@@ -169,15 +169,15 @@ public class TwitchClient : ITwitchClient {
         Credentials?.UpdateChannelId(response.UserId);
     }
     
-    private async Task<string?> ValidateUser(string username, EventHandler<string>? errorCallback = null) {
+    private async Task<string?> ValidateUser(string username, EventHandler<string>? callback = null) {
         if (Credentials == null) {
-            errorCallback?.Invoke(this, "Cannot update a username before initializing a client.");
+            callback?.Invoke(this, "Cannot update a username before initializing a client.");
             return null;
         }
         
         var userId = await Helix.GetUserId(username, Credentials);
         if (userId == null) {
-            errorCallback?.Invoke(this, "User doesn't exist.");
+            callback?.Invoke(this, "User doesn't exist.");
         }
 
         return userId;

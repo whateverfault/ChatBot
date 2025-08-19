@@ -32,29 +32,7 @@ public class TwitchChatBot : Bot {
     
     private TwitchChatBot(){}
     
-    private async Task InitConnection() {
-        try {
-            if (!ValidateSave()) {
-                ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
-                return;
-            }
-            
-            Stop();
-            
-            Options.UpdateClient(new TwitchClient());
-            if (Options.Client == null) return;
-            
-            await Options.Client.Initialize(Options.Credentials);
-
-            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
-            Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
-            _initialized = true;
-        } catch (Exception) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
-        }
-    }
-    
-    public override async void Start() {
+    public override async Task StartAsync() {
         try {
             lock (_startLock) {
                 if (_starting) return;
@@ -63,7 +41,7 @@ public class TwitchChatBot : Bot {
             
             await Task.Run(async () => {
                                _logger.Log(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
-                               await InitConnection();
+                               await InitConnectionAsync();
 
                                if (Options.Client?.Credentials == null) {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
@@ -83,6 +61,26 @@ public class TwitchChatBot : Bot {
         }
     }
 
+    public override void Start() {
+        lock (_startLock) {
+            _starting = true;
+        }
+
+        _logger.Log(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
+        InitConnection();
+
+        if (Options.Client?.Credentials == null) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
+            return;
+        }
+
+        SubscribeToEvents();
+        ServiceManager.InitServices();
+        lock (_startLock) {
+            _starting = false;
+        }
+    }
+    
     public override void Stop() {
         if (Options.Client == null || !_initialized) {
             return;
@@ -191,6 +189,50 @@ public class TwitchChatBot : Bot {
         }
         catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception while updating a channel oauth token: {e}");
+        }
+    }
+    
+    private async Task InitConnectionAsync() {
+        try {
+            if (!ValidateSave()) {
+                ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
+                return;
+            }
+            
+            Stop();
+            
+            Options.UpdateClient(new TwitchClient());
+            if (Options.Client == null) return;
+            
+            await Options.Client.Initialize(Options.Credentials);
+
+            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+            Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
+            _initialized = true;
+        } catch (Exception) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
+        }
+    }
+    
+    private void InitConnection() {
+        try {
+            if (!ValidateSave()) {
+                ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
+                return;
+            }
+            
+            Stop();
+            
+            Options.UpdateClient(new TwitchClient());
+            if (Options.Client == null) return;
+            
+            _ = Options.Client.Initialize(Options.Credentials);
+
+            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+            Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
+            _initialized = true;
+        } catch (Exception) {
+            ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
         }
     }
     

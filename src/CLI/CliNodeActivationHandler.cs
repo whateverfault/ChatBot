@@ -9,6 +9,8 @@ public class CliNodeActivationHandler {
     }
     
     public void ActivateNode(int index) {
+        if (_state.NodeSystem == null) return;
+        
         var currentNodes = _state.NodeSystem.Current.Nodes;
 
         if (!(index >= 0 && index < currentNodes.Count)) {

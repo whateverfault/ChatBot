@@ -958,18 +958,15 @@ public static class CommandsList {
         if (client == null) return;
         
         var levelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
             await client.SendReply(chatMessage.Id, $"Используйте эту комманду внутри награды.");
-            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
             return;
         }
         
         levelRequests.SetRewardId(chatMessage.RewardId);
         await client.SendReply(chatMessage.Id, $"Награда для реквестов успешно установлена.");
-        logger.Log(LogLevel.Info, $"Successfully assigned new Reward Id ({chatMessage.RewardId}).");
     }
     
     private static Task Potato(ChatCmdArgs chatCmdArgs) {
@@ -1825,18 +1822,15 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
             await client.SendReply(chatMessage.Id, $"Используйте эту комманду внутри награды.");
-            logger.Log(LogLevel.Warning, "This command must be used within the reward.");
             return;
         }
         
         gameRequest.Options.AddReward(chatMessage.RewardId);
         await client.SendReply(chatMessage.Id, "Награда добавлена в список.");
-        logger.Log(LogLevel.Info, $"Successfully added new Reward Id ({chatMessage.RewardId}).");
     }
 
     private static async Task ResetGameRequestsRewards(ChatCmdArgs cmdArgs) {
@@ -1844,12 +1838,10 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var gameRequest = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         gameRequest.Options.ResetRewards();
         await client.SendReply(chatMessage.Id, "Список наград очищен.");
-        logger.Log(LogLevel.Info, "Successfully cleared Reward's list");
     }
     
     private static Task AddGame(ChatCmdArgs cmdArgs) {
@@ -1871,7 +1863,6 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseIntArg(cmdArgs, out var indexToRemove);
@@ -1891,7 +1882,6 @@ public static class CommandsList {
         
         gameRequestService.Options.RemoveRequest(indexToRemove);
         await client.SendReply(chatMessage.Id, $"Игра {gameName} удалена из очереди.");
-        logger.Log(LogLevel.Info, $"Successfully removed {gameName} out of the queue.");
     }
     
     private static async Task ResetGames(ChatCmdArgs cmdArgs) {
@@ -1899,12 +1889,10 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         gameRequestService.Options.ResetRequests();
         await client.SendReply(chatMessage.Id, "Список заказов очищен.");
-        logger.Log(LogLevel.Info, "Successfully cleared Game Request's list");
     }
 
     private static async Task CreateReward(ChatCmdArgs cmdArgs) {

@@ -40,7 +40,9 @@ public class TranslatorService : Service {
     
     private async Task<string?> GTranslate(string text, string targetLang) {
         try {
-            var response = await _gTranslateClient.Translate([text,], targetLang, logger: _logger);
+            var response = await _gTranslateClient.Translate([text,], targetLang, callback: (_, message) => {
+                                                                 _logger.Log(LogLevel.Error, message);
+                                                             });
             
             if (response is { Translations.Count: > 0, }) {
                 return response.Translations[0].TranslatedText;
@@ -57,9 +59,13 @@ public class TranslatorService : Service {
         try {
             string[]? response;
             if (!string.IsNullOrEmpty(sourceLang)) {
-                response = await _vkTranslateClient.Translate(text, targetLang, sourceLang, logger: _logger);
+                response = await _vkTranslateClient.Translate(text, targetLang, sourceLang, callback: (_, message) => {
+                                                                  _logger.Log(LogLevel.Error, message);
+                                                              });
             } else {
-                response = await _vkTranslateClient.Translate(text, targetLang, logger: _logger);
+                response = await _vkTranslateClient.Translate(text, targetLang, callback: (_, message) => {
+                                                                  _logger.Log(LogLevel.Error, message);
+                                                              });
             }
             
             if (response?.Length > 0) {
@@ -75,7 +81,9 @@ public class TranslatorService : Service {
 
     public async Task<DetectedLanguage?> DetectLanguage(string text) {
         try {
-            var response = await _gTranslateClient.DetectLanguage(text, _logger);
+            var response = await _gTranslateClient.DetectLanguage(text, callback: (_, message) => {
+                                                                      _logger.Log(LogLevel.Error, message);
+                                                                  });
             
             if (response is { Languages.Count: > 0, }) {
                 return response.Languages[0];

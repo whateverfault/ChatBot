@@ -1,7 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.api.twitch.client;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.translator.VK.Response;
 using Newtonsoft.Json;
 
@@ -17,7 +15,7 @@ public class VkTranslateClient {
         _apiKey = apiKey;
     }
 
-    public async Task<string[]?> Translate(string text, string lang, string? sourceLang = null, LoggerService? logger = null) {
+    public async Task<string[]?> Translate(string text, string lang, string? sourceLang = null, EventHandler<string>? callback = null) {
         try {
             var endpoint = string.IsNullOrEmpty(sourceLang) ?
                                $"https://api.vk.ru/method/translations.translate?texts={text}&translation_language={lang}&v=5.131" :
@@ -40,7 +38,7 @@ public class VkTranslateClient {
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Failed to make an API call. Status: {response.StatusCode}. Content: {responseContent}");
+                callback?.Invoke(this, $"Failed to make an API call. Status: {response.StatusCode}. Content: {responseContent}");
                 return null;
             }
             
@@ -51,10 +49,10 @@ public class VkTranslateClient {
                 return responseData.Response.Text;
             }
 
-            logger?.Log(LogLevel.Error, "API returned a bad response.");
+            callback?.Invoke(this, "API returned a bad response.");
             return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Exception: {e}"); 
+            callback?.Invoke(this, $"Exception: {e}"); 
             return null;
         }
     }

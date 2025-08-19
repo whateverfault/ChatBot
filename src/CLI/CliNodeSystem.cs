@@ -331,7 +331,7 @@ public class CliNodeSystem {
                                                    true,
                                                    [
                                                        new CliNodeLogDirectory(
-                                                                               "Non-Twitch Logs",
+                                                                               "Logs",
                                                                                true,
                                                                                _state,
                                                                                _state.Data.Logger
@@ -868,9 +868,9 @@ public class CliNodeSystem {
                                                 true,
                                                 [
                                                     loginDir,
-                                                    new CliNodeAction(
+                                                    new CliNodeActionAsync(
                                                                       "Initialize",
-                                                                      _state.Data.Bot.Start
+                                                                      _state.Data.Bot.StartAsync
                                                                      ),
                                                     new CliNodeAction(
                                                                       "Stop",

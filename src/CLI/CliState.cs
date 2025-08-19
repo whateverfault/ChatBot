@@ -1,15 +1,22 @@
 ﻿namespace ChatBot.cli;
 
 public class CliState {
-    public CliNodeSystem NodeSystem { get; private set; } = null!;
+    public Cli Cli { get; private set; }
+    
+    public CliRenderer Renderer { get; private set; }
+    
+    public CliNodeSystem? NodeSystem { get; private set; }
+    
     public CliData Data { get; }
 
 
-    public CliState(CliData data) {
+    public CliState(Cli cli, CliData data) {
+        Cli = cli;
         Data = data;
     }
 
-    public void Bind(CliNodeSystem system) {
+    public void Bind(CliNodeSystem system, CliRenderer renderer) {
         NodeSystem = system;
+        Renderer = renderer;
     }
 }

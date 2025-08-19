@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using ChatBot.api.twitch.client;
 using ChatBot.bot.services.ai.AiClients.interfaces;
-using ChatBot.bot.services.logger;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.ai.AiClients.DeepSeek;
@@ -10,7 +8,7 @@ public class DeepSeekClient : AiClient {
     private readonly HttpClient _httpClient = new HttpClient();
     
     
-    public override async Task<string?> GetResponse(string prompt, AiData aiData, LoggerService? logger = null) {
+    public override async Task<string?> GetResponse(string prompt, AiData aiData, EventHandler<string>? callback = null) {
         var requestBody = new
                           {
                               model = aiData.Model,
@@ -39,14 +37,14 @@ public class DeepSeekClient : AiClient {
             var responseJson = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error,  $"Status: {response.StatusCode}. Response: {responseJson}");
+                callback?.Invoke(this,  $"Status: {response.StatusCode}. Response: {responseJson}");
                 return null;
             }
             
             dynamic responseData = JsonConvert.DeserializeObject(responseJson)!;
             return responseData.choices[0].message.content;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error,  $"Caught an Exception. {e}");
+            callback?.Invoke(this,  $"Caught an Exception. {e}");
             return null;
         }
     }

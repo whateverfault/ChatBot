@@ -22,18 +22,19 @@ public sealed class CliNodeStaticDirectory : CliNodeDirectory {
         _hasBackOption = hasBackOption;
         _dynamicName = dynamicName;
 
-        if (hasBackOption) {
-            Nodes.Add(new CliNodeAction("Back", state.NodeSystem.DirectoryBack));
-        } else {
-            Nodes.Add(new CliNodeInvisible());
+        if (state.NodeSystem != null) {
+            if (hasBackOption) {
+                Nodes.Add(new CliNodeAction("Back", state.NodeSystem.DirectoryBack));
+            } else {
+                Nodes.Add(new CliNodeInvisible());
+            }
         }
-        if (nodes.Length <= 0) return;
         
         Nodes.AddRange(nodes);
     }
 
     public override void Activate(CliState state) {
-        state.NodeSystem.DirectoryEnter(this);
+        state.NodeSystem?.DirectoryEnter(this);
     }
 
     public void AddNode(CliNode node) {

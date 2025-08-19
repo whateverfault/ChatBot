@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using ChatBot.api.twitch.client;
 using ChatBot.bot.services.ai.AiClients.interfaces;
-using ChatBot.bot.services.logger;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.ai.AiClients.Ollama;
@@ -10,7 +8,7 @@ public class OllamaClient : AiClient {
     private readonly HttpClient _httpClient = new HttpClient();
 
 
-    public override async Task<string?> GetResponse(string prompt, AiData aiData, LoggerService? logger = null) {
+    public override async Task<string?> GetResponse(string prompt, AiData aiData, EventHandler<string>? callback = null) {
         try {
             var requestData = new {
                                       aiData.Model,
@@ -25,14 +23,14 @@ public class OllamaClient : AiClient {
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Ollama request failed. Status: {response.StatusCode}. Response: {responseContent}");
+                callback?.Invoke(this , $"Ollama request failed. Status: {response.StatusCode}. Response: {responseContent}");
                 return null;
             }
             
             var ollamaResponse = JsonConvert.DeserializeObject<OllamaResponse>(responseContent);
             return ollamaResponse?.Response ?? string.Empty;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while getting ollama response: {e} ");
+            callback?.Invoke(this , $"Error while getting ollama response: {e} ");
             return null;
         }
     }

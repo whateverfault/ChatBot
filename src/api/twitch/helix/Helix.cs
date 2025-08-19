@@ -229,13 +229,10 @@ public static class Helix {
             var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={credentials.ChannelId}&moderator_id={credentials.UserId}", content);
 
-            if (response.IsSuccessStatusCode) {
-                Console.WriteLine();
-                callback?.Invoke(null, $"Successfully banned {username}. Message: {message}");
-            } else {
+            if (!response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 callback?.Invoke(null, $"Failed to ban {username}. Status: {response.StatusCode}. Response: {responseContent}");
-            }
+            } 
         }
         catch (Exception ex) {
             callback?.Invoke(null, $"Error banning user: {ex.Message}");
@@ -274,10 +271,7 @@ public static class Helix {
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
-            if (response.IsSuccessStatusCode) {
-                callback?.Invoke(null, $"Successfully timed out {username} for {(int)durationSeconds.TotalSeconds} seconds. Reason: {message}");
-            }
-            else {
+            if (!response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 callback?.Invoke(null, $"Failed to timeout {username}. Status: {response.StatusCode}. Response: {responseContent}");
             }
@@ -309,9 +303,7 @@ public static class Helix {
                                  };
             var response = await _httpClient.SendAsync(requestMessage);
             
-            if (response.IsSuccessStatusCode) {
-                callback?.Invoke(LogLevel.Info, $"Successfully deleted message {message.Id}");
-            } else {
+            if (!response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 callback?.Invoke(null, $"Failed to delete message. Status: {response.StatusCode}. Response: {responseContent}");
             }
@@ -346,11 +338,7 @@ public static class Helix {
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var followData = JsonConvert.DeserializeObject<FollowResponse>(responseContent);
-
-                if (followData?.Data is not { Count: > 0, }) {
-                    callback?.Invoke(LogLevel.Info, $"{username} is not followed on {credentials.Channel}");
-                    return null;
-                }
+                if (followData?.Data is not { Count: > 0, }) return null;
 
                 var followDate = followData.Data[0].FollowedAt;
                 var followDuration = DateTime.UtcNow - followDate;
@@ -393,12 +381,8 @@ public static class Helix {
                                                         };
 
             var response = await _httpClient.SendAsync(requestMessage);
+            if (response.IsSuccessStatusCode) return true;
 
-            if (response.IsSuccessStatusCode) {
-                callback?.Invoke(LogLevel.Info, $"Successfully updated channel info: Title='{newTitle}', GameID='{newGameId}'");
-                return true;
-            }
-            
             var responseContent = await response.Content.ReadAsStringAsync();
             callback?.Invoke(null, $"Failed to update channel info. Status: {response.StatusCode}. Response: {responseContent}");
         }
@@ -430,7 +414,6 @@ public static class Helix {
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var channelData = JsonConvert.DeserializeObject<ChannelInfoResponse>(responseContent);
-                callback?.Invoke(LogLevel.Info, "Successfully fetched channel info");
                 return channelData?.Data?.FirstOrDefault();
             }
         
@@ -561,10 +544,7 @@ public static class Helix {
 
             var response = await _httpClient.SendAsync(requestMessage);
 
-            if (response.IsSuccessStatusCode) {
-                callback?.Invoke(LogLevel.Info, $"Successfully changed state of a reward with ID: {rewardId}");
-                return true;
-            }
+            if (response.IsSuccessStatusCode) return true;
         
             var responseContent = await response.Content.ReadAsStringAsync();
             callback?.Invoke(null, $"Failed to change state of a reward. Status: {response.StatusCode}. Response: {responseContent}");
@@ -615,8 +595,6 @@ public static class Helix {
             if (response.IsSuccessStatusCode) {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var rewardResponse = JsonConvert.DeserializeObject<RewardCreationResponse>(responseContent);
-            
-                callback?.Invoke(LogLevel.Info, $"Successfully created reward: {title} (Cost: {cost})");
                 return rewardResponse?.Data.FirstOrDefault()?.Id;
             }
 
@@ -644,10 +622,7 @@ public static class Helix {
 
             var response = await _httpClient.SendAsync(requestMessage);
 
-            if (response.IsSuccessStatusCode) {
-                callback?.Invoke(LogLevel.Info, $"Successfully deleted reward ID: {rewardId}");
-                return true;
-            }
+            if (response.IsSuccessStatusCode) return true;
 
             var responseContent = await response.Content.ReadAsStringAsync();
             callback?.Invoke(null, $"Failed to delete reward. Status: {response.StatusCode}. Response: {responseContent}");

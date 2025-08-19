@@ -11,26 +11,29 @@ public class CliNodeLogDirectory : CliNodeDirectory {
 
 
     public CliNodeLogDirectory(string text, bool hasBackOption, CliState state, LoggerService loggerService) {
+        
         Text = text;
         Nodes = [];
 
-        if (hasBackOption) {
-            Nodes.Add(
-                      new CliNodeAction(
-                                        "Back",
-                                        state.NodeSystem.DirectoryBack
-                                        )
-                      );
-        }
+        if (state.NodeSystem != null) {
+            if (hasBackOption) {
+                Nodes.Add(
+                          new CliNodeAction(
+                                            "Back",
+                                            state.NodeSystem.DirectoryBack
+                                           )
+                         );
+            }
         
-        Nodes.Add(
-                  new CliNodeText(
-                                  "-----------------------------------",
-                                  false,
-                                  true,
-                                  1
-                                 )
-                  );
+            Nodes.Add(
+                      new CliNodeText(
+                                      "-----------------------------------",
+                                      false,
+                                      true,
+                                      1
+                                     )
+                     );
+        } 
         
         loggerService.OnLog += HandleLog;
         _state = state;
@@ -43,8 +46,9 @@ public class CliNodeLogDirectory : CliNodeDirectory {
                                   false
                                   )
                   );
-        if (_state.NodeSystem.Current == this) {
-            Program.ForceToRender();
+        if (_state.NodeSystem == null
+         || _state.NodeSystem.Current == this) {
+            _state.Renderer.ForceToRender();
         }
     }
 }

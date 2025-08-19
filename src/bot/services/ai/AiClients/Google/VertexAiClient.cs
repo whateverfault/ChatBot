@@ -1,9 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.api.twitch.client;
 using ChatBot.bot.services.ai.AiClients.Google.Response;
 using ChatBot.bot.services.ai.AiClients.interfaces;
-using ChatBot.bot.services.logger;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.ai.AiClients.Google;
@@ -12,7 +10,7 @@ public class VertexAiClient : AiClient {
     private static readonly HttpClient _httpClient = new HttpClient();
     
 
-    public override async Task<string?> GetResponse(string prompt, AiData aiData, LoggerService? logger = null) {
+    public override async Task<string?> GetResponse(string prompt, AiData aiData, EventHandler<string>? callback = null) {
         _httpClient.DefaultRequestHeaders.Clear();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aiData.ApiKey);
         
@@ -48,7 +46,7 @@ public class VertexAiClient : AiClient {
             var responseContent = await response.Content.ReadAsStringAsync();
         
             if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"API request failed: {response.StatusCode} - {responseContent}");
+                callback?.Invoke(this , $"API request failed: {response.StatusCode} - {responseContent}");
                 return null;
             }
         
@@ -56,7 +54,7 @@ public class VertexAiClient : AiClient {
             return vertexResponse?.Candidates?.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text;
         }
         catch (Exception e) {
-            logger?.Log(LogLevel.Error, e.ToString());
+            callback?.Invoke(this , e.ToString());
             return null;
         }
     }

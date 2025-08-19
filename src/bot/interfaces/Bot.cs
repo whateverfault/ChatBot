@@ -11,6 +11,7 @@ public abstract class Bot : Service {
     public abstract event EventHandler<ChatMessage>? OnMessageReceived;
 
 
+    public abstract Task StartAsync();
     public abstract void Start();
 
     public abstract void Stop();

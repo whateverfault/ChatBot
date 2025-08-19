@@ -73,8 +73,6 @@ public class TelegramBotClient {
                 callback?.Invoke(this, $"Error deleting a Telegram message. Status: {response.StatusCode}. Content: {responseContent}");
                 return false;
             }
-        
-            callback?.Invoke(this, $"Telegram Message deleted successfully. (ChatId - {_chatId}, MessageId - {messageId})");
             return true;
         }
         catch (Exception ex) {

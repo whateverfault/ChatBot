@@ -1,7 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.api.twitch.client;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.translator.Google.Request;
 using ChatBot.bot.services.translator.Google.Response;
 using Newtonsoft.Json;
@@ -22,7 +20,7 @@ public class GoogleTranslateClient {
         _httpClient = new HttpClient();
     }
     
-    public async Task<DetectLanguageResponse?> DetectLanguage(string text, LoggerService? logger = null) {
+    public async Task<DetectLanguageResponse?> DetectLanguage(string text, EventHandler<string>? callback = null) {
         var endpoint = $"https://translate.googleapis.com/v3beta1/projects/{_projectId}/locations/{_location}:detectLanguage";
         var requestBody = new
                           {
@@ -44,21 +42,21 @@ public class GoogleTranslateClient {
                                                        );
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Failed to detect language. Status: {response.StatusCode}. Response: {responseContent}");
-                return null;
+            if (response.IsSuccessStatusCode) {
+                var deserialized =
+                    JsonConvert.DeserializeObject<DetectLanguageResponse>(responseContent);
+                return deserialized;
             }
-            
-            var responseData = 
-                JsonConvert.DeserializeObject<DetectLanguageResponse>(responseContent);
-            return responseData;
+
+            callback?.Invoke(this , $"Failed to detect language. Status: {response.StatusCode}. Response: {responseContent}");
+            return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while detecting a language. {e}");
+            callback?.Invoke(this , $"Error while detecting a language. {e}");
             return null;
         }
     }
     
-    public async Task<TranslateTextResponse?> Translate(List<string> texts, string targetLanguage, string? sourceLanguage = null, LoggerService? logger = null) {
+    public async Task<TranslateTextResponse?> Translate(List<string> texts, string targetLanguage, string? sourceLanguage = null, EventHandler<string>? callback = null) {
         var endpoint = $"https://translate.googleapis.com/v3beta1/projects/{_projectId}/locations/{_location}:translateText";
 
         var request = new TranslateTextRequest
@@ -77,15 +75,16 @@ public class GoogleTranslateClient {
 
             var response = await _httpClient.PostAsync(endpoint, content);
             var responseContent = await response.Content.ReadAsStringAsync();
-            
-            if (!response.IsSuccessStatusCode) {
-                logger?.Log(LogLevel.Error, $"Translation failed: {response.StatusCode}. {responseContent}");
-                return null;
+
+            if (response.IsSuccessStatusCode) {
+                var deserialized = JsonConvert.DeserializeObject<TranslateTextResponse>(responseContent);
+                return deserialized;
             }
 
-            return JsonConvert.DeserializeObject<TranslateTextResponse>(responseContent);
+            callback?.Invoke(this , $"Translation failed: {response.StatusCode}. {responseContent}");
+            return null;
         } catch (Exception e) {
-            logger?.Log(LogLevel.Error, $"Error while Translating. {e}");
+            callback?.Invoke(this , $"Error while Translating. {e}");
             return null;
         }
     }

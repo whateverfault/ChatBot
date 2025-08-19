@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.services.ai.AiClients.DeepSeek;
+﻿using ChatBot.api.twitch.client;
+using ChatBot.bot.services.ai.AiClients.DeepSeek;
 using ChatBot.bot.services.ai.AiClients.Google;
 using ChatBot.bot.services.ai.AiClients.HuggingFace;
 using ChatBot.bot.services.ai.AiClients.interfaces;
@@ -31,7 +32,9 @@ public class AiService : Service {
         var aiData = Options.AiData[aiIndex];
         
         var response = 
-            await aiClient.GetResponse(prompt, aiData, _logger);
+            await aiClient.GetResponse(prompt, aiData, (_, message) => {
+                                                           _logger.Log(LogLevel.Error, message);
+                                                       });
         if (response != null || aiData.Fallback.FallbackState != State.Enabled) {
             return response;
         }
@@ -40,7 +43,9 @@ public class AiService : Service {
         aiClient = _aiClients[aiIndex];
         aiData = Options.AiData[aiIndex];
         
-        response = await aiClient.GetResponse(prompt, aiData, _logger);
+        response = await aiClient.GetResponse(prompt, aiData, (_, message) => {
+                                                                  _logger.Log(LogLevel.Error, message);
+                                                              });
         return response;
     }
     
