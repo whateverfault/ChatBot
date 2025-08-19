@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub.subscription_data.subscription;
 using ChatBot.api.twitch.helix.data.requests;
@@ -716,6 +715,10 @@ public static class Helix {
 
             if (response.IsSuccessStatusCode) {
                 var streamResponse = JsonConvert.DeserializeObject<StreamResponse>(responseContent);
+                
+                if (streamResponse == null
+                 || streamResponse.Data.Count == 0) return null;
+                
                 return streamResponse;
             }
             

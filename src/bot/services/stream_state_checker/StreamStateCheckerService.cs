@@ -35,7 +35,7 @@ public class StreamStateCheckerService : Service {
             var streamResponse = await Helix.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
                                                                _logger.Log(LogLevel.Error, message);
                                                            });
-            if (streamResponse == null || streamResponse.Data.Count == 0) {
+            if (streamResponse == null) {
                 if (lastCheckedWasOnline) {
                     OnStreamStateChangedAsync?.Invoke(Options.StreamState, null);
                     OnStreamStateChanged?.Invoke(Options.StreamState, null);

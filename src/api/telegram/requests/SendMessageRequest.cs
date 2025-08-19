@@ -3,7 +3,7 @@
 namespace ChatBot.api.telegram.requests;
 
 public class SendMessageRequest {
-    [JsonProperty("message")]
+    [JsonProperty("text")]
     public string Message { get; private set; }
     
     [JsonProperty("chat_id")]
