@@ -3,7 +3,7 @@
 public class CliState {
     public Cli Cli { get; private set; }
     
-    public CliRenderer Renderer { get; private set; }
+    public CliRenderer? Renderer { get; private set; }
     
     public CliNodeSystem? NodeSystem { get; private set; }
     

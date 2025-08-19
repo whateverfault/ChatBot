@@ -52,12 +52,15 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
             _content.AddNode(ModActionToNode(node));
         }
 
-        Nodes = [
-                    new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodeModActionAdd(addText, Add),
-                    new CliNodeRemove(removeText, Remove),
-                    _content,
-                ];
+        Nodes = [];
+        if (state.NodeSystem != null) {
+            Nodes = [
+                        new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
+                        new CliNodeModActionAdd(addText, Add),
+                        new CliNodeRemove(removeText, Remove),
+                        _content,
+                    ];
+        }
 
         _state.Data.Moderation.OnModActionAdded += (_, modAction) => {
                                                        _content.AddNode(ModActionToNode(modAction));

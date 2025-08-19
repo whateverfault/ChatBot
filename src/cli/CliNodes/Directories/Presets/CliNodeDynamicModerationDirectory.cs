@@ -51,12 +51,16 @@ public class CliNodeDynamicPresetsDirectory : CliNodeDirectory {
             _content.AddNode(PresetToNode(preset));
         }
 
-        Nodes = [
-                    new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodePresetAdd(addText, Add),
-                    new CliNodeRemove(removeText, Remove),
-                    _content,
-                ];
+        Nodes = [];
+        if (state.NodeSystem != null) {
+            Nodes = [
+                        new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
+                        new CliNodePresetAdd(addText, Add),
+                        new CliNodeRemove(removeText, Remove),
+                        _content,
+                    ];
+        }
+        
 
         _state.Data.Presets.OnPresetAdded += (_, preset) => {
                                                        _content.AddNode(PresetToNode(preset));

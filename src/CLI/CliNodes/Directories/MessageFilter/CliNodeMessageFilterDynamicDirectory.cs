@@ -42,12 +42,15 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
             _content.AddNode(FilterToNode(filter));
         }
 
-        Nodes = [
-                    new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodeFilterAdd(addText, Add),
-                    new CliNodeRemove(removeText, Remove),
-                    _content,
-                ];
+        Nodes = [];
+        if (state.NodeSystem != null) {
+            Nodes = [
+                        new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
+                        new CliNodeFilterAdd(addText, Add),
+                        new CliNodeRemove(removeText, Remove),
+                        _content,
+                    ];
+        }
 
         _state.Data.MessageFilter.OnFilterAdded += (_, filter) => { 
                                                        _content.AddNode(FilterToNode(filter));

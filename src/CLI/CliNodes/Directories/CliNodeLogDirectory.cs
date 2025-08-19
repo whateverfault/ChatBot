@@ -48,7 +48,7 @@ public class CliNodeLogDirectory : CliNodeDirectory {
                   );
         if (_state.NodeSystem == null
          || _state.NodeSystem.Current == this) {
-            _state.Renderer.ForceToRender();
+            _state.Renderer?.ForceToRender();
         }
     }
 }

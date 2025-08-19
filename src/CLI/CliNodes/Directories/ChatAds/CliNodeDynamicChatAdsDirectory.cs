@@ -44,13 +44,16 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
         foreach (var cmd in chatAds) {
             _content.AddNode(ChatAdToNode(cmd));
         }
-        
-        Nodes = [
-                    new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
-                    new CliNodeChatAdAdd(addText, Add),
-                    new CliNodeRemove(removeText, Remove),
-                    _content,
-                ];
+
+        Nodes = [];
+        if (state.NodeSystem != null) {
+            Nodes = [
+                        new CliNodeAction("Back", state.NodeSystem.DirectoryBack),
+                        new CliNodeChatAdAdd(addText, Add),
+                        new CliNodeRemove(removeText, Remove),
+                        _content,
+                    ];
+        }
 
         _state.Data.ChatAds.OnChatAdAdded += (_, chatAd) => {
                                                  _content.AddNode(ChatAdToNode(chatAd));
