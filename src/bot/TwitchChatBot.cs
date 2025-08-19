@@ -244,7 +244,7 @@ public class TwitchChatBot : Bot {
     private void Reconnect(object? sender, string message) {
         if (!_canReconnect) return;
         
-        _logger.Log(LogLevel.Warning, $"{message} Attempting reconnect...");
+        _logger.Log(LogLevel.Warning, $"{message}. Attempting reconnect...");
         Task.Delay(5000).ContinueWith(_ => Options.Client?.Reconnect());
     }
     

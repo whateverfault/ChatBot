@@ -90,11 +90,15 @@ public class TwitchClient : ITwitchClient {
         if (Credentials == null) return;
         
         UnSubscribe();
-        await Disconnect();
+        await Disconnect(true);
         await Initialize(Credentials);
     }
 
     public async Task Disconnect() {
+        await Disconnect(false);
+    }
+    
+    private async Task Disconnect(bool reconnect) {
         UnSubscribe();
 
         if (_websocket.SubscriptionId == null
@@ -103,11 +107,13 @@ public class TwitchClient : ITwitchClient {
         }
         
         await Helix.EventSubUnSubscribe(
-                                           _websocket.SubscriptionId, 
-                                           Credentials,
-                                           OnError
-                                          );
+                                        _websocket.SubscriptionId, 
+                                        Credentials, 
+                                        OnError
+                                        );
         await _websocket.DisconnectAsync();
+        
+        if (reconnect) return;
         OnDisconnected?.Invoke(this, "Disconnected.");
     }
     
@@ -213,9 +219,9 @@ public class TwitchClient : ITwitchClient {
     }
 
     private void UnSubscribe() {
-        _websocket.OnWebSocketError -= OnError;
+        _websocket.OnWebSocketError -= OnWebSocketError;
         _websocket.OnChatMessageReceived -= HandleChatMessage;
-        _websocket.OnConnectionClosed -= OnDisconnected;
+        _websocket.OnConnectionClosed -= OnConnectionClosed;
         
         OnMessageReceived -= HandleChatCommand;
     }
