@@ -3,20 +3,47 @@
 namespace ChatBot.api.aredl.data;
 
 public class LevelInfo {
-    public string id;
-    public string name;
-    public int position;
-    public int points;
-    public bool legacy;
-    public int levelId;
-    public bool twoPlayer;
-    public string[]? tags;
-    public string? description;
-    public int? song;
-    public float? edelEnjoyment;
-    public bool isEdelPending;
-    public float? gddlTier;
-    public string? nlwTier;
+    [JsonProperty("id")]
+    public string Id { get; private set; }
+    
+    [JsonProperty("name")]
+    public string Name { get; private set; }
+    
+    [JsonProperty("position")]
+    public int Position { get; private set; }
+    
+    [JsonProperty("points")]
+    public int Points { get; private set; }
+    
+    [JsonProperty("legacy")]
+    public bool Legacy { get; private set; }
+    
+    [JsonProperty("level_id")]
+    public int LevelId { get; private set; }
+    
+    [JsonProperty("two_player")]
+    public bool TwoPlayer { get; private set; }
+    
+    [JsonProperty("tags")]
+    public string[]? Tags { get; private set; }
+    
+    [JsonProperty("description")]
+    public string? Description { get; private set; }
+    
+    [JsonProperty("song")]
+    public int? Song { get; private set; }
+    
+    [JsonProperty("edel_enjoyment")]
+    public float? EdelEnjoyment { get; private set; }
+    
+    [JsonProperty("is_edel_pending")]
+    public bool IsEdelPending { get; private set; }
+    
+    [JsonProperty("gddl_tier")]
+    public float? GddlTier { get; private set; }
+    
+    [JsonProperty("nlw_tier")]
+    public string? NlwTier { get; private set; }
     
     
     [JsonConstructor]
@@ -35,19 +62,19 @@ public class LevelInfo {
         [JsonProperty("is_edel_pending")] bool isEdelPending,
         [JsonProperty("gddl_tier")] float? gddlTier,
         [JsonProperty("nlw_tier")] string? nlwTier) {
-        this.id = id;
-        this.name = name;
-        this.position = position;
-        this.points = points;
-        this.legacy = legacy;
-        this.levelId = levelId;
-        this.twoPlayer = twoPlayer;
-        this.tags = tags;
-        this.description = description;
-        this.song = song;
-        this.edelEnjoyment = edelEnjoyment;
-        this.isEdelPending = isEdelPending;
-        this.gddlTier = gddlTier;
-        this.nlwTier = nlwTier;
+        Id = id;
+        Name = name;
+        Position = position;
+        Points = points;
+        Legacy = legacy;
+        LevelId = levelId;
+        TwoPlayer = twoPlayer;
+        Tags = tags;
+        Description = description;
+        Song = song;
+        EdelEnjoyment = edelEnjoyment;
+        IsEdelPending = isEdelPending;
+        GddlTier = gddlTier;
+        NlwTier = nlwTier;
     }
 }

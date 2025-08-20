@@ -10,6 +10,7 @@ public class ChatCommandsEvents : ServiceEvents {
 
     public override void Init(Service service) {
         _chatCommands = (ChatCommandsService)service;
+        
         base.Init(service);
     }
 
