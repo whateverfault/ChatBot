@@ -24,14 +24,17 @@ public class ChatCommandsService : Service {
     public async void HandleCommand(object? sender, Command parsedCommand) {
         try {
             if (Options.ServiceState == State.Disabled) return;
-            
+
+            bool found;
             var cmdName = parsedCommand.CommandText;
             var chatMessage = parsedCommand.ChatMessage;
             var chatArgs = new ChatCmdArgs(parsedCommand);
-            
-            var defaultCmds = new List<ChatCommand>(Options.DefaultCmds);
-            var found = await TryActivateCommand(cmdName, defaultCmds, chatArgs);
-            if (found) return;
+
+            if (parsedCommand.CommandIdentifier != ' ') {
+                var defaultCmds = new List<ChatCommand>(Options.DefaultCmds);
+                found = await TryActivateCommand(cmdName, defaultCmds, chatArgs);
+                if (found) return;
+            }
             
             var customCmds = new List<ChatCommand>(Options.CustomCmds);
             found = await TryActivateCommand(cmdName, customCmds, chatArgs);

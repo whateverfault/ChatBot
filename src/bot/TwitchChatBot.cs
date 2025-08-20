@@ -253,7 +253,7 @@ public class TwitchChatBot : Bot {
         
         UnsubscribeFromEvents();
     
-        Options.Client.OnMessageReceived += OnMessageReceived;
+        Options.Client.OnMessageReceived += OnMessageReceiveHandler;
         Options.Client.OnError += OnError;
         Options.Client.OnDisconnected += Reconnect;
         Options.Client.OnConnected += OnConnected;
@@ -262,11 +262,15 @@ public class TwitchChatBot : Bot {
     private void UnsubscribeFromEvents() {
         if (Options.Client == null) return;
     
-        Options.Client.OnMessageReceived -= OnMessageReceived;
+        Options.Client.OnMessageReceived -= OnMessageReceiveHandler;
         Options.Client.OnDisconnected -= Reconnect;
         Options.Client.OnConnected -= OnConnected;
     }
 
+    private void OnMessageReceiveHandler(object? sender, ChatMessage chatMessage) {
+        OnMessageReceived?.Invoke(sender, chatMessage);
+    }
+    
     private void OnError(object? sender, string message) {
         _logger.Log(LogLevel.Error, message);
     }

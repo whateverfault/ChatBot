@@ -542,7 +542,6 @@ public static class Helix {
                                  };
 
             var response = await _httpClient.SendAsync(requestMessage);
-
             if (response.IsSuccessStatusCode) return true;
         
             var responseContent = await response.Content.ReadAsStringAsync();

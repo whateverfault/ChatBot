@@ -910,15 +910,10 @@ public static class CommandsList {
                 switch (args[0]) {
                     case "off": {
                         reqState = ReqState.Off;
-                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
-                                                                            (_, message) => {
-                                                                                _logger.Log(LogLevel.Error, message);
-                                                                            });
-                        if (!result) {
-                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
-                            return;
-                        }
-                        
+                        await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials, 
+                                                          (_, message) => { 
+                                                              _logger.Log(LogLevel.Error, message);
+                                                          });
                         break;
                     }
                     case "points": {
@@ -928,21 +923,17 @@ public static class CommandsList {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
                         if (!result) {
-                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                            ErrorHandler.ReplyWithError(ErrorCode.NoRewardSet, chatMessage, client);
                             return;
                         }
                         break;
                     }
                     case "on": {
                         reqState = ReqState.On;
-                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
-                                                                            (_, message) => {
-                                                                                _logger.Log(LogLevel.Error, message);
-                                                                            });
-                        if (!result) {
-                            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
-                            return;
-                        }
+                        await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                                                          (_, message) => {
+                                                              _logger.Log(LogLevel.Error, message);
+                                                          });
                         break;
                     }
                 }
