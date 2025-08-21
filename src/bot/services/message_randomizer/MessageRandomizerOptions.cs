@@ -1,8 +1,9 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.interfaces;
+using Range = ChatBot.api.basic.Range;
 
 namespace ChatBot.bot.services.message_randomizer;
 
@@ -26,10 +27,10 @@ public class MessageRandomizerOptions : Options {
     public State Randomness => _saveData!.Randomness;
     public int RandomValue { get; private set; }
 
-    public Range Spreading => new Range(_saveData!.SpreadingFrom, _saveData!.SpreadingTo);
+    public Range Spreading => _saveData!.Spreading;
     public MessageState MessageState => _saveData!.MessageState;
     public Message LastGeneratedMessage => _saveData!.LastGeneratedMessage;
-    public ChatLogsService ChatLogsService => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+    public static ChatLogsService ChatLogsService => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
     
     
     public override void Load() {
@@ -94,8 +95,8 @@ public class MessageRandomizerOptions : Options {
     public void SetSpreading(Range range) {
         const int minRangeStart = 1;
 
-        var start = range.Start.Value;
-        var end = range.End.Value;
+        var start = range.Start;
+        var end = range.End;
 
         if (start < minRangeStart) {
             start = minRangeStart;
@@ -104,8 +105,7 @@ public class MessageRandomizerOptions : Options {
             (start, end) = (end, start);
         }
 
-        _saveData!.SpreadingFrom = start;
-        _saveData!.SpreadingTo = end;
+        _saveData!.Spreading = new Range(start, end);
         SetRandomValue();
     }
     
@@ -114,7 +114,7 @@ public class MessageRandomizerOptions : Options {
     }
     
     public void SetRandomValue() {
-        RandomValue = Random.Shared.Next(Spreading.Start.Value, Spreading.End.Value);
+        RandomValue = Random.Shared.Next(Spreading.Start, Spreading.End);
         Save();
     }
 

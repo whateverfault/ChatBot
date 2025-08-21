@@ -1,9 +1,9 @@
 ﻿using ChatBot.api.twitch.helix.data.requests;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_ads.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_ads;
 

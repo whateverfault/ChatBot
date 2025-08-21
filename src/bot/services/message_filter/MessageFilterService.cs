@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using ChatBot.api.twitch.client.data;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.message_filter;
 

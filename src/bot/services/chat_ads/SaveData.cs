@@ -1,5 +1,5 @@
-﻿using ChatBot.bot.services.chat_ads.Data;
-using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.chat_ads.Data;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.chat_ads;

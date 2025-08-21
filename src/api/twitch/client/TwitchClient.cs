@@ -45,7 +45,7 @@ public class TwitchClient : ITwitchClient {
                 return;
             }
 
-            var channelInfo = await Helix.GetUserInfo(
+            var channelInfo = await Helix.GetUserInfoByUsername(
                                                          credentials.Channel,
                                                          credentials.Oauth,
                                                          validateResponse.ClientId,

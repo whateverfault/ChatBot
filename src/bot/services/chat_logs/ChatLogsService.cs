@@ -1,9 +1,9 @@
 ﻿using ChatBot.api.twitch.client.data;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.chat_logs;
 
@@ -20,7 +20,7 @@ public class ChatLogsService : Service {
         if (status == FilterStatus.Match) return;
         if (Constants.ExcludeUsersIds.Contains(chatMessage.UserId)) return;
         
-        var msg = new Message(chatMessage.Text, chatMessage.Username);
+        var msg = new Message(chatMessage.Text, chatMessage.UserId);
         Options.AddLog(msg);
         OnLogsAppended?.Invoke(chatMessage);
     }

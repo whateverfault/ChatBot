@@ -151,7 +151,7 @@ public class DemonListService : Service {
     public async Task<RecordInfo?> GetEasiest(UserProfile? profile) {
         try {
             if (_aredlClient == null) return null;
-
+            
             var completed =
                 await _aredlClient.ListUserRecords(profile?.user?.id!,
                                                    (_, message) => { _logger.Log(LogLevel.Error, message); });
@@ -180,7 +180,7 @@ public class DemonListService : Service {
             if (easiest?.level.position < easiestVerification?.level.position || easiest == null) {
                 easiest = easiestVerification;
             }
-
+            
             return easiest;
         }
         catch (Exception) {
@@ -191,7 +191,7 @@ public class DemonListService : Service {
     public async Task<LevelInfo?> GetEasiest() {
         try {
             if (_aredlClient == null) return null;
-
+            
             var levels = await _aredlClient.ListLevels();
             if (levels?.Data == null || levels.Data.Count < 1) {
                 return null;
@@ -202,7 +202,7 @@ public class DemonListService : Service {
             while (level is { Legacy: true, }) {
                 level = levels.Data?[^i++];
             }
-
+            
             return level;
         }
         catch (Exception) {

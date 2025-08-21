@@ -1,16 +1,14 @@
 ﻿using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.message_randomizer;
 
 public class MessageRandomizerService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static ITwitchClient? Client => TwitchChatBot.Instance.GetClient();
 
     public override string Name => ServiceName.MessageRandomizer;
@@ -41,16 +39,13 @@ public class MessageRandomizerService : Service {
         if (ErrorHandler.LogErrorAndPrint(err)) {
             return;
         }
-        Client?.SendMessage(message!.Msg);
+        Client?.SendMessage(message!.Text);
     }
 
     private ErrorCode Generate(out Message? message) {
         message = null;
-        if (Options.ServiceState == State.Disabled) {
-            return ErrorCode.ServiceDisabled;
-        }
         
-        var logs = Options.ChatLogsService.GetLogs();
+        var logs = MessageRandomizerOptions.ChatLogsService.GetLogs();
         if (logs.Count <= 0) {
             return ErrorCode.ListIsEmpty;
         }
@@ -58,8 +53,6 @@ public class MessageRandomizerService : Service {
         var randomIndex = Random.Shared.Next(0, logs.Count);
         Options.SetLastGeneratedMessage(logs[randomIndex]);
         Options.SetMessageState(MessageState.NotGuessed);
-        _logger.Log(LogLevel.Info,
-                    $"Message has been Generated: {Options.LastGeneratedMessage.Msg} | {Options.LastGeneratedMessage.Username}");
         
         Options.ZeroCounter();
         Options.IncreaseCounter();
@@ -73,7 +66,7 @@ public class MessageRandomizerService : Service {
         if (ErrorHandler.LogError(err)
             || message == null) return;
         
-        Client?.SendMessage(message.Msg);
+        Client?.SendMessage(message.Text);
     }
 
     public ErrorCode GetLastGeneratedMessage(out Message? message) {
@@ -81,7 +74,7 @@ public class MessageRandomizerService : Service {
         if (Options.ServiceState == State.Disabled) {
             return ErrorCode.ServiceDisabled;
         }
-        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Msg)? ErrorCode.NotEnoughData : ErrorCode.None;
+        return string.IsNullOrEmpty(Options.LastGeneratedMessage.Text)? ErrorCode.NotEnoughData : ErrorCode.None;
     }
     
     public override State GetServiceState() {

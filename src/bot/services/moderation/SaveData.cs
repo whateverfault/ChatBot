@@ -1,5 +1,5 @@
-﻿using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.moderation;

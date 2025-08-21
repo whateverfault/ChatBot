@@ -1,10 +1,10 @@
 ﻿using System.Text;
 using ChatBot.api.twitch.client;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.text_generator;
 
@@ -24,7 +24,7 @@ public class TextGeneratorService : Service {
         var sb = new StringBuilder();
         
         foreach (var message in chatLogs) {
-            sb.AppendLine(message.Msg);
+            sb.AppendLine(message.Text);
         }
         
         Options.Train(sb.ToString());

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.helix;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
@@ -16,7 +17,6 @@ using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -1176,16 +1176,22 @@ public static class CommandsList {
         }
 
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)) {
+        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) {
             logger.Log(LogLevel.Info, "Tried to access last random message while there is no such.");
             return;
         }
 
-        if (args[0] != message!.Username) {
+        var userId = await Helix.GetUserId(args[0], client.Credentials, (_, msg) => {
+                                               _logger.Log(LogLevel.Error, msg);
+                                           });
+        if (userId == null) return;
+        
+        if (userId != message.UserId) {
             await client.SendReply(chatMessage.Id, "Неправильно.");
         } else {
             await client.SendReply(chatMessage.Id,
-                              $"Правильно, это было сообщение от {message.Username}.");
+                              $"Правильно, это было сообщение от {args[0]}.");
             messageRandomizer.Options.SetMessageState(MessageState.Guessed);
         }
     }
@@ -1199,13 +1205,16 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)) {
-            ErrorHandler.ReplyWithError(err, chatMessage, client);
+        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) {
             logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
             return;
         }
 
-        await client.SendReply(chatMessage.Id, $"Это было сообщение от '{message!.Username}'");
+        var username = await Helix.GetUsername(message.UserId, client.Credentials, (_, msg) => {
+                                                   _logger.Log(LogLevel.Error, msg);
+                                               });
+        await client.SendReply(chatMessage.Id, $"Это было сообщение от '{username}'");
     }
 
     private static async Task Repeat(ChatCmdArgs cmdArgs) {
@@ -1223,7 +1232,7 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendReply(chatMessage.Id, message!.Msg);
+        await client.SendReply(chatMessage.Id, message!.Text);
         logger.Log(LogLevel.Info, $"Repeated last message for {chatMessage.Username}.");
     }
 

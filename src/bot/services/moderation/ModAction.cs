@@ -1,10 +1,10 @@
 ﻿using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
 using ChatBot.api.twitch.helix;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.moderation;
