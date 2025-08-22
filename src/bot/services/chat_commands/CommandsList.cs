@@ -1783,17 +1783,19 @@ public static class CommandsList {
         await client.SendReply(chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
     }
 
-    private static Task Games(ChatCmdArgs cmdArgs) {
+    private static async Task Games(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
 
 
         var gameRequests = gameRequestService.GetGameRequests();
 
         if (gameRequests?.Count <= 0) {
             ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
-            return Task.CompletedTask;
+            return;
         }
         
         var reply = new List<string>();
@@ -1804,12 +1806,14 @@ public static class CommandsList {
             if (i >= gameRequests.Count-1) {
                 separator = string.Empty;
             }
-            
-            reply.Add($"{i+1}. {gameRequest.GameName} -> {gameRequest.RequesterUsername} {separator}");
+
+            var username = await Helix.GetUsername(gameRequest.UserId, client.Credentials, (_, message) => {
+                                                     _logger.Log(LogLevel.Error, message);
+                                                 });
+            reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
         }
 
-        _ = SendPagedReply(reply, cmdArgs);
-        return Task.CompletedTask;
+        await SendPagedReply(reply, cmdArgs);
     }
 
     private static async Task AddGameRequestsReward(ChatCmdArgs cmdArgs) {

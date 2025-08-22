@@ -5,15 +5,16 @@ namespace ChatBot.bot.services.game_requests.Data;
 public class GameRequest {
     [JsonProperty("game_name")]
     public string GameName { get; private set; }
-    [JsonProperty("username")]
-    public string RequesterUsername { get; private set; }
+    
+    [JsonProperty("user_id")]
+    public string UserId { get; private set; }
     
     
     [JsonConstructor]
     public GameRequest(
         [JsonProperty("game_name")] string gameName,
-        [JsonProperty("username")] string requesterUsername) {
+        [JsonProperty("user_id")] string userId) {
         GameName = gameName;
-        RequesterUsername = requesterUsername;
+        UserId = userId;
     }
 }

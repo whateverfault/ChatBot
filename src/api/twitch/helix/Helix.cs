@@ -2,6 +2,7 @@
 using System.Text;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub.subscription_data.subscription;
+using ChatBot.api.twitch.helix.data;
 using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.api.twitch.helix.data.requests.chat_subscription;
 using ChatBot.api.twitch.helix.data.responses;
@@ -14,7 +15,8 @@ namespace ChatBot.api.twitch.helix;
 
 public static class Helix {
     private static readonly HttpClient _httpClient = new HttpClient();
-
+    private static readonly HelixCache _cache = new HelixCache(5);
+    
 
     public static async Task<ValidateResponse?> ValidateOauth(string oauth, EventHandler<string>? callback = null) {
         try {
@@ -46,6 +48,10 @@ public static class Helix {
 
     public static async Task<UserInfo?> GetUserInfo(string endpoint, string oauth, string clientId, EventHandler<string>? callback = null) {
         try {
+            if (_cache.UserInfoTable.ContainsKey(endpoint)) {
+                return _cache.UserInfoTable[endpoint];
+            }
+            
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", oauth);
@@ -67,7 +73,10 @@ public static class Helix {
                 return null;
             }
 
-            return deserialized.Data[0];
+            var userInfo = deserialized.Data[0];
+            _cache.UserInfoTable.Add(endpoint, userInfo);
+            
+            return userInfo;
         }
         catch (Exception e) {
             callback?.Invoke(null, $"Exception while getting user info. {e.Message}");
@@ -791,8 +800,8 @@ public static class Helix {
             return null;
         }
 
-        if (!string.IsNullOrEmpty(userInfo.Id)) {
-            return userInfo.Id;
+        if (!string.IsNullOrEmpty(userInfo.Login)) {
+            return userInfo.Login;
         }
 
         callback?.Invoke(null, $"User with id {userId} not found");
