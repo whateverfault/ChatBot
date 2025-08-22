@@ -15,8 +15,8 @@ public enum LogLevel {
 }
 
 public class TwitchClient : ITwitchClient {
-    private readonly TwitchEventSubWebSocket _websocket;
     private readonly CommandParser _commandParser;
+    private TwitchEventSubWebSocket? _websocket;
     
     public FullCredentials? Credentials { get; private set; }
 
@@ -29,21 +29,19 @@ public class TwitchClient : ITwitchClient {
     
     public TwitchClient(char? commandIdentifier = null) {
         _commandParser = new CommandParser(commandIdentifier);
-        _websocket = new TwitchEventSubWebSocket();
-        Subscribe();
+        InitializeWebSocket();
     }
 
-    public async Task Initialize(FullCredentials credentials) {
-        await Initialize(new ConnectionCredentials(credentials.Username, credentials.Channel, credentials.Oauth));
+    private async Task Initialize(FullCredentials credentials) {
+        await Initialize(new ConnectionCredentials(credentials.Channel, credentials.Oauth, credentials.ChannelOauth));
     }
     
     public async Task Initialize(ConnectionCredentials credentials) {
         try {
+            if (_websocket == null) return;
+            
             var validateResponse = await Helix.ValidateOauth(credentials.Oauth, OnError);
-
-            if (validateResponse == null) {
-                return;
-            }
+            if (validateResponse == null) return;
 
             var channelInfo = await Helix.GetUserInfoByUsername(
                                                          credentials.Channel,
@@ -91,6 +89,8 @@ public class TwitchClient : ITwitchClient {
         
         UnSubscribe();
         await Disconnect(true);
+
+        InitializeWebSocket();
         await Initialize(Credentials);
     }
 
@@ -99,13 +99,12 @@ public class TwitchClient : ITwitchClient {
     }
     
     private async Task Disconnect(bool reconnect) {
-        UnSubscribe();
-
-        if (_websocket.SubscriptionId == null
+        if (_websocket?.SubscriptionId == null
          || Credentials == null) {
             return;
         }
         
+        UnSubscribe();
         await Helix.EventSubUnSubscribe(
                                         _websocket.SubscriptionId, 
                                         Credentials, 
@@ -174,6 +173,11 @@ public class TwitchClient : ITwitchClient {
         Credentials?.UpdateChannel(response.Login);
         Credentials?.UpdateChannelId(response.UserId);
     }
+
+    private void InitializeWebSocket() {
+        _websocket = new TwitchEventSubWebSocket();
+        Subscribe();
+    }
     
     private async Task<string?> ValidateUser(string username, EventHandler<string>? callback = null) {
         if (Credentials == null) {
@@ -211,6 +215,8 @@ public class TwitchClient : ITwitchClient {
     }
     
     private void Subscribe() {
+        if (_websocket == null) return;
+        
         _websocket.OnWebSocketError += OnWebSocketError;
         _websocket.OnChatMessageReceived += HandleChatMessage;
         _websocket.OnConnectionClosed += OnConnectionClosed;
@@ -219,6 +225,8 @@ public class TwitchClient : ITwitchClient {
     }
 
     private void UnSubscribe() {
+        if (_websocket == null) return;
+        
         _websocket.OnWebSocketError -= OnWebSocketError;
         _websocket.OnChatMessageReceived -= HandleChatMessage;
         _websocket.OnConnectionClosed -= OnConnectionClosed;
