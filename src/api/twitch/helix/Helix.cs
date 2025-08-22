@@ -793,13 +793,19 @@ public static class Helix {
         return null;
     }
     
-    public static async Task<string?> GetUsername(string userId, FullCredentials credentials, EventHandler<string>? callback = null) {
+    public static async Task<string?> GetUsername(string userId, FullCredentials credentials, bool displayName = false, EventHandler<string>? callback = null) {
         var userInfo = await GetUserInfoByUserId(userId, credentials.Oauth, credentials.ClientId);
         if (userInfo == null) {
             callback?.Invoke(null, $"Couldn't get info of user with id '{userId}'");
             return null;
         }
 
+        if (displayName) {
+            if (!string.IsNullOrEmpty(userInfo.DisplayName)) {
+                return userInfo.DisplayName;
+            }
+        }
+        
         if (!string.IsNullOrEmpty(userInfo.Login)) {
             return userInfo.Login;
         }

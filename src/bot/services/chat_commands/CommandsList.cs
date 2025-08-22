@@ -1211,7 +1211,7 @@ public static class CommandsList {
             return;
         }
 
-        var username = await Helix.GetUsername(message.UserId, client.Credentials, (_, msg) => {
+        var username = await Helix.GetUsername(message.UserId, client.Credentials, true, (_, msg) => {
                                                    _logger.Log(LogLevel.Error, msg);
                                                });
         await client.SendReply(chatMessage.Id, $"Это было сообщение от '{username}'");
@@ -1807,7 +1807,7 @@ public static class CommandsList {
                 separator = string.Empty;
             }
 
-            var username = await Helix.GetUsername(gameRequest.UserId, client.Credentials, (_, message) => {
+            var username = await Helix.GetUsername(gameRequest.UserId, client.Credentials, true, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
             reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
