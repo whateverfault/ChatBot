@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
 
 namespace ChatBot.bot.services.interfaces;
 

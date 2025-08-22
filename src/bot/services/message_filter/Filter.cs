@@ -1,5 +1,5 @@
-﻿using ChatBot.bot.services.Static;
-using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.Static;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.message_filter;

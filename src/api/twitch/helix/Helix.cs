@@ -2,6 +2,7 @@
 using System.Text;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub.subscription_data.subscription;
+using ChatBot.api.twitch.helix.data;
 using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.api.twitch.helix.data.requests.chat_subscription;
 using ChatBot.api.twitch.helix.data.responses;
@@ -14,7 +15,8 @@ namespace ChatBot.api.twitch.helix;
 
 public static class Helix {
     private static readonly HttpClient _httpClient = new HttpClient();
-
+    private static readonly HelixCache _cache = new HelixCache(5);
+    
 
     public static async Task<ValidateResponse?> ValidateOauth(string oauth, EventHandler<string>? callback = null) {
         try {
@@ -44,24 +46,23 @@ public static class Helix {
         }
     }
 
-    public static async Task<UserInfo?> GetUserInfo(string username, string oauth, string clientId, EventHandler<string>? callback = null) {
+    public static async Task<UserInfo?> GetUserInfo(string endpoint, string oauth, string clientId, EventHandler<string>? callback = null) {
         try {
-            if (string.IsNullOrEmpty(username)) {
-                callback?.Invoke(null, "Username is empty.");
-                return null;
+            if (_cache.UserInfoTable.ContainsKey(endpoint)) {
+                return _cache.UserInfoTable[endpoint];
             }
-
+            
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", oauth);
             _httpClient.DefaultRequestHeaders.Add("Client-Id", clientId);
 
-            var response = await _httpClient.GetAsync($"https://api.twitch.tv/helix/users?login={username}");
+            var response = await _httpClient.GetAsync(endpoint);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
                 callback?.Invoke(null,
-                                 $"Failed to get a user id. Status: {response.StatusCode}. Content: {responseContent}");
+                                 $"Failed to get user info. Status: {response.StatusCode}. Content: {responseContent}");
                 return null;
             }
 
@@ -72,14 +73,17 @@ public static class Helix {
                 return null;
             }
 
-            return deserialized.Data[0];
+            var userInfo = deserialized.Data[0];
+            _cache.UserInfoTable.Add(endpoint, userInfo);
+            
+            return userInfo;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Exception while getting a user id. {e.Message}");
+            callback?.Invoke(null, $"Exception while getting user info. {e.Message}");
             return null;
         }
     }
-
+    
     public static async Task<SendMessageResponse?> SendMessage(string message, FullCredentials credentials, EventHandler<string>? callback = null) {
         try {
             if (string.IsNullOrEmpty(message)) {
@@ -729,8 +733,38 @@ public static class Helix {
         return null;
     }
     
+    public static async Task<UserInfo?> GetUserInfoByUsername(string username, string oauth, string clientId, EventHandler<string>? callback = null) {
+        try {
+            if (string.IsNullOrEmpty(username)) {
+                callback?.Invoke(null, "Username is empty.");
+                return null;
+            }
+            var response = await GetUserInfo($"https://api.twitch.tv/helix/users?login={username}", oauth, clientId, callback);
+            return response;
+        }
+        catch (Exception e) {
+            callback?.Invoke(null, $"Exception while getting user info. {e.Message}");
+            return null;
+        }
+    }
+
+    public static async Task<UserInfo?> GetUserInfoByUserId(string userId, string oauth, string clientId, EventHandler<string>? callback = null) {
+        try {
+            if (string.IsNullOrEmpty(userId)) {
+                callback?.Invoke(null, "UserId is empty.");
+                return null;
+            }
+            var response = await GetUserInfo($"https://api.twitch.tv/helix/users?id={userId}", oauth, clientId, callback);
+            return response;
+        }
+        catch (Exception e) {
+            callback?.Invoke(null, $"Exception while getting user info. {e.Message}");
+            return null;
+        }
+    }
+    
     public static async Task<string?> GetUserId(string username, string oauth, string clientId, EventHandler<string>? callback = null) {
-        var userInfo = await GetUserInfo(username, oauth, clientId);
+        var userInfo = await GetUserInfoByUsername(username, oauth, clientId);
         if (userInfo == null) {
             callback?.Invoke(null, $"Couldn't get info of user '{username}'");
             return null;
@@ -745,7 +779,7 @@ public static class Helix {
     }
     
     public static async Task<string?> GetUserId(string username, FullCredentials credentials, EventHandler<string>? callback = null) {
-        var userInfo = await GetUserInfo(username, credentials.Oauth, credentials.ClientId);
+        var userInfo = await GetUserInfoByUsername(username, credentials.Oauth, credentials.ClientId);
         if (userInfo == null) {
             callback?.Invoke(null, $"Couldn't get info of user '{username}'");
             return null;
@@ -756,6 +790,21 @@ public static class Helix {
         }
 
         callback?.Invoke(null, $"User {username} not found");
+        return null;
+    }
+    
+    public static async Task<string?> GetUsername(string userId, FullCredentials credentials, EventHandler<string>? callback = null) {
+        var userInfo = await GetUserInfoByUserId(userId, credentials.Oauth, credentials.ClientId);
+        if (userInfo == null) {
+            callback?.Invoke(null, $"Couldn't get info of user with id '{userId}'");
+            return null;
+        }
+
+        if (!string.IsNullOrEmpty(userInfo.Login)) {
+            return userInfo.Login;
+        }
+
+        callback?.Invoke(null, $"User with id {userId} not found");
         return null;
     }
 }

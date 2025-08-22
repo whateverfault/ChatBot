@@ -1,12 +1,13 @@
 ﻿using System.Text;
 using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
+using ChatBot.api.twitch.helix;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.game_requests.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.game_requests;
 
@@ -35,7 +36,9 @@ public class GameRequestsService : Service {
         }
     }
 
-    public Task AddGameRequest(List<string> args, ChatMessage chatMessage) {
+    public async Task AddGameRequest(List<string> args, ChatMessage chatMessage) {
+        if (Client?.Credentials == null) return;
+        
         var gameNameSb = new StringBuilder();
 
         foreach (var arg in args) {
@@ -53,9 +56,17 @@ public class GameRequestsService : Service {
         }
         
         index = args.IndexOf("--user");
-        var requester = chatMessage.Username;
+        var requesterId = chatMessage.UserId;
         if (index >= 0 && index < args.Count-1) {
-            requester = args[index+1];
+            var userId = await Helix.GetUserId(args[index+1], Client.Credentials, (_, message) => {
+                                                   _logger.Log(LogLevel.Error, message);
+                                               });
+            if (userId == null) {
+                ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, Client);
+                return;
+            }
+
+            requesterId = userId;
         }
         
         if (position <= 0 || position > Options.GameRequests!.Count+1) {
@@ -67,20 +78,18 @@ public class GameRequestsService : Service {
         try {
             if (Options.GameRequests.Any(request => string.Equals(request.GameName, gameName, StringComparison.OrdinalIgnoreCase))) {
                 ErrorHandler.ReplyWithError(ErrorCode.AlreadyContains, chatMessage, Client);
-                return Task.CompletedTask;
+                return;
             }
             
             var gameRequest = new GameRequest(
                                               gameName,
-                                              requester
+                                              requesterId
                                               );
             
             Options.AddRequest(gameRequest, position-1);
-            Client?.SendReply(chatMessage.Id, $"Игра {gameName} добавлена в очередь на {position} позицию.");
-            return Task.CompletedTask;
+            await Client.SendReply(chatMessage.Id, $"Игра {gameName} добавлена в очередь на {position} позицию.");
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e}");
-            return Task.CompletedTask;
         }
     }
     

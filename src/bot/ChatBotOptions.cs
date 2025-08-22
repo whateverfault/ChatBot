@@ -1,8 +1,8 @@
 ﻿using ChatBot.api.json;
 using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.credentials;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot;
 

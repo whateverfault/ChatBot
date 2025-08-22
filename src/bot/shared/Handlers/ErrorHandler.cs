@@ -21,6 +21,7 @@ public enum ErrorCode {
     TranslationFailed,
     ConnectionFailed,
     NoRewardSet,
+    UserNotFound,
     None,
 }
 
@@ -43,6 +44,7 @@ public static class ErrorHandler {
                                                                   "Translation failed.",
                                                                   "Connection failed.",
                                                                   "Reward isn't properly set.",
+                                                                  "User not found.",
                                                               ];
 
 
@@ -62,6 +64,7 @@ public static class ErrorHandler {
                                                                 "Не удалось перевести.",
                                                                 "Не удалось подключиться к сети.",
                                                                 "Награда не установлена.",
+                                                                "Пользователь не найден.",
                                                             ];
     
     

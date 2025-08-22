@@ -3,10 +3,10 @@
 namespace ChatBot.api.aredl.responses;
 
 public class ListLevelsResponse {
-    public readonly List<LevelInfo>? data;
+    public List<LevelInfo> Data { get; private set; }
 
-
-    public ListLevelsResponse(List<LevelInfo>? data) {
-        this.data = data;
+    
+    public ListLevelsResponse(List<LevelInfo> data) {
+        Data = data;
     }
 }

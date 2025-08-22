@@ -14,6 +14,7 @@ public class MessageRandomizerEvents : ServiceEvents {
     public override void Init(Service service) {
         _messageRandomizer = (MessageRandomizerService)service;
         _chatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        
         base.Init(service);
     }
 

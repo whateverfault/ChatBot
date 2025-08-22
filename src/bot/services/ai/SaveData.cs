@@ -1,5 +1,5 @@
-﻿using ChatBot.bot.services.ai.AiClients.interfaces;
-using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.ai.AiClients.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.ai;

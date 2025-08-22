@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using Range = ChatBot.api.basic.Range;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate Range RangeGetter();
 public delegate void RangeSetter(Range value);
@@ -26,7 +28,7 @@ public class CliNodeRange : CliNode {
         base.PrintValue(index, out end);
         
         var range = _getter.Invoke();
-        Console.Write($" - {range.Start.Value}..{range.End.Value}");
+        Console.Write($" - {range.Start}..{range.End}");
         return 0;
     }
 
@@ -34,12 +36,12 @@ public class CliNodeRange : CliNode {
         if (_permission == CliNodePermission.ReadOnly) return;
 
         var range = _getter.Invoke();
-        Console.WriteLine($"Value: {range.Start.Value}..{range.End.Value}");
+        Console.WriteLine($"Value: {range.Start}..{range.End}");
         
         Console.Write("from: ");
         var line = Console.ReadLine();
         
-        var from = _getter.Invoke().Start.Value;
+        var from = _getter.Invoke().Start;
         if (!string.IsNullOrEmpty(line)) {
             int.TryParse(line, out from);
         }        
@@ -47,7 +49,7 @@ public class CliNodeRange : CliNode {
         Console.Write("to: ");
         line = Console.ReadLine();
         
-        var to = _getter.Invoke().End.Value;
+        var to = _getter.Invoke().End;
         if (!string.IsNullOrEmpty(line)) {
             int.TryParse(line, out to);
         }   

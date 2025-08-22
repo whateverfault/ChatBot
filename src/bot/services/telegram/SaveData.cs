@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.telegram;

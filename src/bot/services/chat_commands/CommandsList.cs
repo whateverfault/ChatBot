@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using ChatBot.api.aredl;
 using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.helix;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
@@ -17,7 +17,6 @@ using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -1177,16 +1176,22 @@ public static class CommandsList {
         }
 
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)) {
+        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) {
             logger.Log(LogLevel.Info, "Tried to access last random message while there is no such.");
             return;
         }
 
-        if (args[0] != message!.Username) {
+        var userId = await Helix.GetUserId(args[0], client.Credentials, (_, msg) => {
+                                               _logger.Log(LogLevel.Error, msg);
+                                           });
+        if (userId == null) return;
+        
+        if (userId != message.UserId) {
             await client.SendReply(chatMessage.Id, "Неправильно.");
         } else {
             await client.SendReply(chatMessage.Id,
-                              $"Правильно, это было сообщение от {message.Username}.");
+                              $"Правильно, это было сообщение от {args[0]}.");
             messageRandomizer.Options.SetMessageState(MessageState.Guessed);
         }
     }
@@ -1200,13 +1205,16 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)) {
-            ErrorHandler.ReplyWithError(err, chatMessage, client);
+        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) {
             logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
             return;
         }
 
-        await client.SendReply(chatMessage.Id, $"Это было сообщение от '{message!.Username}'");
+        var username = await Helix.GetUsername(message.UserId, client.Credentials, (_, msg) => {
+                                                   _logger.Log(LogLevel.Error, msg);
+                                               });
+        await client.SendReply(chatMessage.Id, $"Это было сообщение от '{username}'");
     }
 
     private static async Task Repeat(ChatCmdArgs cmdArgs) {
@@ -1224,7 +1232,7 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendReply(chatMessage.Id, message!.Msg);
+        await client.SendReply(chatMessage.Id, message!.Text);
         logger.Log(LogLevel.Info, $"Repeated last message for {chatMessage.Username}.");
     }
 
@@ -1363,16 +1371,16 @@ public static class CommandsList {
             await client.SendReply(chatMessage.Id, "Позиция не найдена.");
             return;
         }
-        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
+        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
         var tier = 
-            levelInfo.nlwTier == null? 
+            levelInfo.NlwTier == null? 
                 "(List tier)":
-                $"({levelInfo.nlwTier} tier)";
+                $"({levelInfo.NlwTier} tier)";
         
-        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.name} {tier} {verificationLink}");
+        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier} {verificationLink}");
     }
 
     private static async Task Place(ChatCmdArgs cmdArgs) {
@@ -1422,19 +1430,19 @@ public static class CommandsList {
         if (page >= levelsInfo.Count) page = levelsInfo.Count-1;
         
         var levelInfo = levelsInfo[page];
-        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
+        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
         
         var tier = 
-            levelInfo.nlwTier == null? 
+            levelInfo.NlwTier == null? 
                 string.Empty:
-                $"({levelInfo.nlwTier} tier";
+                $"({levelInfo.NlwTier} tier";
 
-        var enjoyment = (levelInfo.edelEnjoyment == null) switch {
+        var enjoyment = (levelInfo.EdelEnjoyment == null) switch {
                             true  => string.IsNullOrEmpty(tier) ? string.Empty : ")",
-                            false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.edelEnjoyment})" : $"; EDL: {(int)levelInfo.edelEnjoyment})",
+                            false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.EdelEnjoyment})" : $"; EDL: {(int)levelInfo.EdelEnjoyment})",
                         };
 
         var pages = 
@@ -1442,7 +1450,7 @@ public static class CommandsList {
                 string.Empty : 
                 $"Страница {page+1} из {levelsInfo.Count} |";
         
-        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier}{enjoyment} {verificationLink}");
+        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.Position} {levelInfo.Name} {tier}{enjoyment} {verificationLink}");
     }
     
     private static async Task Ptop(ChatCmdArgs cmdArgs) {
@@ -1466,17 +1474,17 @@ public static class CommandsList {
             await client.SendReply(chatMessage.Id, "Позиция не найдена.");
             return;
         }
-        var verificationLink = await demonList.GetPlatformerLevelVerificationLink(levelInfo.id);
+        var verificationLink = await demonList.GetPlatformerLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
         
         var tier = 
-            levelInfo.nlwTier == null? 
+            levelInfo.NlwTier == null? 
                 "(List tier)":
-                $"({levelInfo.nlwTier} tier)";
+                $"({levelInfo.NlwTier} tier)";
         
-        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.name} {tier} {verificationLink}");
+        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier} {verificationLink}");
     }
     
     private static async Task Pplace(ChatCmdArgs cmdArgs) {
@@ -1526,22 +1534,22 @@ public static class CommandsList {
         if (page >= levelsInfo.Count) page = levelsInfo.Count-1;
         
         var levelInfo = levelsInfo[page];
-        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
+        var verificationLink = await demonList.GetPlatformerLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
         
         var tier = 
-            levelInfo.nlwTier == null? 
+            levelInfo.NlwTier == null? 
                 "(List tier)":
-                $"({levelInfo.nlwTier} tier)";
+                $"({levelInfo.NlwTier} tier)";
         
         var pages = 
             levelsInfo.Count <= 1 ? 
                 string.Empty : 
                 $"Страница {page+1} из {levelsInfo.Count} |";
         
-        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.position} {levelInfo.name} {tier} {verificationLink}");
+        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.Position} {levelInfo.Name} {tier} {verificationLink}");
     }
 
     private static async Task Hardest(ChatCmdArgs cmdArgs) {
@@ -1559,22 +1567,22 @@ public static class CommandsList {
         }
                     
         if (args.Count < 1) {
-            var levels = await Aredl.ListLevels();
-            if (levels == null || levels.data?.Count < 1) {
+            var level = await demonList.GetHardest();
+            if (level == null) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
                     ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 }
                 return;
             }
-            var level = levels.data?[0];
-            var details = await demonList.GetLevelDetails(level?.id!);
+            
+            var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
                     ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 }
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level?.position} {level?.name} | {details.verifications[0].videoUrl}");
+            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
             return;
         }
         
@@ -1613,26 +1621,22 @@ public static class CommandsList {
         }
                     
         if (args.Count < 1) {
-            var levels = await Aredl.ListLevels();
-            if (levels == null || levels.data?.Count < 1) {
+            var level = await demonList.GetEasiest();
+            if (level == null) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
-                    await client.SendReply(chatMessage.Id, "Что-то пошло не так.");
+                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 }
                 return;
             }
-            var level = levels.data?[^1];
-            var i = 2;
-            while (level!.legacy) {
-                level = levels.data?[^i++];
-            }
-            var details = await demonList.GetLevelDetails(level.id);
+            
+            var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
                 if (chatCommands.Options.VerboseState == State.Enabled) {
                     await client.SendReply(chatMessage.Id, "Не найдено.");
                 }
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level.position} {level.name} | {details.verifications[0].videoUrl}");
+            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
             return;
         }
 
@@ -1684,11 +1688,11 @@ public static class CommandsList {
             ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
-        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.id);
+        var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        await client.SendReply(chatMessage.Id, $"#{levelInfo.position} {levelInfo.name} {verificationLink}");
+        await client.SendReply(chatMessage.Id, $"#{levelInfo.Position} {levelInfo.Name} {verificationLink}");
     }
 
     private static async Task Clan(ChatCmdArgs cmdArgs) {
@@ -1710,7 +1714,7 @@ public static class CommandsList {
                         
         var clanInfo = await demonList.GetClanInfo(args[0]);
         if (clanInfo == null) {
-            await client.SendReply(chatMessage.Id, $"Клана не существует.");
+            await client.SendReply(chatMessage.Id, "Клана не существует.");
             return;
         }
                         
@@ -1779,17 +1783,19 @@ public static class CommandsList {
         await client.SendReply(chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
     }
 
-    private static Task Games(ChatCmdArgs cmdArgs) {
+    private static async Task Games(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var client = _bot.GetClient();
 
 
         var gameRequests = gameRequestService.GetGameRequests();
 
         if (gameRequests?.Count <= 0) {
             ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
-            return Task.CompletedTask;
+            return;
         }
         
         var reply = new List<string>();
@@ -1800,12 +1806,14 @@ public static class CommandsList {
             if (i >= gameRequests.Count-1) {
                 separator = string.Empty;
             }
-            
-            reply.Add($"{i+1}. {gameRequest.GameName} -> {gameRequest.RequesterUsername} {separator}");
+
+            var username = await Helix.GetUsername(gameRequest.UserId, client.Credentials, (_, message) => {
+                                                     _logger.Log(LogLevel.Error, message);
+                                                 });
+            reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
         }
 
-        _ = SendPagedReply(reply, cmdArgs);
-        return Task.CompletedTask;
+        await SendPagedReply(reply, cmdArgs);
     }
 
     private static async Task AddGameRequestsReward(ChatCmdArgs cmdArgs) {

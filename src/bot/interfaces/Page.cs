@@ -1,4 +1,6 @@
-﻿namespace ChatBot.bot.shared.interfaces;
+﻿using ChatBot.bot.shared;
+
+namespace ChatBot.bot.interfaces;
 
 public static class Page {
     public const string PageTerminator = "--";

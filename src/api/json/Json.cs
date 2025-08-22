@@ -47,12 +47,15 @@ public static class Json {
             }
         }
         catch (NullReferenceException) {
+            obj = new T();
             HandleException();
         }
         catch (JsonSerializationException) {
+            obj = new T();
             HandleException();
         }
         catch (JsonReaderException) {
+            obj = new T();
             HandleException();
         }
 

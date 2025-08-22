@@ -1,7 +1,7 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai.AiClients.interfaces;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.ai;
 

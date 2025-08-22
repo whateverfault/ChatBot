@@ -1,7 +1,7 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.stream_state_checker.Data;
 using ChatBot.bot.shared;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.stream_state_checker;
 

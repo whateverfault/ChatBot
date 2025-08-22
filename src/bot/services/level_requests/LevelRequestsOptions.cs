@@ -1,9 +1,9 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.level_requests;
 

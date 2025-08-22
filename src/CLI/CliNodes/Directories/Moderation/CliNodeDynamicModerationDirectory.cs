@@ -1,7 +1,7 @@
-﻿using ChatBot.bot.services.moderation;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.cli.CliNodes.Directories.Moderation;
 

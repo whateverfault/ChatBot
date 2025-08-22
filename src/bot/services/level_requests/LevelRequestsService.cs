@@ -1,11 +1,11 @@
 ﻿using ChatBot.api.twitch.client;
 using ChatBot.api.twitch.client.data;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
-using ChatBot.bot.shared.interfaces;
 
 namespace ChatBot.bot.services.level_requests;
 
