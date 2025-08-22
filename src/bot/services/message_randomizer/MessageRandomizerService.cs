@@ -46,7 +46,7 @@ public class MessageRandomizerService : Service {
         message = null;
         
         var logs = MessageRandomizerOptions.ChatLogsService.GetLogs();
-        if (logs.Count <= 0) {
+        if (logs is not { Count: > 0, }) {
             return ErrorCode.ListIsEmpty;
         }
 
