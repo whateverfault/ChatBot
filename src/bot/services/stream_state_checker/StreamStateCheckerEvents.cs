@@ -9,6 +9,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
 
     private StreamStateCheckerService _checkerService = null!;
+    private readonly object _killLock = new object();
     private bool _killSignal;
     
     public override bool Initialized { get; protected set; }
@@ -22,8 +23,9 @@ public class StreamStateCheckerEvents : ServiceEvents {
     }
 
     public override void Kill() {
-        _killSignal = true;
-        
+        lock (_killLock) {
+            _killSignal = true;
+        }
         base.Kill();
     }
     
@@ -48,8 +50,8 @@ public class StreamStateCheckerEvents : ServiceEvents {
     private async void CheckStreamStateRoutine() {
         try {
             while (true) {
-                if (_killSignal) {
-                    return;
+                lock (_killLock) {
+                    if (_killSignal) return;
                 }
                 
                 var cooldown = _checkerService.Options.GetCheckCooldown();

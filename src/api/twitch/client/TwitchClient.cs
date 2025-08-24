@@ -67,7 +67,7 @@ public class TwitchClient : ITwitchClient {
         
             async void SubscribeToChat(object? sender, EventArgs e) {
                 try {
-                    var result = await Helix.SubscribeToChannelChat(_websocket.SessionId, Credentials, OnError);
+                    var result = await EventSub.SubscribeToChannelChat(_websocket.SessionId, Credentials, OnError);
                     if (result?.Id == null) return;
                 
                     _websocket.SetSubscriptionId(result.Id);
@@ -105,10 +105,10 @@ public class TwitchClient : ITwitchClient {
         }
         
         UnSubscribe();
-        await Helix.EventSubUnSubscribe(
-                                        _websocket.SubscriptionId, 
-                                        Credentials, 
-                                        OnError
+        await EventSub.EventSubUnSubscribe(
+                                           _websocket.SubscriptionId, 
+                                           Credentials, 
+                                           OnError
                                         );
         await _websocket.DisconnectAsync();
         

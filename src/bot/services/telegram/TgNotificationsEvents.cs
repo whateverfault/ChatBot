@@ -7,6 +7,8 @@ using ChatBot.bot.services.stream_state_checker.Data;
 namespace ChatBot.bot.services.telegram;
 
 public class TgNotificationsEvents : ServiceEvents {
+    private readonly object _lock = new object();
+    
     private TgNotificationsService _tgNotifications = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
 
@@ -16,6 +18,7 @@ public class TgNotificationsEvents : ServiceEvents {
     public override void Init(Service service) {
         _tgNotifications = (TgNotificationsService)service;
         _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        
         base.Init(service);
     }
 
@@ -24,6 +27,7 @@ public class TgNotificationsEvents : ServiceEvents {
             return;
         }
         base.Subscribe();
+        
         _streamStateChecker.OnStreamStateChangedAsync += SendNotificationWrapper;
         _streamStateChecker.OnStreamStateUpdateAsync += DeleteNotificationWrapper;
     }
@@ -44,19 +48,34 @@ public class TgNotificationsEvents : ServiceEvents {
         }
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        if (now - streamState.LastOnline < _tgNotifications.GetCooldown()) return;
+        Task<int?> sendTask;
+        lock (_lock) {
+            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()) return;
+            sendTask = _tgNotifications.SendNotification(data);
+        }
         
-        var messageId = await _tgNotifications.SendNotification(data);
-        _tgNotifications.Options.SetLastMessageId(messageId);
+        var messageId = await sendTask;
+        lock (_lock) {
+            _tgNotifications.Options.SetLastMessageId(messageId);
+        }
     }
 
-    private async Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
-        if (streamState.WasOnline || streamState.OfflineTime < _tgNotifications.GetCooldown()) return;
-        
-        var lastMessageId = _tgNotifications.Options.LastMessageId;
-        if (lastMessageId.HasValue) {
-            await _tgNotifications.DeleteNotification(lastMessageId.Value);
+    private Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
+        lock (_lock) {
+            if (streamState.WasOnline || streamState.OfflineTime < _tgNotifications.GetCooldown()) return Task.CompletedTask;
+        }
+
+        int? lastMessageId;
+        lock (_lock) {
+            lastMessageId = _tgNotifications.Options.LastMessageId;
+        }
+
+        if (!lastMessageId.HasValue) return Task.CompletedTask;
+
+        lock (_lock) {
+            _ = _tgNotifications.DeleteNotification(lastMessageId.Value);
             _tgNotifications.Options.SetLastMessageId(null);
         }
+        return Task.CompletedTask;
     }
 }

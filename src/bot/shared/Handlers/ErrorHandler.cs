@@ -73,7 +73,6 @@ public static class ErrorHandler {
             return false;
         }
         
-        LogError(error);
         client?.SendReply(message.Id, _twitchErrorMessages[(int)error]);
         return true;
     }

@@ -170,7 +170,7 @@ public class TwitchChatBot : Bot {
                     Options.Credentials.ChannelOauth);
     }
 
-    public async void SetChannelOauth(string oauth) {
+    public async void SetChannelOauth(string channelOauth) {
         try {
             if (Options.Client?.Credentials == null) {
                 Options.SetCredentials(
@@ -178,13 +178,13 @@ public class TwitchChatBot : Bot {
                                            (
                                             Options.Credentials.Channel,
                                             Options.Credentials.Oauth,
-                                            oauth
+                                            channelOauth
                                            )
                                       );
                 return;
             }
             
-            await Options.Client.UpdateOauth(oauth);
+            await Options.Client.UpdateChannelOauth(channelOauth);
             Options.UpdateCredentials();
         }
         catch (Exception e) {

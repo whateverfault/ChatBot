@@ -1926,7 +1926,7 @@ public static class CommandsList {
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         
@@ -2420,7 +2420,7 @@ public static class CommandsList {
             sb.Append($"{arg} ");
         }
         
-        parsed = sb.ToString().Split(';', StringSplitOptions.TrimEntries);
+        parsed = sb.ToString().Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return ErrorCode.None;
     }
 }
