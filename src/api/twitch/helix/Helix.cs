@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.helix.data;
@@ -7,25 +6,16 @@ using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.api.twitch.helix.data.responses;
 using ChatBot.api.twitch.helix.data.responses.GetUserInfo;
 using ChatBot.api.twitch.helix.data.responses.SendMessage;
+using ChatBot.api.twitch.shared;
 using Newtonsoft.Json;
 using ChatMessage = ChatBot.api.twitch.client.data.ChatMessage;
 
 namespace ChatBot.api.twitch.helix;
 
 public static class Helix {
-    private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
-                                                              {
-                                                                  PooledConnectionLifetime  = TimeSpan.FromMinutes(2),
-                                                                  MaxConnectionsPerServer = 50,
-                                                                  EnableMultipleHttp2Connections = true,
-                                                                  PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1),
-                                                                  UseCookies = false,
-                                                                  AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                                                              };
-    private static readonly HttpClient _httpClient = new HttpClient(_httpHandler);
+    private static readonly HttpClient _httpClient = new HttpClient(HttpHandlerProvider.SharedHandler, disposeHandler: false);
     private static readonly HelixCache _cache = new HelixCache(5);
     
-
     public static async Task<ValidateResponse?> ValidateOauth(string oauth, EventHandler<string>? callback = null) {
         try {
             if (string.IsNullOrEmpty(oauth)) {
@@ -35,7 +25,7 @@ public static class Helix {
 
             using var request = new HttpRequestMessage(HttpMethod.Get, "https://id.twitch.tv/oauth2/validate");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", oauth);
-
+            
             var response = await _httpClient.SendAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -45,10 +35,9 @@ public static class Helix {
 
             callback?.Invoke(null, $"Failed to validate oauth token. Status: {response.StatusCode}. Content: {responseContent}");
             return null;
-
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Exception while validating an oauth token. {e.Message}");
+            callback?.Invoke(null, $"Exception while validating an oauth token. {e}");
             return null;
         }
     }

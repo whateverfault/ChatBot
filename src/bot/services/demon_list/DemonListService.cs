@@ -307,7 +307,7 @@ public class DemonListService : Service {
     
     public override void Init() {
         base.Init();
-
+        
         _aredlClient = new AredlClient(true);
     }
 }

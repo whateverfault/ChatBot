@@ -111,7 +111,11 @@ public class ChatCommandsService : Service {
     }
     
     public void SetCommandIdentifier(char identifier) {
-        if (Client == null) return;
+        if (Client == null) {
+            if (!char.IsPunctuation(identifier)) return;
+            Options.SetCommandIdentifier(identifier);
+            return;
+        }
 
         if (!Client.SetCommandIdentifier(identifier)) {
             ErrorHandler.LogErrorMessageAndPrint(ErrorCode.InvalidInput, $"Cannot set '{identifier}' as a command identifier.");

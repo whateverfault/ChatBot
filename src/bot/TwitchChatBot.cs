@@ -44,6 +44,9 @@ public class TwitchChatBot : Bot {
                                await InitConnectionAsync();
 
                                if (Options.Client?.Credentials == null) {
+                                   lock (_startLock) {
+                                       _starting = false;
+                                   }
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
                                    return;
                                }

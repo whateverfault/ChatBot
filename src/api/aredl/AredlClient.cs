@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
 using ChatBot.api.aredl.data;
 using ChatBot.api.aredl.responses;
 using Newtonsoft.Json;
@@ -6,7 +7,15 @@ using Newtonsoft.Json;
 namespace ChatBot.api.aredl;
 
 public class AredlClient {
-    private readonly HttpClient _httpClient = new HttpClient();
+    private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
+                                                              {
+                                                                  PooledConnectionLifetime  = TimeSpan.Zero,
+                                                                  PooledConnectionIdleTimeout = TimeSpan.Zero,
+                                                                  MaxConnectionsPerServer = 50,
+                                                                  UseCookies = false,
+                                                                  AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                                                              };
+    private static readonly HttpClient _httpClient = new HttpClient(_httpHandler);
     private readonly AredlCache? _cache;
     
 

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
+using ChatBot.api.aredl;
 using ChatBot.bot;
 using ChatBot.bot.services.Static;
 using ChatBot.cli;
@@ -9,6 +11,8 @@ internal static class Program {
     private static async Task Main(string[] args) {
         var autoInit = false;
         
+        ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
 

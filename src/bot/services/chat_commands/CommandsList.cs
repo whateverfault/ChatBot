@@ -1375,12 +1375,18 @@ public static class CommandsList {
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
+        
         var tier = 
             levelInfo.NlwTier == null? 
-                "(List tier)":
-                $"({levelInfo.NlwTier} tier)";
+                string.Empty:
+                $"({levelInfo.NlwTier} tier";
         
-        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier} {verificationLink}");
+        var enjoyment = (levelInfo.EdelEnjoyment == null) switch {
+                            true  => string.IsNullOrEmpty(tier) ? string.Empty : ")",
+                            false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.EdelEnjoyment})" : $"; EDL: {(int)levelInfo.EdelEnjoyment})",
+                        };
+        
+        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier}{enjoyment} {verificationLink}");
     }
 
     private static async Task Place(ChatCmdArgs cmdArgs) {
@@ -1481,7 +1487,7 @@ public static class CommandsList {
         
         var tier = 
             levelInfo.NlwTier == null? 
-                "(List tier)":
+                string.Empty:
                 $"({levelInfo.NlwTier} tier)";
         
         await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier} {verificationLink}");
@@ -1541,7 +1547,7 @@ public static class CommandsList {
         
         var tier = 
             levelInfo.NlwTier == null? 
-                "(List tier)":
+                string.Empty:
                 $"({levelInfo.NlwTier} tier)";
         
         var pages = 

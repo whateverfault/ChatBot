@@ -6,6 +6,7 @@ namespace ChatBot.bot.services.chat_commands;
 public class SaveData {
     [JsonProperty("service_state")]
     public State ServiceState{ get; set; }
+    
     [JsonProperty("command_identifier")]
     public char CommandIdentifier { get; set; }
 
@@ -19,7 +20,10 @@ public class SaveData {
     public State SendWhisperIfPossible { get; set; }
 
 
-    public SaveData() {}
+    public SaveData() {
+        ServiceState = State.Enabled;
+        CommandIdentifier = '!';
+    }
     
     [JsonConstructor]
     public SaveData(

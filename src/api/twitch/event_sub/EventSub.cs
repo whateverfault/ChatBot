@@ -1,24 +1,15 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using ChatBot.api.twitch.client.credentials;
 using ChatBot.api.twitch.event_sub.subscription_data.subscription;
 using ChatBot.api.twitch.helix.data.requests.chat_subscription;
+using ChatBot.api.twitch.shared;
 using Newtonsoft.Json;
 
 namespace ChatBot.api.twitch.event_sub;
 
 public static class EventSub {
-    private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
-                                                              {
-                                                                  PooledConnectionLifetime  = TimeSpan.FromMinutes(2),
-                                                                  MaxConnectionsPerServer = 50,
-                                                                  EnableMultipleHttp2Connections = true,
-                                                                  PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1),
-                                                                  UseCookies = false,
-                                                                  AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                                                              };
-    private static readonly HttpClient _httpClient = new HttpClient(_httpHandler);
+    private static readonly HttpClient _httpClient = new HttpClient(HttpHandlerProvider.SharedHandler, disposeHandler: false);
     
     
     public static async Task<EventSubPayload?> SubscribeToChannelChat(string? sessionId, FullCredentials credentials, EventHandler<string>? callback = null) {

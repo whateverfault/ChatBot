@@ -1,5 +1,4 @@
-﻿using ChatBot.api.twitch.helix;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.chat_logs;
 
