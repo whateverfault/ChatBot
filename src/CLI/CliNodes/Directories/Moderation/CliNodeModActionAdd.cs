@@ -61,6 +61,7 @@ public class CliNodeModActionAdd : CliNode {
         
         while (true) {
             if (!Console.KeyAvailable) {
+                Thread.Sleep(50);
                 continue;
             }
 

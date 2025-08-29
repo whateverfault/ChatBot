@@ -60,8 +60,11 @@ public class StreamStateCheckerEvents : ServiceEvents {
                 var cooldown = _checkerService.Options.GetCheckCooldown();
                 var lastChecked = _checkerService.Options.GetLastCheckTime();
                 var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                
-                if (now-lastChecked < cooldown) continue;
+
+                if (now - lastChecked < cooldown) {
+                    var sleep = cooldown - now + lastChecked;
+                    Thread.Sleep(TimeSpan.FromSeconds(sleep));
+                }
 
                 await _checkerService.CheckState();
                 _checkerService.Options.SetLastCheckedTime();
