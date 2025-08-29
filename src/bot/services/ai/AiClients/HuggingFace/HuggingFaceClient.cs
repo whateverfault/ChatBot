@@ -19,8 +19,13 @@ public class HuggingFaceClient : AiClient {
                                              {
                                                  new
                                                  {
+                                                     role = "system",
+                                                     content = $"{aiData.BasePrompt}",
+                                                 },
+                                                 new
+                                                 {
                                                      role = "user",
-                                                     content = $"{aiData.BasePrompt} {prompt}",
+                                                     content = $"{prompt}",
                                                  },
                                              },
                                   model = aiData.Model,

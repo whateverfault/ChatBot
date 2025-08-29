@@ -21,7 +21,7 @@ public class TgNotificationsEvents : ServiceEvents {
         
         base.Init(service);
     }
-
+    
     protected override void Subscribe() {
         if (Subscribed) {
             return;
@@ -71,7 +71,6 @@ public class TgNotificationsEvents : ServiceEvents {
         }
 
         if (!lastMessageId.HasValue) return Task.CompletedTask;
-
         lock (_lock) {
             _ = _tgNotifications.DeleteNotification(lastMessageId.Value);
             _tgNotifications.Options.SetLastMessageId(null);

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Text;
-using ChatBot.api.aredl;
 using ChatBot.bot;
 using ChatBot.bot.services.Static;
 using ChatBot.cli;

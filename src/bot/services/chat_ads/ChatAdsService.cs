@@ -27,7 +27,7 @@ public class ChatAdsService : Service {
         
         foreach (var ad in ads) {
             if (ad.GetState() == State.Disabled) continue;
-            if (now - streamState.LastOnline < ad.GetCooldown()
+            if (now - streamState.StreamStart < ad.GetCooldown()
              || now - ad.GetLastTimeSent() < ad.GetCooldown()) continue;
             
             client.SendMessage(ad.GetOutput());

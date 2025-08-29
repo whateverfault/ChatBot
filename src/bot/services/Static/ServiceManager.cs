@@ -173,6 +173,19 @@ public static class ServiceManager {
     public static void InitServices() {
         InitServices([]);
     }
+
+    public static void KillServices(string[] exclude) {
+        foreach (var (_, (service, serviceEvents)) in _services) {
+            if (exclude.Contains(service.Name)) continue;
+            if (serviceEvents.Initialized) {
+                serviceEvents.Kill();
+            }
+        }
+    }
+    
+    public static void KillServices() {
+        KillServices([]);
+    }
     
     public static void ServicesToDefault(string[] exclude) {
         foreach (var (_, (service, _)) in _services) {

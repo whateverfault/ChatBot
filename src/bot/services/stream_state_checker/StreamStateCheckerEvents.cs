@@ -16,17 +16,20 @@ public class StreamStateCheckerEvents : ServiceEvents {
     
 
     public override void Init(Service service) {
-        _killSignal = false;
-        
+        lock (_killLock) {
+            _killSignal = false;
+        }
+
         _checkerService = (StreamStateCheckerService)service;
         base.Init(service);
     }
 
     public override void Kill() {
+        base.Kill();
+        
         lock (_killLock) {
             _killSignal = true;
         }
-        base.Kill();
     }
     
     protected override void Subscribe() {

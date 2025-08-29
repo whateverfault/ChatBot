@@ -91,6 +91,7 @@ public class TwitchChatBot : Bot {
         _canReconnect = false;
 
         UnsubscribeFromEvents();
+        ServiceManager.KillServices();
         Options.Client.Disconnect();
 
         _canReconnect = true;

@@ -60,37 +60,16 @@ public class StreamStateCheckerOptions : Options {
     }
     
     public void AddOnlineTime() {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         if (!IsOnline()) {
             SetOnline();
+            SetSteamStart(now);
             return;
         }
         
         StreamState.OnlineTime += StreamStateMeta.CheckCooldown;
-        StreamState.LastOnline = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        StreamState.LastOnline = now;
         Save();
-    }
-
-    public void SetOffline() {
-        if (!StreamState.WasOnline) return;
-        
-        StreamState.OfflineTime = 0;
-        StreamState.OnlineTime = 0;
-        StreamState.WasOnline = false;
-        Save();
-    }
-    
-    public void SetOnline() {
-        if (StreamState.WasOnline) return;
-        
-        StreamState.OfflineTime = 0;
-        StreamState.OnlineTime = 0;
-        StreamState.WasOnline = true;
-        StreamState.LastOnline = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Save();
-    }
-
-    public bool IsOnline() {
-        return StreamState.WasOnline;
     }
     
     public long GetLastOnline() {
@@ -111,5 +90,32 @@ public class StreamStateCheckerOptions : Options {
 
     public long GetLastCheckTime() {
         return StreamStateMeta.LastChecked;
+    }
+    
+    private void SetOffline() {
+        if (!StreamState.WasOnline) return;
+        
+        StreamState.OfflineTime = 0;
+        StreamState.OnlineTime = 0;
+        StreamState.WasOnline = false;
+        Save();
+    }
+    
+    private void SetOnline() {
+        if (StreamState.WasOnline) return;
+        
+        StreamState.OfflineTime = 0;
+        StreamState.OnlineTime = 0;
+        StreamState.WasOnline = true;
+        StreamState.LastOnline = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Save();
+    }
+
+    private bool IsOnline() {
+        return StreamState.WasOnline;
+    }
+    
+    private void SetSteamStart(long time) {
+        _saveData!.StreamState.StreamStart = time;
     }
 }
