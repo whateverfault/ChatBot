@@ -21,8 +21,8 @@ public class TextGeneratorService : Service {
     public void Train() {
         var chatLogsService = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
         var chatLogs = chatLogsService.GetLogs();
-        if (chatLogs == null) return;
-        
+        if (chatLogs.Count == 0) return;
+
         var sb = new StringBuilder();
         
         foreach (var message in chatLogs) {

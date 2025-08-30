@@ -6,11 +6,13 @@ namespace ChatBot.bot.services.chat_logs;
 public class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
+    
     [JsonProperty(PropertyName = "logs")]
-    public List<Message>? Logs { get; private set; }
+    public List<Message> Logs { get; private set; }
 
 
     public SaveData() {
+        ServiceState = State.Enabled;
         Logs = [];
     }
     

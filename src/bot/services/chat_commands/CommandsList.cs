@@ -1346,7 +1346,11 @@ public static class CommandsList {
             return Task.CompletedTask;
         }
                     
-        messageRandomizer.GenerateAndSend();
+        var err = messageRandomizer.Generate(out var message);
+        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) return Task.CompletedTask;
+        
+        client?.SendMessage(message.Text);
         return Task.CompletedTask;
     }
 

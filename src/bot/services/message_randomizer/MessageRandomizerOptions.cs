@@ -1,7 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_logs;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
 using Range = ChatBot.api.basic.Range;
 
@@ -30,7 +29,6 @@ public class MessageRandomizerOptions : Options {
     public Range Spreading => _saveData!.Spreading;
     public MessageState MessageState => _saveData!.MessageState;
     public Message LastGeneratedMessage => _saveData!.LastGeneratedMessage;
-    public static ChatLogsService ChatLogsService => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
     
     
     public override void Load() {

@@ -13,7 +13,7 @@ public class ChatLogsOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    private List<Message>? Logs => _saveData!.Logs;
+    private List<Message> Logs => _saveData!.Logs;
     
 
     public override void Load() {
@@ -39,10 +39,10 @@ public class ChatLogsOptions : Options {
     }
 
     public void AddLog(Message message) {
-        Logs?.Add(message);
+        Logs.Add(message);
     }
     
-    public List<Message>? GetLogs() {
+    public List<Message> GetLogs() {
         return Logs;
     }
 }

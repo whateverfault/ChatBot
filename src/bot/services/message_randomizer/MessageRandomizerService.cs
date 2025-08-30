@@ -10,6 +10,7 @@ namespace ChatBot.bot.services.message_randomizer;
 
 public class MessageRandomizerService : Service {
     private static ITwitchClient? Client => TwitchChatBot.Instance.GetClient();
+    private static ChatLogsService ChatLogs => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
 
     public override string Name => ServiceName.MessageRandomizer;
     public override MessageRandomizerOptions Options { get; } = new MessageRandomizerOptions();
@@ -36,18 +37,18 @@ public class MessageRandomizerService : Service {
         }
 
         var err = Generate(out var message);
-        if (ErrorHandler.LogErrorAndPrint(err)) {
+        if (ErrorHandler.LogError(err)) {
             return;
         }
         Client?.SendMessage(message!.Text);
     }
 
-    private ErrorCode Generate(out Message? message) {
+    public ErrorCode Generate(out Message? message) {
         message = null;
         
-        var logs = MessageRandomizerOptions.ChatLogsService.GetLogs();
-        if (logs is not { Count: > 0, }) {
-            return ErrorCode.ListIsEmpty;
+        var logs = ChatLogs.GetLogs();
+        if (logs.Count <= 0) {
+            return ErrorCode.NotEnoughData;
         }
 
         var randomIndex = Random.Shared.Next(0, logs.Count);

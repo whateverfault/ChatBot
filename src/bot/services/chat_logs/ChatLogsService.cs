@@ -25,7 +25,7 @@ public class ChatLogsService : Service {
         OnLogsAppended?.Invoke(chatMessage);
     }
     
-    public List<Message>? GetLogs() {
+    public List<Message> GetLogs() {
         return Options.GetLogs();
     }
 }
