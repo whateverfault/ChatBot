@@ -838,6 +838,7 @@ public static class CommandsList {
 
         foreach (var message in messages) {
             await client.SendReply(chatMessage.Id, message);
+            Thread.Sleep(TimeSpan.FromMilliseconds(500));
         }
     }
 

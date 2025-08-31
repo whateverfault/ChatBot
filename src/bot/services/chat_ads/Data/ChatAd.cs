@@ -57,14 +57,9 @@ public class ChatAd {
         Name = name;
         Output = output;
         Cooldown = cooldown;
-        LastSentMessageCount = lastSentMessageCount;
         MessageThreshold = messageThreshold;
+        LastSentMessageCount = lastSentMessageCount;
         LastSent = lastSent;
-    }
-
-    public void SetState(State state) {
-        State = state;
-        _options.Save();
     }
     
     public void StateNext() {
