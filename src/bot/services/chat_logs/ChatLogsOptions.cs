@@ -40,9 +40,16 @@ public class ChatLogsOptions : Options {
 
     public void AddLog(Message message) {
         Logs.Add(message);
+        if (Logs.Count > 0 && Logs.Count % 25 == 0) {
+            Save();
+        }
     }
     
     public List<Message> GetLogs() {
         return Logs;
+    }
+    
+    public int GetLogsCount() {
+        return Logs.Count;
     }
 }

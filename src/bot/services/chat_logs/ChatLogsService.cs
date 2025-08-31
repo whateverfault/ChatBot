@@ -28,4 +28,8 @@ public class ChatLogsService : Service {
     public List<Message> GetLogs() {
         return Options.GetLogs();
     }
+
+    public int GetLogsCount() {
+        return Options.GetLogsCount();
+    }
 }

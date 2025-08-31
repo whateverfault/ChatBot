@@ -46,11 +46,16 @@ public class CliNodeSystem {
                                                      true,
                                                      [
                                                          new CliNodeEnum(
-                                                                         "ServiceState",
+                                                                         "Service State",
                                                                          _state.Data.ChatLogs.GetServiceStateAsInt,
                                                                          typeof(State),
                                                                          CliNodePermission.Default,
                                                                          _state.Data.ChatLogs.ServiceStateNext
+                                                                        ),
+                                                         new CliNodeInt(
+                                                                         "Message Count",
+                                                                         _state.Data.ChatLogs.GetLogsCount,
+                                                                         CliNodePermission.ReadOnly
                                                                         ),
                                                      ]
                                                      );

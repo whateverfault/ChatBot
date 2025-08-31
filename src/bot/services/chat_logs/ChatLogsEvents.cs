@@ -44,7 +44,7 @@ public class ChatLogsEvents : ServiceEvents {
     }
 
     private void SaveLogsWrapper(StreamState streamState, StreamData? data) {
-        if (!streamState.WasOnline) {
+        if (streamState.WasOnline) {
             return;
         }
         

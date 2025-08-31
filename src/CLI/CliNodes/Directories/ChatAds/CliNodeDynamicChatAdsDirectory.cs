@@ -100,6 +100,12 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 chatAd.SetCooldown
                                                                ),
+                                              new CliNodeInt(
+                                                              "Message Threshold",
+                                                              chatAd.GetThreshold,
+                                                              CliNodePermission.Default,
+                                                              chatAd.SetThreshold
+                                                             ),
                                               new CliNodeEnum(
                                                                 "State",
                                                                 chatAd.GetStateAsInt,
