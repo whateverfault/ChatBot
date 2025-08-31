@@ -30,7 +30,7 @@ public static class CommandsList {
 
 
     static CommandsList() {
-        // 57
+        // 60
         DefaultsCommands = [
                                new DefaultChatCommand(
                                                    1,
@@ -289,6 +289,23 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      28,
+                                                      "hardest",
+                                                      "[username]",
+                                                      "хардест пользователя по AREDL.",
+                                                      Hardest,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      29,
+                                                      "easiest",
+                                                      "[username]",
+                                                      "легчайший экстрим пользователя по AREDL.",
+                                                      Easiest,
+                                                      Restriction.Everyone,
+                                                      aliases: ["lowest",]
+                                                     ),
+                               new DefaultChatCommand(
                                                       25,
                                                       "top",
                                                       "<position>",
@@ -322,29 +339,21 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      28,
-                                                      "hardest",
+                                                      59,
+                                                      "phardest",
                                                       "[username]",
-                                                      "хардест пользователя по AREDL.",
-                                                      Hardest,
+                                                      "хардест пользователя по Pemon List.",
+                                                      PHardest,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      29,
-                                                      "easiest",
+                                                      60,
+                                                      "peasiest",
                                                       "[username]",
-                                                      "легчайший экстрим пользователя по AREDL.",
-                                                      Easiest,
+                                                      "легчайший экстрим пользователя по Pemon List.",
+                                                      PEasiest,
                                                       Restriction.Everyone,
-                                                      aliases: ["lowest",]
-                                                     ),
-                               new DefaultChatCommand(
-                                                      30,
-                                                      string.Empty,
-                                                      string.Empty,
-                                                      string.Empty,
-                                                      PageTerminator,
-                                                      Restriction.Everyone
+                                                      aliases: ["plowest",]
                                                      ),
                                new DefaultChatCommand(
                                                       31,
@@ -900,9 +909,7 @@ public static class CommandsList {
         var reqState = levelRequests.GetReqState();
         switch (args.Count) {
             case <= 0:
-                if (_chatCmds.Options.VerboseState == State.Enabled) {
-                    await client.SendReply(chatMessage.Id, "Недостаточно аргументов для изменения состояния.");
-                }
+                await client.SendReply(chatMessage.Id, "Недостаточно аргументов для изменения состояния.");
                 await ReqEveryone(cmdArgs);
                 return;
             case > 0:
@@ -1477,8 +1484,12 @@ public static class CommandsList {
             logger.Log(LogLevel.Error, "Demon List service is disabled");
             return;
         }
-                    
-        var index = int.Parse(string.IsNullOrWhiteSpace(args[0])? "-1" : args[0]);
+
+        if (!int.TryParse(args[0], out var index)) {
+            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+        
         var levelInfo =  await demonList.GetPlatformerLevelByPlacement(index);
         if (levelInfo == null) {
             await client.SendReply(chatMessage.Id, "Позиция не найдена.");
@@ -1567,7 +1578,6 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var demonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
-        var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
@@ -1579,17 +1589,13 @@ public static class CommandsList {
         if (args.Count < 1) {
             var level = await demonList.GetHardest();
             if (level == null) {
-                if (chatCommands.Options.VerboseState == State.Enabled) {
-                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                }
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                if (chatCommands.Options.VerboseState == State.Enabled) {
-                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                }
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
@@ -1613,15 +1619,65 @@ public static class CommandsList {
             return;
         }
                         
-        await client.SendReply(chatMessage.Id, $"#{hardest.level.position} {profile.hardest?.name} | {hardest.videoUrl}");
+        await client.SendReply(chatMessage.Id, $"#{hardest.level.position} {profile.Hardest?.name} | {hardest.videoUrl}");
     }
 
+        private static async Task PHardest(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        if (demonList.GetServiceState() == State.Disabled) {
+            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+                    
+        if (args.Count < 1) {
+            var level = await demonList.GetPlatformerHardest();
+            if (level == null) {
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                return;
+            }
+            
+            var details = await demonList.GetPlatformerLevelDetails(level.Id);
+            if (details == null || details.verifications.Count < 1) {
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                return;
+            }
+            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            return;
+        }
+        
+        var argSb = new StringBuilder();
+        foreach (var arg in args) {
+            argSb.Append($"{arg} ");
+        }
+        
+        var username = argSb.ToString();
+        var profile = await demonList.GetProfile(username.Trim());
+        if (profile == null) {
+            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            return;
+        }
+        
+        var hardest = await demonList.GetPlatformerHardest(profile);
+        if (hardest == null
+         || profile.Hardest == null) {
+            await client.SendReply(chatMessage.Id, "Хардест не найден.");
+            return;
+        }
+                        
+        await client.SendReply(chatMessage.Id, $"#{hardest.level.position} {hardest.level.name} | {hardest.videoUrl}");
+    }
+    
     private static async Task Easiest(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
         var demonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
-        var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
@@ -1633,17 +1689,13 @@ public static class CommandsList {
         if (args.Count < 1) {
             var level = await demonList.GetEasiest();
             if (level == null) {
-                if (chatCommands.Options.VerboseState == State.Enabled) {
-                    ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                }
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                if (chatCommands.Options.VerboseState == State.Enabled) {
-                    await client.SendReply(chatMessage.Id, "Не найдено.");
-                }
+                await client.SendReply(chatMessage.Id, "Не найдено.");
                 return;
             }
             await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
@@ -1670,6 +1722,56 @@ public static class CommandsList {
         await client.SendReply(chatMessage.Id, $"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}");
     }
 
+    private static async Task PEasiest(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        if (demonList.GetServiceState() == State.Disabled) {
+            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
+            return;
+        }
+                    
+        if (args.Count < 1) {
+            var level = await demonList.GetPlatformerEasiest();
+            if (level == null) {
+                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                return;
+            }
+            
+            var details = await demonList.GetPlatformerLevelDetails(level.Id);
+            if (details == null || details.verifications.Count < 1) {
+                await client.SendReply(chatMessage.Id, "Не найдено.");
+                return;
+            }
+            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            return;
+        }
+
+        var argSb = new StringBuilder();
+        foreach (var arg in args) {
+            argSb.Append($"{arg} ");
+        }
+        var username = argSb.ToString();
+
+        var profile = await demonList.GetProfile(username.Trim());
+        if (profile == null) {
+            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            return;
+        }
+        var easiest = await demonList.GetPlatformerEasiest(profile);
+        if (easiest == null) {
+            await client.SendReply(chatMessage.Id, "Не найдено.");
+            return;
+        }
+
+        await client.SendReply(chatMessage.Id, $"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}");
+    }
+
+    
     private static async Task Roulette(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;

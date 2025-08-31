@@ -3,18 +3,18 @@
 namespace ChatBot.api.aredl.data;
 
 public class UserProfile {
-    public int? rank;
-    public int? extremesRank;
-    public int? rawRank;
-    public int? countryRank;
-    public int? countryExtremesRank;
-    public int? countryRawRank;
-    public UserInfo? user;
-    public int? country;
-    public int? totalPoints;
-    public int? packPoints;
-    public HardestInfo? hardest;
-    public int? extremes;
+    public int? Rank;
+    public int? ExtremesRank;
+    public int? RawRank;
+    public int? CountryRank;
+    public int? CountryExtremesRank;
+    public int? CountryRawRank;
+    public UserInfo? User;
+    public int? Country;
+    public int? TotalPoints;
+    public int? PackPoints;
+    public HardestInfo? Hardest;
+    public int? Extremes;
 
     
     [JsonConstructor]
@@ -31,17 +31,17 @@ public class UserProfile {
         [JsonProperty(PropertyName = "raw_rank")] int? rawRank,
         [JsonProperty(PropertyName = "extremes_rank")] int? extremesRank,
         [JsonProperty(PropertyName = "rank")] int? rank) {
-        this.extremes = extremes;
-        this.hardest = hardest;
-        this.packPoints = packPoints;
-        this.totalPoints = totalPoints;
-        this.country = country;
-        this.user = user;
-        this.countryRawRank = countryRawRank;
-        this.countryExtremesRank = countryExtremesRank;
-        this.countryRank = countryRank;
-        this.rawRank = rawRank;
-        this.extremesRank = extremesRank;
-        this.rank = rank;
+        Extremes = extremes;
+        Hardest = hardest;
+        PackPoints = packPoints;
+        TotalPoints = totalPoints;
+        Country = country;
+        User = user;
+        CountryRawRank = countryRawRank;
+        CountryExtremesRank = countryExtremesRank;
+        CountryRank = countryRank;
+        RawRank = rawRank;
+        ExtremesRank = extremesRank;
+        Rank = rank;
     }
 }

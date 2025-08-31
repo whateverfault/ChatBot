@@ -363,32 +363,38 @@ public class AredlClient {
             return null;
         }
     }
-
+    
     public async Task<RecordInfo?> GetPlatformerRecord(string levelId, string userId,
-                                                              EventHandler<string>? callback = null) {
+                                                       EventHandler<string>? callback = null) {
         try {
             var levelRecords = await ListUserPlatformerRecords(userId, callback);
-            if (levelRecords?.records.Count + levelRecords?.verified.Count < 1) {
-                callback?.Invoke(null, "Error while fetching user platformer record data.");
+            if (levelRecords == null) return null;
+            
+            if (levelRecords.records.Count + levelRecords.verified.Count < 1) {
+                callback?.Invoke(null, "Error while fetching user record data.");
                 return null;
             }
 
-            foreach (var record in levelRecords?.verified!) {
+            foreach (var record in levelRecords.verified) {
                 if (record.level.id != levelId) continue;
                 return record;
             }
 
-            return levelRecords.records
-                               .FirstOrDefault(record => record.level.id == levelId);
+            foreach (var record in levelRecords.records) {
+                if (record.level.id != levelId) continue;
+                return record;
+            }
+
+            return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user platformer record data: {e}");
+            callback?.Invoke(null, $"Error while fetching user record data: {e}");
             return null;
         }
     }
 
     public async Task<ListUserRecordsResponse?> ListUserRecords(string userId,
-                                                                       EventHandler<string>? callback = null) {
+                                                                EventHandler<string>? callback = null) {
         try {
             var requestMessage = new HttpRequestMessage {
                                                             Method = HttpMethod.Get,
