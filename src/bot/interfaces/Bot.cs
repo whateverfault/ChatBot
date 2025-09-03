@@ -1,7 +1,7 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.client.data;
-using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared.handlers;
+using TwitchAPI.client;
+using TwitchAPI.client.data;
 
 namespace ChatBot.bot.interfaces;
 

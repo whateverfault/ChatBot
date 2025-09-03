@@ -1,4 +1,4 @@
-﻿using ChatBot.api.twitch.client.data;
+﻿using TwitchAPI.client.data;
 
 namespace ChatBot.bot.shared.handlers;
 

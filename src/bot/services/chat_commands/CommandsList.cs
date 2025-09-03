@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.helix;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.chat_ads;
@@ -17,6 +15,8 @@ using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
+using TwitchAPI.client;
+using TwitchAPI.helix;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;

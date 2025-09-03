@@ -1,5 +1,4 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai.AiClients.DeepSeek;
 using ChatBot.bot.services.ai.AiClients.Google;
 using ChatBot.bot.services.ai.AiClients.HuggingFace;
@@ -8,6 +7,7 @@ using ChatBot.bot.services.ai.AiClients.Ollama;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
+using TwitchAPI.client;
 
 namespace ChatBot.bot.services.ai;
 

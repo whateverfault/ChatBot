@@ -1,10 +1,10 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.helix;
-using ChatBot.api.twitch.helix.data.requests;
-using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
+using TwitchAPI.client;
+using TwitchAPI.helix;
+using TwitchAPI.helix.data.requests;
 
 namespace ChatBot.bot.services.stream_state_checker;
 

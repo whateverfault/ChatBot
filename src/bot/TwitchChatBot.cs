@@ -1,11 +1,11 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.client.credentials;
-using ChatBot.api.twitch.client.data;
-using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
+using TwitchAPI.client;
+using TwitchAPI.client.credentials;
+using TwitchAPI.client.data;
 
 namespace ChatBot.bot;
 

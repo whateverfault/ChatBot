@@ -1,10 +1,10 @@
 ﻿using ChatBot.api.telegram;
-using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.helix.data.requests;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
+using TwitchAPI.client;
+using TwitchAPI.helix.data.requests;
 
 namespace ChatBot.bot.services.telegram;
 

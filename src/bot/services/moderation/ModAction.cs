@@ -1,11 +1,11 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.api.twitch.client.data;
-using ChatBot.api.twitch.helix;
-using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
+using TwitchAPI.client;
+using TwitchAPI.client.data;
+using TwitchAPI.helix;
 
 namespace ChatBot.bot.services.moderation;
 

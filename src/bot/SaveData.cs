@@ -1,5 +1,5 @@
-﻿using ChatBot.api.twitch.client.credentials;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using TwitchAPI.client.credentials;
 
 namespace ChatBot.bot;
 
