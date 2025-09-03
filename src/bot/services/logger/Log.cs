@@ -1,4 +1,4 @@
-﻿using ChatBot.api.twitch.client;
+﻿using TwitchAPI.client;
 
 namespace ChatBot.bot.services.logger;
 public class Log {

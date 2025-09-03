@@ -1,16 +1,13 @@
-﻿using ChatBot.api.twitch.helix.data.requests;
-using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_ads.Data;
-using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
+using TwitchAPI.helix.data.requests;
 
 namespace ChatBot.bot.services.chat_ads;
 
 public class ChatAdsService : Service {
-    private static readonly ChatLogsService _chatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
-    
     public override string Name => ServiceName.ChatAds;
     public override ChatAdsOptions Options { get; } = new ChatAdsOptions();
 
@@ -18,7 +15,7 @@ public class ChatAdsService : Service {
     public event EventHandler<int>? OnChatAdRemoved;
     
 
-    public void HandleChatAdsSending(StreamState streamState, StreamData? streamData) {
+    public void SendChatAds(StreamState streamState, StreamData? streamData) {
         if (Options.ServiceState == State.Disabled) return;
         if (!streamState.WasOnline || streamState.OnlineTime <= 0) return;
         
@@ -26,21 +23,20 @@ public class ChatAdsService : Service {
         if (client == null) return;
         
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var messageCount = _chatLogs.GetLogsCount();
         var ads = Options.GetChatAds();
         
         foreach (var ad in ads) {
             if (ad.GetState() == State.Disabled) continue;
-            if (messageCount - ad.GetLastSentMessageCount() < ad.GetThreshold()) continue;
+            if (ad.GetCounter() < ad.GetThreshold()) continue;
             if (now - streamState.StreamStart < ad.GetCooldown()
              || now - ad.GetLastTimeSent() < ad.GetCooldown()) continue;
             
             client.SendMessage(ad.GetOutput());
             ad.SetLastSentTime();
-            ad.SetLastSentMessageCount(messageCount);
+            ad.ZeroCounter();
         }
     }
-
+    
     public void AddChatAd(ChatAd chatAd) {
         Options.AddChatAd(chatAd);
         OnChatAdAdded?.Invoke(this, chatAd);

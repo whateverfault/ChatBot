@@ -1,9 +1,9 @@
 ﻿using ChatBot.api.aredl;
 using ChatBot.api.aredl.data;
-using ChatBot.api.twitch.client;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
+using TwitchAPI.client;
 
 namespace ChatBot.bot.services.demon_list;
 

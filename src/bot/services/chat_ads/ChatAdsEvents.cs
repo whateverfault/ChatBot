@@ -1,12 +1,18 @@
-﻿using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.chat_logs;
+using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
+using ChatBot.bot.services.stream_state_checker.Data;
+using TwitchAPI.client.data;
+using TwitchAPI.helix.data.requests;
 
 namespace ChatBot.bot.services.chat_ads;
 
 public class ChatAdsEvents : ServiceEvents {
     private ChatAdsService _chatAds = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
+    private ChatLogsService _chatLogs = null!;
     
     public override bool Initialized { get; protected set; }
     
@@ -14,6 +20,7 @@ public class ChatAdsEvents : ServiceEvents {
     public override void Init(Service service) {
         _chatAds = (ChatAdsService)service;
         _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _chatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
         
         base.Init(service);
     }
@@ -24,7 +31,9 @@ public class ChatAdsEvents : ServiceEvents {
         }
         base.Subscribe();
         
-        _streamStateChecker.OnStreamStateUpdate += _chatAds.HandleChatAdsSending;
+        _streamStateChecker.OnStreamStateUpdate += _chatAds.SendChatAds;
+        _streamStateChecker.OnStreamStateChanged += ZeroChatAdsCounter;
+        _chatLogs.OnLogsAppended += IncrementChatAdsCounterWrapper;
     }
     
     protected override void UnSubscribe() {
@@ -33,6 +42,26 @@ public class ChatAdsEvents : ServiceEvents {
         }
         base.UnSubscribe();
         
-        _streamStateChecker.OnStreamStateUpdate -= _chatAds.HandleChatAdsSending;
+        _streamStateChecker.OnStreamStateUpdate -= _chatAds.SendChatAds;
+        _streamStateChecker.OnStreamStateChanged -= ZeroChatAdsCounter;
+        _chatLogs.OnLogsAppended -= IncrementChatAdsCounterWrapper;
+    }
+
+    private void IncrementChatAdsCounterWrapper(ChatMessage chatMessage) {
+        var ads = _chatAds.GetChatAds();
+
+        foreach (var ad in ads) {
+            if (ad.GetState() == State.Disabled) continue;
+            ad.IncrementCounter();
+        }
+    }
+    
+    private void ZeroChatAdsCounter(StreamState state, StreamData? data) {
+        if (state.WasOnline) return;
+        
+        var ads = _chatAds.GetChatAds();
+        foreach (var ad in ads) {
+            ad.ZeroCounter();
+        }
     }
 }

@@ -1,10 +1,10 @@
-﻿using ChatBot.api.twitch.client;
-using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.translator.Google;
 using ChatBot.bot.services.translator.Google.Data;
 using ChatBot.bot.services.translator.VK;
+using TwitchAPI.client;
 
 namespace ChatBot.bot.services.translator;
 

@@ -22,8 +22,8 @@ public class ChatAd {
     [JsonProperty("threshold")]
     private int MessageThreshold { get; set; }
 
-    [JsonProperty("last_sent_message_count")]
-    private int LastSentMessageCount { get; set; }
+    [JsonProperty("counter")]
+    private int Counter { get; set; }
     
     [JsonProperty("last_sent")]
     private long LastSent { get; set; }
@@ -40,7 +40,7 @@ public class ChatAd {
         Cooldown = cooldown <= 0? 1800 : cooldown;
         MessageThreshold = messageThreshold;
         
-        LastSentMessageCount = 0;
+        Counter = 0;
         LastSent = 0;
     }
 
@@ -51,14 +51,14 @@ public class ChatAd {
         [JsonProperty("output")] string output,
         [JsonProperty("cooldown")] long cooldown,
         [JsonProperty("threshold")] int messageThreshold,
-        [JsonProperty("last_sent_message_count")] int lastSentMessageCount,
+        [JsonProperty("counter")] int counter,
         [JsonProperty("last_sent")] long lastSent) {
         State = state;
         Name = name;
         Output = output;
         Cooldown = cooldown;
         MessageThreshold = messageThreshold;
-        LastSentMessageCount = lastSentMessageCount;
+        Counter = counter;
         LastSent = lastSent;
     }
     
@@ -86,8 +86,12 @@ public class ChatAd {
         MessageThreshold = threshold;
     }
     
-    public void SetLastSentMessageCount(int messageCount) {
-        LastSentMessageCount = messageCount;
+    public void IncrementCounter() {
+        ++Counter;
+    }
+    
+    public void ZeroCounter() {
+        Counter = 0;
     }
     
     public void SetLastSentTime() {
@@ -119,8 +123,8 @@ public class ChatAd {
         return MessageThreshold;
     }
 
-    public int GetLastSentMessageCount() {
-        return LastSentMessageCount;
+    public int GetCounter() {
+        return Counter;
     }
     
     public long GetLastTimeSent() {
