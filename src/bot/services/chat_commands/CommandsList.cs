@@ -12,6 +12,7 @@ using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_randomizer;
+using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.telegram;
 using ChatBot.bot.services.text_generator;
@@ -629,16 +630,16 @@ public static class CommandsList {
                                                       61,
                                                       "balance",
                                                       string.Empty,
-                                                      "посмотреть баланс.",
-                                                      Flex,
+                                                      "ваш баланс.",
+                                                      Balance,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       62,
                                                       "shop",
                                                       string.Empty,
-                                                      "посмотреть баланс.",
-                                                      Flex,
+                                                      "список лотов.",
+                                                      Shop,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -2539,7 +2540,7 @@ public static class CommandsList {
         await client.SendMessage($"{balance} -> {newBalance} | x{result.Multiplier:F}{arrow}", chatMessage.Id);
     }
     
-    private static async Task Flex(ChatCmdArgs cmdArgs) {
+    private static async Task Balance(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -2553,6 +2554,20 @@ public static class CommandsList {
 
         var arrow = account.Gain >= 0 ? "↑" : "↓";
         await client.SendMessage($"Баланс: {account.Money} фантиков | За все время: {Math.Abs(account.Gain)}{arrow}.", chatMessage.Id);
+    }
+    
+    private static async Task Shop(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+        var lots = shop.Lots;
+
+        var reply = lots.Select(
+                                (lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost} {(i >= lots.Length - 1 ? string.Empty : "/")}")
+                        .ToList();
+
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
     }
     
     private static async Task Give(ChatCmdArgs cmdArgs) {
