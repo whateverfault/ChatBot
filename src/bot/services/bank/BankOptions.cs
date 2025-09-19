@@ -62,10 +62,12 @@ public class BankOptions : Options {
     }
     
     public bool Deposit(string userId, long quantity, bool gain = true) {
+        if (quantity == 0) return true;
         return quantity > 0 && BankAdd(userId, quantity, gain);
     }
 
     public bool TakeOut(string userId, long quantity, bool gain = true) {
+        if (quantity == 0) return true;
         return quantity > 0 && BankAdd(userId, -quantity, gain);
     }
 

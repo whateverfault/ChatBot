@@ -891,7 +891,7 @@ public static class CommandsList {
 
         Result<string?, ErrorCode?> result;
         if (ai.Options.CasinoIntegration == State.Enabled) {
-            result = await ai.GetPaidResponse(chatMessage.Id, prompt.ToString().Trim());
+            result = await ai.GetPaidResponse(chatMessage.UserId, prompt.ToString().Trim());
         }else {
             result = await ai.GetResponse(prompt.ToString().Trim());
         }
@@ -934,7 +934,7 @@ public static class CommandsList {
 
         foreach (var message in messages) {
             await client.SendMessage(message, chatMessage.Id);
-            Thread.Sleep(TimeSpan.FromMilliseconds(500));
+            Thread.Sleep(TimeSpan.FromMilliseconds(250));
         }
     }
 

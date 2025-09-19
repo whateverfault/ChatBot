@@ -1,11 +1,10 @@
-﻿using ChatBot.bot.services.casino;
-using ChatBot.bot.services.Static;
+﻿using ChatBot.bot.services.Static;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.shop.data;
 
 public class ShopLot {
-    private static CasinoService Casino => (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+    private static ShopService Shop => (ShopService)ServiceManager.GetService(ServiceName.Shop);
     
     [JsonProperty("name")]
     public string Name { get; private set; }
@@ -32,11 +31,11 @@ public class ShopLot {
     
     public void ChangeName(string name) {
         Name = name;
-        Casino.Options.Save();
+        Shop.Options.Save();
     }
     
     public void ChangeCost(long cost) {
         Cost = cost;
-        Casino.Options.Save();
+        Shop.Options.Save();
     }
 }
