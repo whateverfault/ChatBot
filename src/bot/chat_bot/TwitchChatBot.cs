@@ -130,6 +130,11 @@ public class TwitchChatBot : Bot {
                 return;
             }
             
+            if (string.IsNullOrEmpty(username)) {
+                ErrorHandler.PrintMessage("Stop the bot first.");
+                return;
+            }
+            
             await Options.Client.UpdateChannel(username);
             Options.UpdateCredentials();
         }
@@ -156,6 +161,11 @@ public class TwitchChatBot : Bot {
                                             Options.Credentials.ChannelOauth
                                            )
                                       );
+                return;
+            }
+
+            if (string.IsNullOrEmpty(oauth)) {
+                ErrorHandler.PrintMessage("Stop the bot first.");
                 return;
             }
             
@@ -185,6 +195,11 @@ public class TwitchChatBot : Bot {
                                             channelOauth
                                            )
                                       );
+                return;
+            }
+            
+            if (string.IsNullOrEmpty(channelOauth)) {
+                ErrorHandler.PrintMessage("Stop the bot first.");
                 return;
             }
             

@@ -1,5 +1,4 @@
-﻿using ChatBot.bot;
-using ChatBot.bot.chat_bot;
+﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.bank;
 using ChatBot.bot.services.casino;

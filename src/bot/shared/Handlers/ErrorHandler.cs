@@ -6,7 +6,7 @@ using TwitchAPI.client.data;
 namespace ChatBot.bot.shared.handlers;
 
 public enum ErrorCode {
-    InvalidInput,
+    InvalidInput = 0,
     TooFewArgs,
     AlreadyContains,
     ServiceDisabled,
@@ -23,6 +23,7 @@ public enum ErrorCode {
     NoRewardSet,
     UserNotFound,
     TooFewPoints,
+    AccountNotFound,
     None,
 }
 
@@ -47,6 +48,7 @@ public static class ErrorHandler {
                                                                   "Reward isn't properly set.",
                                                                   "User not found.",
                                                                   "Too few points.",
+                                                                  "Account not found.",
                                                               ];
 
 
@@ -68,6 +70,7 @@ public static class ErrorHandler {
                                                                 "Награда не установлена.",
                                                                 "Пользователь не найден.",
                                                                 "Слишком мало фантиков.",
+                                                                "Аккаунт не найден.",
                                                             ];
     
     
@@ -80,12 +83,16 @@ public static class ErrorHandler {
         return true;
     }
 
+    public static void LogMessage(LogLevel logLevel, string message) {
+        _logger.Log(logLevel, message);
+    }
+    
     public static bool LogError(ErrorCode code) {
         if (code == ErrorCode.None) {
             return false;
         }
         
-        _logger.Log(LogLevel.Error, _internalErrorMessages[(int)code]);
+        LogMessage(LogLevel.Error, _internalErrorMessages[(int)code]);
         return true;
     }
 
@@ -105,6 +112,13 @@ public static class ErrorHandler {
     public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
         LogError(error);
         
+        Console.Clear();
+        Console.WriteLine(message);
+        Console.ReadKey();
+        Console.Clear();
+    }
+    
+    public static void PrintMessage(string message) {
         Console.Clear();
         Console.WriteLine(message);
         Console.ReadKey();

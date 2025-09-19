@@ -1,8 +1,9 @@
-﻿using ChatBot.bot.services.bank;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.bank;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.shop;
-using ChatBot.bot.services.shop.data;
 using ChatBot.bot.services.Static;
+using ChatBot.bot.shared.handlers;
+using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.casino;
 
@@ -20,8 +21,9 @@ public class CasinoService : Service {
 
 
     private (float chance, float multiplier) CalculateChances(long betAmount, long userBalance, long moneySupply) {
+        if (moneySupply <= 0) moneySupply = 1;
         var riskFactor = Math.Clamp(betAmount / (moneySupply * 0.1f), 0.1f, 2f);
-        var multiplier = 1.5f + Options.RandomValue * 1.3f * riskFactor;
+        var multiplier = Options.BaseMultiplier + Options.RandomValue * Options.AdditionalMultiplier * riskFactor;
         var chance = 1f / (multiplier*1.5f);
         var wealthPenalty = 1f - Math.Min(0.3f, userBalance / (moneySupply * 2f));
         
@@ -30,17 +32,17 @@ public class CasinoService : Service {
     
         return (chance, multiplier);
     }
-
-    public void Deposit(string userId, long quantity) {
-        Bank.Deposit(userId, quantity, gain: false);
-    }
     
-    public GambleResult Gamble(string userId, long quantity) {
+    public Result<GambleResult?, ErrorCode?> Gamble(string userId, long quantity) {
+        if (Options.ServiceState == State.Disabled) {
+            return new Result<GambleResult?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
+        }
+        
         var result = new GambleResult { Ok = true, Result = false, };
         if (!Bank.GetBalance(userId, out var balance)
          || !Bank.TakeOut(userId, quantity)) {
             result.Ok = false;
-            return result;
+            return new Result<GambleResult?, ErrorCode?>(result, ErrorCode.TooFewPoints);
         }
         
         var (chances, multiplier) = CalculateChances(quantity, balance, Bank.MoneySupply);
@@ -54,10 +56,6 @@ public class CasinoService : Service {
         
         result.Multiplier = multiplier;
         Options.NewRandomValue();
-        return result;
-    }
-
-    public long GetMoneySupply() {
-        return Bank.MoneySupply;
+        return new Result<GambleResult?, ErrorCode?>(result, null);
     }
 }

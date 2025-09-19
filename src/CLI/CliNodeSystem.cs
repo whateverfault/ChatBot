@@ -787,16 +787,16 @@ public class CliNodeSystem {
                                                             ]
                                                             );
         
-        var casinoShopDir = new CliNodeStaticDirectory(
-                                                       "Shop",
-                                                       _state,
-                                                       true,
-                                                       []
-                                                       );
+        var shopDir = new CliNodeStaticDirectory(
+                                                 "Shop", 
+                                                 _state, 
+                                                 true, 
+                                                 []
+                                                 );
 
         var lots = _state.Data.Shop.Lots;
         foreach (var lot in lots) {
-            casinoShopDir.AddNode(
+            shopDir.AddNode(
                                   new CliNodeStaticDirectory(
                                                              lot.Name,
                                                              _state,
@@ -819,18 +819,40 @@ public class CliNodeSystem {
                                                             )
                                   );
         }
+
+        var bankDir = new CliNodeStaticDirectory(
+                                                 ServiceName.Bank,
+                                                 _state,
+                                                 true,
+                                                 [
+                                                 new CliNodeLong(
+                                                                 "Money Supply",
+                                                                 _state.Data.Bank.GetMoneySupply,
+                                                                 CliNodePermission.ReadOnly
+                                                                 ),
+                                                 ]
+                                                 );
         
         var casinoDir = new CliNodeStaticDirectory(
-                                                   ServiceName.Casino,
+                                                 ServiceName.Bank,
+                                                 _state,
+                                                 true,
+                                                 [
+                                                     new CliNodeLong(
+                                                                     "Money Supply",
+                                                                     _state.Data.Bank.GetMoneySupply,
+                                                                     CliNodePermission.ReadOnly
+                                                                    ),
+                                                 ]
+                                                );
+        
+        var pointsDir = new CliNodeStaticDirectory(
+                                                   "Points",
                                                    _state,
                                                    true,
                                                    [
-                                                       casinoShopDir,
-                                                       new CliNodeLong(
-                                                                       "Money Supply",
-                                                                       _state.Data.Casino.GetMoneySupply,
-                                                                       CliNodePermission.ReadOnly
-                                                                      ),
+                                                       bankDir,
+                                                       shopDir,
                                                        new CliNodeEnum(
                                                                        "Service State",
                                                                        _state.Data.Casino.GetServiceStateAsInt,
@@ -904,7 +926,7 @@ public class CliNodeSystem {
                                                         [
                                                             randomMsgsDir,
                                                             textGeneratorDir,
-                                                            casinoDir,
+                                                            pointsDir,
                                                         ]
                                                        );
         

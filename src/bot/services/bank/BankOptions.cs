@@ -56,7 +56,7 @@ public class BankOptions : Options {
             account.AddMoney(quantity, gain);
         }
 
-        _saveData!.MoneySupply += quantity;
+        if (_saveData!.MoneySupply + quantity >= 0) _saveData!.MoneySupply += quantity;
         Save();
         return true;
     }

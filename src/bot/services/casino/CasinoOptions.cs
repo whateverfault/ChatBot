@@ -15,6 +15,8 @@ public class CasinoOptions : Options{
     public override State ServiceState => _saveData!.ServiceState;
     
     public float RandomValue => _saveData!.RandomValue;
+    public float BaseMultiplier => _saveData!.BaseMultiplier;
+    public float AdditionalMultiplier => _saveData!.AdditionalMultiplier;
     
     
     public override void Load() {

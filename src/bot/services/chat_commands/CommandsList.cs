@@ -2521,23 +2521,29 @@ public static class CommandsList {
         }
 
         if (!bank.GetBalance(chatMessage.UserId, out var balance)) {
-            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
         var result = casino.Gamble(chatMessage.UserId, quantity);
         if (!result.Ok) {
-            await client.SendMessage("Слишком мало фантиков.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
         
         if (!bank.GetBalance(chatMessage.UserId, out var newBalance)) {
-            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+
+        var gambleResult = result.Value;
+        if (gambleResult is not { Ok: true, }) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
             return;
         }
         
-        var arrow = result.Result ? "↑" : "↓";
+        var arrow = gambleResult.Value.Result ? "↑" : "↓";
         
-        await client.SendMessage($"{balance} -> {newBalance} | x{result.Multiplier:F}{arrow}", chatMessage.Id);
+        await client.SendMessage($"{balance} -> {newBalance} | x{gambleResult.Value.Multiplier:F}{arrow}", chatMessage.Id);
     }
     
     private static async Task Balance(ChatCmdArgs cmdArgs) {
@@ -2548,7 +2554,7 @@ public static class CommandsList {
         var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
 
         if (!bank.GetAccount(chatMessage.UserId, out var account) || account == null) {
-            await client.SendMessage("Аккаунт не создан.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
 
@@ -2615,14 +2621,14 @@ public static class CommandsList {
     
     private static async Task Giveaway(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
-        if (client == null) return;
+        if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
         var accounts = bank.Options.GetAccounts();
 
         if (!bank.GetAccount(chatMessage.UserId, out var account) || account == null) {
-            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
         
@@ -2631,42 +2637,80 @@ public static class CommandsList {
         if (err != ErrorCode.None) {
             quantity = account.Money;
         }
+
+        if (account.Money < quantity) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
+            return;
+        }
         
         var random = Random.Shared;
-        var amount = (accounts.Count-1) switch {
-                         1   => 1,
-                         > 1 => random.Next(1, accounts.Count),
+        var amount = accounts.Count switch {
+                         > 1 => (int)random.NextInt64(2, Math.Min(quantity, accounts.Count)%int.MaxValue),
                          _   => 0,
                      };
+
+        if (amount <= 1) {
+            await client.SendMessage("Некому раздавать.", chatMessage.Id);
+            return;
+        }
+        if (amount > 6) amount = 6;
         
         var quantityPerEach = quantity / amount;
         if (quantityPerEach <= 0) {
-            await client.SendMessage($"Слишком мало фантиков.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
             return;
         }
+
+        var map = new Dictionary<string, long>();
+        var left = quantity;
+        var retries = 0;
         
         for (var i = 0; i < amount; ++i) {
             var index = random.Next(0, accounts.Count);
             var (_, receiver) = accounts.ElementAt(index);
+
             if (receiver.UserId.Equals(chatMessage.UserId)) {
-                switch (index - 1) {
-                    case < 0 when index + 1 < accounts.Count:
-                        ++index;
-                        break;
-                    case >= 0 when index + 1 >= accounts.Count:
-                        --index;
-                        break;
-                    default:
-                        await client.SendMessage($"Некому роздавать.", chatMessage.Id);
-                        return;
+                if (index - 1 < 0 && index + 1 < accounts.Count) ++index;
+                else if (index - 1 >= 0) --index;
+                else {
+                    await client.SendMessage("Некому раздавать.", chatMessage.Id);
+                    return;
                 }
+                
+                (_, receiver) = accounts.ElementAt(index);
             }
             
-            bank.Give(receiver.UserId, chatMessage.UserId, quantityPerEach);
-        }
+            var result = bank.Give(receiver.UserId, chatMessage.UserId, quantityPerEach);
+            if (!result.Ok) {
+                if (retries++ >= 3) break;
+                --i;
+                continue;
+            }
 
-        var word = accounts.Count-1 <= 1 ? "человеку" : "людям";
-        await client.SendMessage($"Роздано {quantity} фантиков {amount} {word}.", chatMessage.Id);
+            if (!map.TryAdd(receiver.UserId, quantityPerEach)) {
+                map[receiver.UserId] += quantityPerEach;
+            }
+
+            left -= quantityPerEach;
+            
+            var tempAmount = amount - (i + 1);
+            if (tempAmount < 1) tempAmount = 1;
+            
+            quantityPerEach = left / tempAmount;
+        }
+        
+        var sb = new StringBuilder();
+        for (var i = 0; i < map.Count; ++i) {
+            var (receiver, points) = map.ElementAt(i);
+            var username = await Helix.GetUsername(receiver, client.Credentials, true, (_, msg) => {
+                                                                                     ErrorHandler.LogMessage(LogLevel.Error, msg);
+                                                 });
+            if (username == null) continue;
+            
+            sb.Append($"{username} - {points} {(i >= map.Count-1? string.Empty : "/ ")}");
+        }
+        
+        await client.SendMessage($"Роздано {quantity} фантиков - {sb}", chatMessage.Id);
     }
     
     private static async Task BankListRewards(ChatCmdArgs cmdArgs) {
