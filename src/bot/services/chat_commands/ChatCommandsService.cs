@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands.Data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
@@ -11,8 +12,6 @@ namespace ChatBot.bot.services.chat_commands;
 public class ChatCommandsService : Service {
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
     private static ITwitchClient? Client => Bot.GetClient();
-    
-    private long _time;
     
     public override string Name => ServiceName.ChatCommands;
     public override ChatCommandsOptions Options { get; } = new ChatCommandsOptions();
@@ -41,11 +40,11 @@ public class ChatCommandsService : Service {
             if (found) return;
 
             if (Options.VerboseState == State.Enabled) {
-                Client?.SendReply(chatMessage.Id, $"Неизвестная комманда: {Options.CommandIdentifier}{parsedCommand.CommandText}");
+                Client?.SendMessage($"Неизвестная комманда: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
             }
         } catch (Exception) {
             if (Options.VerboseState == State.Enabled) {
-                Client?.SendReply(parsedCommand.ChatMessage.Id, $"Ошибка при обработке команды {Options.CommandIdentifier}{parsedCommand.CommandText}.");
+                Client?.SendMessage($"Ошибка при обработке команды {Options.CommandIdentifier}{parsedCommand.CommandText}.");
             }
         }
     }
@@ -68,8 +67,8 @@ public class ChatCommandsService : Service {
 
             if (cmd.State == State.Disabled) return Task.FromResult(false);
             
-            var curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (curTime-_time < cmd.Cooldown) continue;
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (now-cmd.LastUsed < cmd.Cooldown) continue;
             
             args.UpdateCommand(cmd);
             
@@ -79,7 +78,7 @@ public class ChatCommandsService : Service {
             }
             
             _ = cmd.Action.Invoke(args);
-            _time = curTime;
+            cmd.SetLastUsed(now);
             return Task.FromResult(true);
         }
 

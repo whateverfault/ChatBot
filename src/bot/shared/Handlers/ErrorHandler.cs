@@ -22,6 +22,7 @@ public enum ErrorCode {
     ConnectionFailed,
     NoRewardSet,
     UserNotFound,
+    TooFewPoints,
     None,
 }
 
@@ -45,6 +46,7 @@ public static class ErrorHandler {
                                                                   "Connection failed.",
                                                                   "Reward isn't properly set.",
                                                                   "User not found.",
+                                                                  "Too few points.",
                                                               ];
 
 
@@ -65,15 +67,16 @@ public static class ErrorHandler {
                                                                 "Не удалось подключиться к сети.",
                                                                 "Награда не установлена.",
                                                                 "Пользователь не найден.",
+                                                                "Слишком мало фантиков.",
                                                             ];
     
     
-    public static bool ReplyWithError(ErrorCode error, ChatMessage message, ITwitchClient? client) {
-        if (error == ErrorCode.None) {
+    public static async Task<bool> ReplyWithError(ErrorCode? error, ChatMessage message, ITwitchClient? client) {
+        if (client == null || error == null || error == ErrorCode.None) {
             return false;
         }
         
-        client?.SendReply(message.Id, _twitchErrorMessages[(int)error]);
+        await client.SendMessage(_twitchErrorMessages[(int)error], message.Id);
         return true;
     }
 

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.message_filter;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty("filters")]
     public List<Filter> Filters { get; }
     [JsonProperty("state")]

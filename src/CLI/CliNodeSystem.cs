@@ -589,6 +589,13 @@ public class CliNodeSystem {
                                                                               ]
                                                                              ),
                                                    new CliNodeEnum(
+                                                                   "Shop Integration",
+                                                                   _state.Data.Ai.GetCasinoIntegrationAsInt,
+                                                                   typeof(State),
+                                                                   CliNodePermission.Default,
+                                                                   _state.Data.Ai.CasinoIntegrationNext
+                                                                  ),
+                                                   new CliNodeEnum(
                                                                    "Service State",
                                                                    _state.Data.Ai.GetServiceStateAsInt,
                                                                    typeof(State),
@@ -780,6 +787,60 @@ public class CliNodeSystem {
                                                             ]
                                                             );
         
+        var casinoShopDir = new CliNodeStaticDirectory(
+                                                       "Shop",
+                                                       _state,
+                                                       true,
+                                                       []
+                                                       );
+
+        var lots = _state.Data.Shop.Lots;
+        foreach (var lot in lots) {
+            casinoShopDir.AddNode(
+                                  new CliNodeStaticDirectory(
+                                                             lot.Name,
+                                                             _state,
+                                                             true,
+                                                             [
+                                                                 new CliNodeString(
+                                                                      "Name",
+                                                                      lot.GetName,
+                                                                      CliNodePermission.Default,
+                                                                      lot.ChangeName
+                                                                     ),
+                                                                 new CliNodeLong(
+                                                                      "Cost",
+                                                                      lot.GetCost,
+                                                                      CliNodePermission.Default,
+                                                                      lot.ChangeCost
+                                                                     ),
+                                                             ],
+                                                             lot.GetName
+                                                            )
+                                  );
+        }
+        
+        var casinoDir = new CliNodeStaticDirectory(
+                                                   ServiceName.Casino,
+                                                   _state,
+                                                   true,
+                                                   [
+                                                       casinoShopDir,
+                                                       new CliNodeLong(
+                                                                       "Money Supply",
+                                                                       _state.Data.Casino.GetMoneySupply,
+                                                                       CliNodePermission.ReadOnly
+                                                                      ),
+                                                       new CliNodeEnum(
+                                                                       "Service State",
+                                                                       _state.Data.Casino.GetServiceStateAsInt,
+                                                                       typeof(State),
+                                                                       CliNodePermission.Default,
+                                                                       _state.Data.Casino.ServiceStateNext
+                                                                      ),
+                                                   ]
+                                                   );
+        
         var presetsDir = new CliNodeStaticDirectory(
                                                     ServiceName.Presets,
                                                     _state,
@@ -809,24 +870,52 @@ public class CliNodeSystem {
                                                       loggerDir,
                                                   ]
                                                   );
+
+        var coreServicesDir = new CliNodeStaticDirectory(
+                                                         "Core",
+                                                         _state,
+                                                         true,
+                                                         [
+                                                             chatCmdsDir,
+                                                             chatLogsDir,
+                                                             messageFilterDir,
+                                                             moderationDir,
+                                                         ]
+                                                         );
+        
+        var usefulServicesDir = new CliNodeStaticDirectory(
+                                                           "Useful",
+                                                           _state,
+                                                           true,
+                                                           [
+                                                               aiDir,
+                                                               translatorDir,
+                                                               demonListDir,
+                                                               levelReqsDir,
+                                                               gameReqsDir,
+                                                               tgNotificationsDir,
+                                                           ]
+                                                          );
+        
+        var funServicesDir = new CliNodeStaticDirectory(
+                                                        "Fun",
+                                                        _state,
+                                                        true,
+                                                        [
+                                                            randomMsgsDir,
+                                                            textGeneratorDir,
+                                                            casinoDir,
+                                                        ]
+                                                       );
         
         var servicesDir = new CliNodeStaticDirectory(
                                                   "Services",
                                                   _state,
                                                   true,
                                                   [
-                                                      chatCmdsDir,
-                                                      chatLogsDir,
-                                                      randomMsgsDir,
-                                                      textGeneratorDir,
-                                                      aiDir,
-                                                      translatorDir,
-                                                      demonListDir,
-                                                      messageFilterDir,
-                                                      moderationDir,
-                                                      levelReqsDir,
-                                                      gameReqsDir,
-                                                      tgNotificationsDir,
+                                                      coreServicesDir,
+                                                      usefulServicesDir,
+                                                      funServicesDir,
                                                       debugDir,
                                                   ]);
         

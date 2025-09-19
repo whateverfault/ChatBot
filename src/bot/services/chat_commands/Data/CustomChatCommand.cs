@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 
@@ -94,7 +95,7 @@ public sealed class CustomChatCommand : ChatCommand {
         var client = TwitchChatBot.Instance.GetClient();
 
         if (HasIdentifier) {
-            client?.SendReply(chatMessage.Id, command.Output);
+            client?.SendMessage(command.Output, chatMessage.Id);
         }
         else {
             if (chatArgs.Parsed.ArgumentsAsList.Count != 0) return Task.CompletedTask;

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.translator;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
     [JsonProperty(PropertyName = "project_id")]

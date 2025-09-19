@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.chat_ads;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
 

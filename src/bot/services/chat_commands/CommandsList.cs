@@ -1,6 +1,9 @@
 ﻿using System.Text;
+using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
+using ChatBot.bot.services.bank;
+using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
 using ChatBot.bot.services.chat_commands.Data;
@@ -17,6 +20,7 @@ using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.helix;
+using TwitchAPI.shared;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -62,6 +66,14 @@ public static class CommandsList {
                                                       "[username]",
                                                       "время, которое пользователь отслеживает канал.",
                                                       Followage,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      8,
+                                                      "req",
+                                                      string.Empty, 
+                                                      "узнать включены ли реквесты",
+                                                      ReqEveryone,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -113,28 +125,12 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      8,
-                                                      "req",
-                                                      string.Empty, 
-                                                      "узнать включены ли реквесты",
-                                                      ReqEveryone,
-                                                      Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
                                                       -1,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
                                                       PageTerminator,
                                                       Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
-                                                      9,
-                                                      "rizz",
-                                                      "[text]",
-                                                      "RIZZ",
-                                                      Rizz,
-                                                      Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
                                                       10,
@@ -166,7 +162,7 @@ public static class CommandsList {
                                                       "[prompt]",
                                                       "задать вопрос ии.",
                                                       Ai,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       13,
@@ -174,7 +170,7 @@ public static class CommandsList {
                                                       string.Empty,
                                                       "сгенерировать сообщение",
                                                       Potato,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       14,
@@ -182,7 +178,7 @@ public static class CommandsList {
                                                       string.Empty,
                                                       "зарандомить новое сообщение",
                                                       Carrot,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       -1,
@@ -621,6 +617,94 @@ public static class CommandsList {
                                                       ChangeChatAdCooldown,
                                                       Restriction.DevBroad
                                                      ),
+                               new DefaultChatCommand(
+                                                      -1,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      61,
+                                                      "balance",
+                                                      string.Empty,
+                                                      "посмотреть баланс.",
+                                                      Flex,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      62,
+                                                      "shop",
+                                                      string.Empty,
+                                                      "посмотреть баланс.",
+                                                      Flex,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      -1,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      63,
+                                                      "gamble",
+                                                      "<quantity>",
+                                                      "слить баллы.",
+                                                      Gamble,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      64,
+                                                      "give",
+                                                      "<quantity;username>",
+                                                      "отдать нищему фантики.",
+                                                      Give,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      65,
+                                                      "giveaway",
+                                                      "[quantity]",
+                                                      "раздать нищим фантики.",
+                                                      Giveaway,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      -1,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      66,
+                                                      "bank-list-rewards",
+                                                      "[--page]",
+                                                      "вывести список наград.",
+                                                      BankListRewards,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      67,
+                                                      "bank-create-reward",
+                                                      "<quantity>",
+                                                      "создать награду.",
+                                                      BankCreateReward,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      68,
+                                                      "bank-delete-reward",
+                                                      "<id>",
+                                                      "удалить награду.",
+                                                      BankDeleteReward,
+                                                      Restriction.DevBroad
+                                                     ),
                            ];
     }
     
@@ -635,7 +719,7 @@ public static class CommandsList {
         var cmds = new List<string>();
 
         foreach (var cmd in _chatCmds.Options.DefaultCmds) {
-            if (!chatMessage.Fits(cmd.Restriction)) continue;
+            if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.DefaultCmds
                          .Any(defaultCmd =>
                                   defaultCmd.Name.Equals(cmd.Name)
@@ -675,7 +759,7 @@ public static class CommandsList {
         var cmds = new List<string>();
         
         foreach (var cmd in _chatCmds.Options.CustomCmds) {
-            if (!chatMessage.Fits(cmd.Restriction)) continue;
+            if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.CustomCmds
                          .Any(customCmd =>
                                   customCmd.Name.Equals(cmd.Name)
@@ -722,8 +806,7 @@ public static class CommandsList {
         
         switch (chatCommands.Options.SendWhisperIfPossible) {
             case State.Disabled: {
-                await client.SendReply(chatMessage.Id, usage);
-                break;
+                await client.SendMessage(usage, chatMessage.Id); break;
             }
             case State.Enabled: {
                 var result = await Helix.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
@@ -731,7 +814,7 @@ public static class CommandsList {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
                 if (!result) {
-                    ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                    await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
                 }
                 break;
             }
@@ -748,7 +831,7 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -763,8 +846,8 @@ public static class CommandsList {
             random == 0 ? 
                 $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew" : 
                 $"{argSb} никогда GAGAGA GAGAGA GAGAGA";
-        await client.SendReply(chatMessage.Id, randomizedMessage);
-    }
+        await client.SendMessage(randomizedMessage, chatMessage.Id); 
+        }
 
     private static async Task Ban(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
@@ -774,7 +857,7 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -784,7 +867,7 @@ public static class CommandsList {
             argSb.Append($"{arg} ");
         }
                 
-        await client.SendReply(chatMessage.Id, $"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL");
+        await client.SendMessage($"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL", chatMessage.Id);
     }
 
     private static async Task Ai(ChatCmdArgs cmdArgs) {
@@ -796,7 +879,7 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -805,10 +888,22 @@ public static class CommandsList {
             prompt.Append($"{word} ");
         }
 
-        var response = await ai.GetResponse(prompt.ToString().Trim());
+        Result<string?, ErrorCode?> result;
+        if (ai.Options.CasinoIntegration == State.Enabled) {
+            result = await ai.GetPaidResponse(chatMessage.Id, prompt.ToString().Trim());
+        }else {
+            result = await ai.GetResponse(prompt.ToString().Trim());
+        }
+        
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+
+        var response = result.Value;
         
         if (string.IsNullOrEmpty(response)) {
-            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
 
@@ -837,7 +932,7 @@ public static class CommandsList {
         } while (remainingLenght > 0);
 
         foreach (var message in messages) {
-            await client.SendReply(chatMessage.Id, message);
+            await client.SendMessage(message, chatMessage.Id);
             Thread.Sleep(TimeSpan.FromMilliseconds(500));
         }
     }
@@ -861,7 +956,7 @@ public static class CommandsList {
         
         switch (args.Count) {
             case < 1:
-                await client.SendReply(chatMessage.Id, $"Дополнительные логи {verboseStateStr} {comment}");
+                await client.SendMessage($"Дополнительные логи {verboseStateStr} {comment}", chatMessage.Id);
                 return;
             case > 0: {
                 if (args[0] == "on") {
@@ -883,7 +978,7 @@ public static class CommandsList {
             chatCommands.Options.VerboseState == State.Enabled ?
                 "Shiza":
                 "ZACHTO";
-        await client.SendReply(chatMessage.Id, $"Дополнительные логи теперь {verboseStateStr} {comment}");
+        await client.SendMessage($"Дополнительные логи теперь {verboseStateStr} {comment}", chatMessage.Id);
     }
 
     private static async Task ReqEveryone(ChatCmdArgs cmdArgs) {
@@ -894,7 +989,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var reqState = levelRequests.GetReqState();
-        await client.SendReply(chatMessage.Id, $"Реквесты {levelRequests.GetReqStateStr(reqState)}"); 
+        await client.SendMessage($"Реквесты {levelRequests.GetReqStateStr(reqState)}", chatMessage.Id); 
     }
     
     private static async Task Req(ChatCmdArgs cmdArgs) {
@@ -910,7 +1005,6 @@ public static class CommandsList {
         var reqState = levelRequests.GetReqState();
         switch (args.Count) {
             case <= 0:
-                await client.SendReply(chatMessage.Id, "Недостаточно аргументов для изменения состояния.");
                 await ReqEveryone(cmdArgs);
                 return;
             case > 0:
@@ -930,7 +1024,7 @@ public static class CommandsList {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
                         if (!result) {
-                            ErrorHandler.ReplyWithError(ErrorCode.NoRewardSet, chatMessage, client);
+                            await ErrorHandler.ReplyWithError(ErrorCode.NoRewardSet, chatMessage, client);
                             return;
                         }
                         break;
@@ -948,7 +1042,7 @@ public static class CommandsList {
         }
 
         levelRequests.Options.SetReqState(reqState);
-        await client.SendReply(chatMessage.Id, $"Реквесты теперь {levelRequests.GetReqStateStr(reqState)}");
+        await client.SendMessage($"Реквесты теперь {levelRequests.GetReqStateStr(reqState)}", chatMessage.Id);
     }
 
     private static async Task SetReqReward(ChatCmdArgs cmdArgs) {
@@ -959,12 +1053,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendReply(chatMessage.Id, $"Используйте эту комманду внутри награды.");
+            await client.SendMessage($"Используйте эту комманду внутри награды.", chatMessage.Id);
             return;
         }
         
         levelRequests.SetRewardId(chatMessage.RewardId);
-        await client.SendReply(chatMessage.Id, $"Награда для реквестов успешно установлена.");
+        await client.SendMessage($"Награда для реквестов успешно установлена.", chatMessage.Id);
     }
     
     private static Task Potato(ChatCmdArgs chatCmdArgs) {
@@ -985,29 +1079,10 @@ public static class CommandsList {
                                                                      });
 
         if (clipId == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"Клип создан - https://www.twitch.tv/{client.Credentials.Channel}/clip/{clipId}");
-    }
-    
-    private static Task Rizz(ChatCmdArgs cmdArgs) {
-        var args = cmdArgs.Parsed.ArgumentsAsList;
-        var client = _bot.GetClient();
-        
-        var argSb = new StringBuilder();
-
-        foreach (var arg in args) {
-            argSb.Append($"{arg} ");
-        }
-                
-        var message =
-            args.Count == 0 ?
-                "КШЯЯ" :
-                argSb.ToString();
-                
-        client?.SendMessage($"{message} RIZZ RIZZ RIZZ");
-        return Task.CompletedTask;
+        await client.SendMessage($"Клип создан - https://www.twitch.tv/{client.Credentials.Channel}/clip/{clipId}", chatMessage.Id);
     }
 
     private static async Task TitleEveryone(ChatCmdArgs cmdArgs) {
@@ -1019,7 +1094,7 @@ public static class CommandsList {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         
-        await client.SendReply(chatMessage.Id, $"Название стрима - {channelInfo!.Title}");
+        await client.SendMessage($"Название стрима - {channelInfo!.Title}", chatMessage.Id);
     }
     
     private static async Task Title(ChatCmdArgs cmdArgs) {
@@ -1050,10 +1125,10 @@ public static class CommandsList {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
-            await client.SendReply(chatMessage.Id, $"Не удалось изменить название");
+            await client.SendMessage($"Не удалось изменить название", chatMessage.Id);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"Название стрима изменено на {titleSb}");
+        await client.SendMessage($"Название стрима изменено на {titleSb}", chatMessage.Id);
     }
     
     private static async Task Followage(ChatCmdArgs cmdArgs) {
@@ -1085,7 +1160,7 @@ public static class CommandsList {
                         $"Вы не фолловнуты на {chatMessage.Channel} Sadding";
             }
 
-            await client.SendReply(chatMessage.Id, result);
+            await client.SendMessage(result, chatMessage.Id);
             return;
         }
         var years =
@@ -1104,7 +1179,7 @@ public static class CommandsList {
             args.Count > 0 ? 
                 $"{username} фолловнут на {chatMessage.Channel} {years} {months} {days}" : 
                 $"Вы фолловнуты на {chatMessage.Channel} {years} {months} {days}";
-        await client.SendReply(chatMessage.Id, result);
+        await client.SendMessage(result, chatMessage.Id);
     }
 
     private static async Task GameEveryone(ChatCmdArgs cmdArgs) {
@@ -1116,7 +1191,7 @@ public static class CommandsList {
                                                                               });
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
-        await client.SendReply(chatMessage.Id, $"Текущая категория - {channelInfo!.GameName}");
+        await client.SendMessage($"Текущая категория - {channelInfo!.GameName}", chatMessage.Id);
     }
     
     private static async Task Game(ChatCmdArgs cmdArgs) {
@@ -1154,13 +1229,13 @@ public static class CommandsList {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
-            await client.SendReply(chatMessage.Id, "Не удалось изменить категорию");
+            await client.SendMessage("Не удалось изменить категорию", chatMessage.Id);
             return;
         }
         channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
                                                                               _logger.Log(LogLevel.Error, message);
                                                                           });
-        await client.SendReply(chatMessage.Id, $"Категория изменена на {channelInfo!.GameName}");
+        await client.SendMessage($"Категория изменена на {channelInfo!.GameName}", chatMessage.Id);
     }
     
     private static async Task Guess(ChatCmdArgs cmdArgs) {
@@ -1168,25 +1243,22 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (messageRandomizer.Options.MessageState == MessageState.Guessed) {
-            await client.SendReply(chatMessage.Id, "Уже отгадано.");
+            await client.SendMessage("Уже отгадано.", chatMessage.Id);
             return;
         }
 
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            logger.Log(LogLevel.Error, $"Too few arguments for '{cmdArgs.Parsed.CommandText}' command");
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+        if (await ErrorHandler.ReplyWithError(err, chatMessage, client)
          || message == null) {
-            logger.Log(LogLevel.Info, "Tried to access last random message while there is no such.");
             return;
         }
 
@@ -1196,10 +1268,9 @@ public static class CommandsList {
         if (userId == null) return;
         
         if (userId != message.UserId) {
-            await client.SendReply(chatMessage.Id, "Неправильно.");
+            await client.SendMessage("Неправильно.", chatMessage.Id);
         } else {
-            await client.SendReply(chatMessage.Id,
-                              $"Правильно, это было сообщение от {args[0]}.");
+            await client.SendMessage($"Правильно, это было сообщение от {args[0]}.", chatMessage.Id);
             messageRandomizer.Options.SetMessageState(MessageState.Guessed);
         }
     }
@@ -1209,20 +1280,18 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
+        if (await ErrorHandler.ReplyWithError(err, chatMessage, client)
          || message == null) {
-            logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
             return;
         }
 
         var username = await Helix.GetUsername(message.UserId, client.Credentials, true, (_, msg) => {
                                                    _logger.Log(LogLevel.Error, msg);
                                                });
-        await client.SendReply(chatMessage.Id, $"Это было сообщение от '{username}'");
+        await client.SendMessage($"Это было сообщение от '{username}'", chatMessage.Id);
     }
 
     private static async Task Repeat(ChatCmdArgs cmdArgs) {
@@ -1230,18 +1299,14 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var err = messageRandomizer.GetLastGeneratedMessage(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)) {
-            ErrorHandler.ReplyWithError(err, chatMessage, client);
-            logger.Log(LogLevel.Info, "Tried to access last random message while there are no such.");
+        if (await ErrorHandler.ReplyWithError(err, chatMessage, client) || message == null) {
             return;
         }
         
-        await client.SendReply(chatMessage.Id, message!.Text);
-        logger.Log(LogLevel.Info, $"Repeated last message for {chatMessage.Username}.");
+        await client.SendMessage(message.Text, chatMessage.Id);
     }
 
     private static async Task Translate(ChatCmdArgs cmdArgs) {
@@ -1253,12 +1318,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (translator.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
         
         if (args.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
@@ -1282,10 +1347,10 @@ public static class CommandsList {
         
         var translated = await translator.Translate(textSb.ToString(), targetLang, sourceLang);
         if (translated == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.TranslationFailed, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TranslationFailed, chatMessage, client);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"Перевод: {translated}");
+        await client.SendMessage($"Перевод: {translated}", chatMessage.Id);
     }
 
     private static async Task DetectLang(ChatCmdArgs cmdArgs) {
@@ -1297,12 +1362,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (translator.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
         
         if (args.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
@@ -1314,10 +1379,10 @@ public static class CommandsList {
         
         var lang = await translator.DetectLanguage(textSb.ToString());
         if (lang == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"Самый близкий язык: {lang.LanguageCode} с вероятностью {(int)(lang.Confidence*100)}%");
+        await client.SendMessage($"Самый близкий язык - {lang.LanguageCode}", chatMessage.Id);
     }
 
     private static async Task Lang(ChatCmdArgs cmdArgs) {
@@ -1329,37 +1394,34 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (translator.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
         
         if (args.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
         translator.SetTargetLanguage(args[0]);
-        await client.SendReply(chatMessage.Id, $"Язык установлен на '{args[0]}'");
+        await client.SendMessage($"Язык установлен на '{args[0]}'", chatMessage.Id);
     }
     
-    private static Task Carrot(ChatCmdArgs cmdArgs) {
+    private static async Task Carrot(ChatCmdArgs cmdArgs) {
         var messageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
-        var logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var client = _bot.GetClient();
         
         if (messageRandomizer.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
-            logger.Log(LogLevel.Error, "Message Randomizer service is disabled");
-            return Task.CompletedTask;
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
         }
                     
         var err = messageRandomizer.Generate(out var message);
-        if (ErrorHandler.ReplyWithError(err, chatMessage, client)
-         || message == null) return Task.CompletedTask;
+        if (await ErrorHandler.ReplyWithError(err, chatMessage, client)
+         || message == null) return;
         
         client?.SendMessage(message.Text);
-        return Task.CompletedTask;
     }
 
     private static async Task Top(ChatCmdArgs cmdArgs) {
@@ -1372,7 +1434,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             logger.Log(LogLevel.Error, "Demon List service is disabled");
             return;
         }
@@ -1380,7 +1442,7 @@ public static class CommandsList {
         var index = int.Parse(string.IsNullOrWhiteSpace(args[0])? "-1" : args[0]);
         var levelInfo =  await demonList.GetLevelByPlacement(index);
         if (levelInfo == null) {
-            await client.SendReply(chatMessage.Id, "Позиция не найдена.");
+            await client.SendMessage("Позиция не найдена.", chatMessage.Id);
             return;
         }
         var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.Id);
@@ -1398,7 +1460,7 @@ public static class CommandsList {
                             false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.EdelEnjoyment})" : $"; EDL: {(int)levelInfo.EdelEnjoyment})",
                         };
         
-        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier}{enjoyment} {verificationLink}");
+        await client.SendMessage($"#{index} {levelInfo.Name} {tier}{enjoyment} {verificationLink}", chatMessage.Id);
     }
 
     private static async Task Place(ChatCmdArgs cmdArgs) {
@@ -1410,12 +1472,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
 
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -1434,7 +1496,7 @@ public static class CommandsList {
         var levelsInfo =  await demonList.GetLevelsInfoByName(levelName.ToString().Trim());
 
         if (levelsInfo == null || levelsInfo.Count == 0) {
-            await client.SendReply(chatMessage.Id, "Уровень не найден.");
+            await client.SendMessage("Уровень не найден.", chatMessage.Id);
             return;
         }
         
@@ -1468,7 +1530,7 @@ public static class CommandsList {
                 string.Empty : 
                 $"Страница {page+1} из {levelsInfo.Count} |";
         
-        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.Position} {levelInfo.Name} {tier}{enjoyment} {verificationLink}");
+        await client.SendMessage($"{pages} #{levelInfo.Position} {levelInfo.Name} {tier}{enjoyment} {verificationLink}", chatMessage.Id);
     }
     
     private static async Task Ptop(ChatCmdArgs cmdArgs) {
@@ -1481,19 +1543,19 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             logger.Log(LogLevel.Error, "Demon List service is disabled");
             return;
         }
 
         if (!int.TryParse(args[0], out var index)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
         
         var levelInfo =  await demonList.GetPlatformerLevelByPlacement(index);
         if (levelInfo == null) {
-            await client.SendReply(chatMessage.Id, "Позиция не найдена.");
+            await client.SendMessage("Позиция не найдена.", chatMessage.Id);
             return;
         }
         var verificationLink = await demonList.GetPlatformerLevelVerificationLink(levelInfo.Id);
@@ -1506,7 +1568,7 @@ public static class CommandsList {
                 string.Empty:
                 $"({levelInfo.NlwTier} tier)";
         
-        await client.SendReply(chatMessage.Id, $"#{index} {levelInfo.Name} {tier} {verificationLink}");
+        await client.SendMessage($"#{index} {levelInfo.Name} {tier} {verificationLink}", chatMessage.Id);
     }
     
     private static async Task Pplace(ChatCmdArgs cmdArgs) {
@@ -1518,12 +1580,12 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
 
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
 
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -1542,7 +1604,7 @@ public static class CommandsList {
         var levelsInfo =  await demonList.GetPlatformerLevelsInfoByName(levelName.ToString().Trim());
 
         if (levelsInfo == null) {
-            await client.SendReply(chatMessage.Id, "Уровень не найден.");
+            await client.SendMessage("Уровень не найден.", chatMessage.Id);
             return;
         }
         
@@ -1571,7 +1633,7 @@ public static class CommandsList {
                 string.Empty : 
                 $"Страница {page+1} из {levelsInfo.Count} |";
         
-        await client.SendReply(chatMessage.Id, $"{pages} #{levelInfo.Position} {levelInfo.Name} {tier} {verificationLink}");
+        await client.SendMessage($"{pages} #{levelInfo.Position} {levelInfo.Name} {tier} {verificationLink}", chatMessage.Id);
     }
 
     private static async Task Hardest(ChatCmdArgs cmdArgs) {
@@ -1583,23 +1645,23 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
                     
         if (args.Count < 1) {
             var level = await demonList.GetHardest();
             if (level == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            await client.SendMessage($"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}", chatMessage.Id);
             return;
         }
         
@@ -1611,16 +1673,16 @@ public static class CommandsList {
                     
         var profile = await demonList.GetProfile(username.Trim());
         if (profile == null) {
-            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            await client.SendMessage("Пользователь не найден.", chatMessage.Id);
             return;
         }
         var hardest = await demonList.GetHardest(profile);
         if (hardest == null) {
-            await client.SendReply(chatMessage.Id, "Хардест не найден.");
+            await client.SendMessage("Хардест не найден.", chatMessage.Id);
             return;
         }
                         
-        await client.SendReply(chatMessage.Id, $"#{hardest.level.position} {profile.Hardest?.name} | {hardest.videoUrl}");
+        await client.SendMessage($"#{hardest.level.position} {profile.Hardest?.name} | {hardest.videoUrl}", chatMessage.Id);
     }
 
         private static async Task PHardest(ChatCmdArgs cmdArgs) {
@@ -1632,23 +1694,23 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
                     
         if (args.Count < 1) {
             var level = await demonList.GetPlatformerHardest();
             if (level == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetPlatformerLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            await client.SendMessage($"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}", chatMessage.Id);
             return;
         }
         
@@ -1660,18 +1722,18 @@ public static class CommandsList {
         var username = argSb.ToString();
         var profile = await demonList.GetProfile(username.Trim());
         if (profile == null) {
-            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            await client.SendMessage("Пользователь не найден.", chatMessage.Id);
             return;
         }
         
         var hardest = await demonList.GetPlatformerHardest(profile);
         if (hardest == null
          || profile.Hardest == null) {
-            await client.SendReply(chatMessage.Id, "Хардест не найден.");
+            await client.SendMessage("Хардест не найден.", chatMessage.Id);
             return;
         }
                         
-        await client.SendReply(chatMessage.Id, $"#{hardest.level.position} {hardest.level.name} | {hardest.videoUrl}");
+        await client.SendMessage($"#{hardest.level.position} {hardest.level.name} | {hardest.videoUrl}", chatMessage.Id);
     }
     
     private static async Task Easiest(ChatCmdArgs cmdArgs) {
@@ -1683,23 +1745,23 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
             return;
         }
                     
         if (args.Count < 1) {
             var level = await demonList.GetEasiest();
             if (level == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                await client.SendReply(chatMessage.Id, "Не найдено.");
+                await client.SendMessage("Не найдено.", chatMessage.Id);
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            await client.SendMessage($"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}", chatMessage.Id);
             return;
         }
 
@@ -1711,16 +1773,16 @@ public static class CommandsList {
 
         var profile = await demonList.GetProfile(username.Trim());
         if (profile == null) {
-            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            await client.SendMessage("Пользователь не найден.", chatMessage.Id);
             return;
         }
         var easiest = await demonList.GetEasiest(profile);
         if (easiest == null) {
-            await client.SendReply(chatMessage.Id, "Не найдено.");
+            await client.SendMessage("Не найдено.", chatMessage.Id);
             return;
         }
 
-        await client.SendReply(chatMessage.Id, $"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}");
+        await client.SendMessage($"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}", chatMessage.Id);
     }
 
     private static async Task PEasiest(ChatCmdArgs cmdArgs) {
@@ -1732,23 +1794,23 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
             return;
         }
                     
         if (args.Count < 1) {
             var level = await demonList.GetPlatformerEasiest();
             if (level == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                 return;
             }
             
             var details = await demonList.GetPlatformerLevelDetails(level.Id);
             if (details == null || details.verifications.Count < 1) {
-                await client.SendReply(chatMessage.Id, "Не найдено.");
+                await client.SendMessage("Не найдено.", chatMessage.Id);
                 return;
             }
-            await client.SendReply(chatMessage.Id, $"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}");
+            await client.SendMessage($"#{level.Position} {level.Name} | {details.verifications[0].videoUrl}", chatMessage.Id);
             return;
         }
 
@@ -1760,16 +1822,16 @@ public static class CommandsList {
 
         var profile = await demonList.GetProfile(username.Trim());
         if (profile == null) {
-            await client.SendReply(chatMessage.Id, "Пользователь не найден.");
+            await client.SendMessage("Пользователь не найден.", chatMessage.Id);
             return;
         }
         var easiest = await demonList.GetPlatformerEasiest(profile);
         if (easiest == null) {
-            await client.SendReply(chatMessage.Id, "Не найдено.");
+            await client.SendMessage("Не найдено.", chatMessage.Id);
             return;
         }
 
-        await client.SendReply(chatMessage.Id, $"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}");
+        await client.SendMessage($"#{easiest.level.position} {easiest.level.name} | {easiest.videoUrl}", chatMessage.Id);
     }
 
     
@@ -1785,7 +1847,7 @@ public static class CommandsList {
         var to = -1;
 
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
 
@@ -1798,14 +1860,14 @@ public static class CommandsList {
                         
         var levelInfo = await demonList.GetRandomLevel(from, to);
         if (levelInfo == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
         var verificationLink = await demonList.GetLevelVerificationLink(levelInfo.Id);
         if (verificationLink != null) {
             verificationLink = $"| {verificationLink}";
         }
-        await client.SendReply(chatMessage.Id, $"#{levelInfo.Position} {levelInfo.Name} {verificationLink}");
+        await client.SendMessage($"#{levelInfo.Position} {levelInfo.Name} {verificationLink}", chatMessage.Id);
     }
 
     private static async Task Clan(ChatCmdArgs cmdArgs) {
@@ -1817,21 +1879,21 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
                         
         var clanInfo = await demonList.GetClanInfo(args[0]);
         if (clanInfo == null) {
-            await client.SendReply(chatMessage.Id, "Клана не существует.");
+            await client.SendMessage("Клана не существует.", chatMessage.Id);
             return;
         }
                         
-        await client.SendReply(chatMessage.Id, $"[{clanInfo.clan.tag}] {clanInfo.clan.globalName} | https://aredl.net/clans/{clanInfo.clan.id}");
+        await client.SendMessage($"[{clanInfo.clan.tag}] {clanInfo.clan.globalName} | https://aredl.net/clans/{clanInfo.clan.id}", chatMessage.Id);
     }
     
     private static async Task ClanHardest(ChatCmdArgs cmdArgs) {
@@ -1843,26 +1905,31 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
 
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
                     
         var clanInfo = await demonList.GetClanInfo(args[0]);
         if (clanInfo == null) {
-            await client.SendReply(chatMessage.Id, $"Клана не существует.");
+            await client.SendMessage($"Клана не существует.", chatMessage.Id);
             return;
         }
         var hardest = await demonList.GetLevelDetails(clanInfo.hardest.id);
+        if (hardest == null) {
+            await client.SendMessage("Не найдено.", chatMessage.Id);
+            return;
+        }
+        
         var verificationLink = string.Empty;
-        if (hardest?.verifications.Count > 0) {
+        if (hardest.verifications.Count > 0) {
             verificationLink = $"| {hardest.verifications[0].videoUrl}";
         }
-        await client.SendReply(chatMessage.Id, $"#{hardest?.position} {clanInfo.hardest.name} {verificationLink}");
+        await client.SendMessage($"#{hardest.position} {clanInfo.hardest.name} {verificationLink}", chatMessage.Id);
     }
 
     private static async Task ClanRoulette(ChatCmdArgs cmdArgs) {
@@ -1874,26 +1941,27 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (demonList.GetServiceState() == State.Disabled) {
-            ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
             return;
         }
 
         if (args.Count < 1) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
         var clanInfo = await demonList.GetClanInfo(args[0]);
         if (clanInfo == null) {
-            await client.SendReply(chatMessage.Id, $"Клана не существует.");
+            await client.SendMessage($"Клана не существует.", chatMessage.Id);
             return;
         }
         var levelInfo = await demonList.GetRandomClanSubmission(clanInfo.clan.id)!;
         if (levelInfo == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
-        await client.SendReply(chatMessage.Id, $"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}");
+
+        await client.SendMessage($"#{levelInfo.level?.position} {levelInfo.level?.name} | {levelInfo.videoUrl}", chatMessage.Id);
     }
 
     private static async Task Games(ChatCmdArgs cmdArgs) {
@@ -1907,7 +1975,7 @@ public static class CommandsList {
         var gameRequests = gameRequestService.GetGameRequests();
 
         if (gameRequests?.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
+            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
             return;
         }
         
@@ -1937,12 +2005,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendReply(chatMessage.Id, $"Используйте эту комманду внутри награды.");
+            await client.SendMessage($"Используйте эту комманду внутри награды.", chatMessage.Id);
             return;
         }
         
         gameRequest.Options.AddReward(chatMessage.RewardId);
-        await client.SendReply(chatMessage.Id, "Награда добавлена в список.");
+        await client.SendMessage("Награда добавлена в список.", chatMessage.Id);
     }
 
     private static async Task ResetGameRequestsRewards(ChatCmdArgs cmdArgs) {
@@ -1953,21 +2021,21 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         gameRequest.Options.ResetRewards();
-        await client.SendReply(chatMessage.Id, "Список наград очищен.");
+        await client.SendMessage("Список наград очищен.", chatMessage.Id);
     }
     
-    private static Task AddGame(ChatCmdArgs cmdArgs) {
+    private static async Task AddGame(ChatCmdArgs cmdArgs) {
         var gameRequestService = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var client = _bot.GetClient();
         
         if (args.Count > 0) {
-            return gameRequestService.AddGameRequest(args, chatMessage);
+            await gameRequestService.AddGameRequest(args, chatMessage);
+            return;
         }
         
-        ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-        return Task.CompletedTask;
+        await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
     }
 
     private static async Task CompleteGame(ChatCmdArgs cmdArgs) {
@@ -1978,14 +2046,14 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseIntArg(cmdArgs, out var indexToRemove);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         var gameRequests = gameRequestService.GetGameRequests();
         
         if (indexToRemove <= 0 || indexToRemove > gameRequests!.Count) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
@@ -1993,7 +2061,7 @@ public static class CommandsList {
         var gameName = gameRequests[indexToRemove].GameName;
         
         gameRequestService.Options.RemoveRequest(indexToRemove);
-        await client.SendReply(chatMessage.Id, $"Игра {gameName} удалена из очереди.");
+        await client.SendMessage($"Игра {gameName} удалена из очереди.", chatMessage.Id);
     }
     
     private static async Task ResetGames(ChatCmdArgs cmdArgs) {
@@ -2004,7 +2072,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         gameRequestService.Options.ResetRequests();
-        await client.SendReply(chatMessage.Id, "Список заказов очищен.");
+        await client.SendMessage("Список заказов очищен.", chatMessage.Id);
     }
 
     private static async Task CreateReward(ChatCmdArgs cmdArgs) {
@@ -2014,12 +2082,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
@@ -2039,11 +2107,11 @@ public static class CommandsList {
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         
-        await client.SendReply(chatMessage.Id, $"Награда успешно создана. ({rewardId})");
+        await client.SendMessage($"Награда успешно создана. ({rewardId})", chatMessage.Id);
     }
     
     private static async Task DeleteReward(ChatCmdArgs cmdArgs) {
@@ -2054,7 +2122,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (args.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -2063,11 +2131,11 @@ public static class CommandsList {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
         if (!result) {
-            ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
         
-        await client.SendReply(chatMessage.Id, $"Награда успешно удалена. ({rewardId})");
+        await client.SendMessage($"Награда успешно удалена. ({rewardId})", chatMessage.Id);
     }
     
     private static async Task TgNotifyEveryone(ChatCmdArgs cmdArgs) {
@@ -2081,7 +2149,7 @@ public static class CommandsList {
             tgNotifications.GetServiceState() == State.Enabled? 
                 "включены":
                 "отключены";
-        await client.SendReply(chatMessage.Id, $"Уведомления о стримах {stateStr}");
+        await client.SendMessage($"Уведомления о стримах {stateStr}", chatMessage.Id);
     }
     
     private static async Task TgNotify(ChatCmdArgs cmdArgs) {
@@ -2112,7 +2180,7 @@ public static class CommandsList {
             tgNotifications.GetServiceState() == State.Enabled? 
                 "включены":
                 "отключены";
-        await client.SendReply(chatMessage.Id, $"Уведомления о стримах теперь {stateStr}");
+        await client.SendMessage($"Уведомления о стримах теперь {stateStr}", chatMessage.Id);
     }
     
     private static async Task TgNotifyPrompt(ChatCmdArgs cmdArgs) {
@@ -2124,7 +2192,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (args.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
@@ -2134,7 +2202,7 @@ public static class CommandsList {
         }
         
         tgNotifications.SetNotificationPrompt(prompt.ToString().Trim());
-        await client.SendReply(chatMessage.Id, $"Текст уведомлений успешно изменен.");
+        await client.SendMessage($"Текст уведомлений успешно изменен.", chatMessage.Id);
     }
 
     private static async Task ListCustomCmds(ChatCmdArgs cmdArgs) {
@@ -2145,7 +2213,7 @@ public static class CommandsList {
 
         var cmds = _chatCmds.Options.GetCustomCommands();
         if (cmds.Count == 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
             return;
         }
         
@@ -2160,12 +2228,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
         
         if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -2190,7 +2258,7 @@ public static class CommandsList {
                                         Restriction.Everyone);
         
         _chatCmds.AddChatCmd(cmd);
-        await client.SendReply(chatMessage.Id, $"Новая команда '{cmd.Name}' добавлена успешно.");
+        await client.SendMessage($"Новая команда '{cmd.Name}' добавлена успешно.", chatMessage.Id);
     }
 
     private static async Task RemoveCmd(ChatCmdArgs cmdArgs) {
@@ -2200,17 +2268,17 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseIntArg(cmdArgs, out var id);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         var cmd = _chatCmds.Options.GetCustomCmdById(id);
         if (cmd == null || !_chatCmds.Options.TryRemoveChatCmdById(id)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
-        await client.SendReply(chatMessage.Id, $"Команда '{cmd.Name}' успешно удалена.");
+        await client.SendMessage($"Команда '{cmd.Name}' успешно удалена.", chatMessage.Id);
     }
     
     private static async Task ChangeCmdDescription(ChatCmdArgs cmdArgs) {
@@ -2220,24 +2288,24 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
         
         if (!int.TryParse(args[0], out var id)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         var cmd = _chatCmds.Options.GetCustomCmdById(id);
 
         if (cmd == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
         
         cmd.SetDescription(args[1]);
-        await client.SendReply(chatMessage.Id, $"Описание команды '{cmd.Name}' изменено на {cmd.Description}.");
+        await client.SendMessage($"Описание команды '{cmd.Name}' изменено на {cmd.Description}.", chatMessage.Id);
     }
     
     private static async Task ChangeCmdOutput(ChatCmdArgs cmdArgs) {
@@ -2247,29 +2315,29 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
         
         if (args.Length < 2) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
         if (!int.TryParse(args[0], out var id)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         var cmd = _chatCmds.Options.GetCustomCmdById(id);
 
         if (cmd == null) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
         
         cmd.SetOutput(args[1]);
-        await client.SendReply(chatMessage.Id, $"Вывод команды '{cmd.Name}' изменено на {cmd.Output}.");
+        await client.SendMessage($"Вывод команды '{cmd.Name}' изменено на {cmd.Output}.", chatMessage.Id);
     }
 
     private static async Task ListChatAds(ChatCmdArgs cmdArgs) {
@@ -2293,12 +2361,12 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
         
         if (args.Length < 3) {
-            ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
@@ -2306,14 +2374,14 @@ public static class CommandsList {
         var output = args[1];
         
         if (!long.TryParse(args[2], out var cooldown)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         var chatAd = new ChatAd(name, output, cooldown);
         chatAdsService.AddChatAd(chatAd);
 
-        await client.SendReply(chatMessage.Id, $"Чат-реклама с названием {chatAd.GetName()} добавлена успешно.");
+        await client.SendMessage($"Чат-реклама с названием {chatAd.GetName()} добавлена успешно.", chatMessage.Id);
     }
     
     private static async Task RemoveChatAd(ChatCmdArgs cmdArgs) {
@@ -2324,7 +2392,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var error = ParseIntArg(cmdArgs, out var indexToRemove);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
         --indexToRemove;
@@ -2332,11 +2400,11 @@ public static class CommandsList {
         var name = chatAdsService.Options.GetChatAds()[indexToRemove].GetName();
         var result = chatAdsService.RemoveChatAd(indexToRemove);
         if (!result) {
-            await client.SendReply(chatMessage.Id, $"Не удалось удалить чат-рекламу с айди {indexToRemove+1}.");
+            await client.SendMessage($"Не удалось удалить чат-рекламу с айди {indexToRemove+1}.", chatMessage.Id);
             return;
         }
         
-        await client.SendReply(chatMessage.Id, $"Чат-реклама с названием {name} удалена успешно.");
+        await client.SendMessage($"Чат-р еклама с названием {name} удалена успешно.", chatMessage.Id);
     }
 
     private static async Task ChangeChatAdName(ChatCmdArgs cmdArgs) {
@@ -2348,19 +2416,19 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         if (args.Length < 2
          || !int.TryParse(args[0], out var index)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         --index;
         if (index < 0 || index >= chatAds.Count) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
@@ -2369,7 +2437,7 @@ public static class CommandsList {
         var oldName = chatAd.GetName();
         chatAd.SetName(args[1]);
         
-        await client.SendReply(chatMessage.Id, $"Название чат-рекламы {oldName} изменено на {chatAd.GetName()}.");
+        await client.SendMessage($"Название чат-рекламы {oldName} изменено на {chatAd.GetName()}.", chatMessage.Id);
     }
     
     private static async Task ChangeChatAdOutput(ChatCmdArgs cmdArgs) {
@@ -2381,27 +2449,27 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         if (args.Length < 2
          || !int.TryParse(args[0], out var index)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         --index;
         if (index < 0
          || index >= chatAds.Count) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         var chatAd = chatAds[index];
         chatAd.SetOutput(args[1]);
         
-        await client.SendReply(chatMessage.Id, $"Вывод чат-рекламы {chatAd.GetName()} изменен на {chatAd.GetOutput()}.");
+        await client.SendMessage($"Вывод чат-рекламы {chatAd.GetName()} изменен на {chatAd.GetOutput()}.", chatMessage.Id);
     }
     
     private static async Task ChangeChatAdCooldown(ChatCmdArgs cmdArgs) {
@@ -2413,13 +2481,13 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         var error = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
-        if (ErrorHandler.ReplyWithError(error, chatMessage, client)) {
+        if (await ErrorHandler.ReplyWithError(error, chatMessage, client)) {
             return;
         }
 
         if (args.Length < 2
          || !int.TryParse(args[0], out var index)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
@@ -2427,14 +2495,250 @@ public static class CommandsList {
         if (index < 0 
          || index >= chatAds.Count 
          || !int.TryParse(args[1], out var cooldown)) {
-            ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
 
         var chatAd = chatAds[index];
         chatAd.SetCooldown(cooldown);
         
-        await client.SendReply(chatMessage.Id, $"Перезарядка чат-рекламы {chatAd.GetName()} изменена на {chatAd.GetCooldown()}.");
+        await client.SendMessage($"Перезарядка чат-рекламы {chatAd.GetName()} изменена на {chatAd.GetCooldown()}.", chatMessage.Id);
+    }
+    
+    private static async Task Gamble(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        var err = ParseIntArg(cmdArgs, out var quantity);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        if (!bank.GetBalance(chatMessage.UserId, out var balance)) {
+            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            return;
+        }
+        var result = casino.Gamble(chatMessage.UserId, quantity);
+        if (!result.Ok) {
+            await client.SendMessage("Слишком мало фантиков.", chatMessage.Id);
+            return;
+        }
+        
+        if (!bank.GetBalance(chatMessage.UserId, out var newBalance)) {
+            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            return;
+        }
+        
+        var arrow = result.Result ? "↑" : "↓";
+        
+        await client.SendMessage($"{balance} -> {newBalance} | x{result.Multiplier:F}{arrow}", chatMessage.Id);
+    }
+    
+    private static async Task Flex(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        if (!bank.GetAccount(chatMessage.UserId, out var account) || account == null) {
+            await client.SendMessage("Аккаунт не создан.", chatMessage.Id);
+            return;
+        }
+
+        var arrow = account.Gain >= 0 ? "↑" : "↓";
+        await client.SendMessage($"Баланс: {account.Money} фантиков | За все время: {Math.Abs(account.Gain)}{arrow}.", chatMessage.Id);
+    }
+    
+    private static async Task Give(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        var err = ParseSemicolonSeparatedArgs(cmdArgs, out var parsed);
+        
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+        if (parsed.Length < 2) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        if (!long.TryParse(parsed[0], out var quantity)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+        var username = parsed[1];
+
+        var userId = await Helix.GetUserId(username, client.Credentials, async void (_, message) => {
+                                                                             try {
+                                                                                 await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                                                                                 _logger.Log(LogLevel.Error, message);
+                                                                             }
+                                                                             catch (Exception e) {
+                                                                                 _logger.Log(LogLevel.Error, e.Message);
+                                                                             }
+                                                                         });
+        if (string.IsNullOrEmpty(userId)) return;
+
+        var result = bank.Give(userId, chatMessage.UserId, quantity);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+        await client.SendMessage($"Успешно отправлено {quantity} фантиков пользователю {username}", chatMessage.Id);
+    }
+    
+    private static async Task Giveaway(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+        var accounts = bank.Options.GetAccounts();
+
+        if (!bank.GetAccount(chatMessage.UserId, out var account) || account == null) {
+            await client.SendMessage("Аккаунт не найден.", chatMessage.Id);
+            return;
+        }
+        
+        var err = ParseIntArg(cmdArgs, out var temp);
+        long quantity = temp;
+        if (err != ErrorCode.None) {
+            quantity = account.Money;
+        }
+        
+        var random = Random.Shared;
+        var amount = (accounts.Count-1) switch {
+                         1   => 1,
+                         > 1 => random.Next(1, accounts.Count),
+                         _   => 0,
+                     };
+        
+        var quantityPerEach = quantity / amount;
+        if (quantityPerEach <= 0) {
+            await client.SendMessage($"Слишком мало фантиков.", chatMessage.Id);
+            return;
+        }
+        
+        for (var i = 0; i < amount; ++i) {
+            var index = random.Next(0, accounts.Count);
+            var (_, receiver) = accounts.ElementAt(index);
+            if (receiver.UserId.Equals(chatMessage.UserId)) {
+                switch (index - 1) {
+                    case < 0 when index + 1 < accounts.Count:
+                        ++index;
+                        break;
+                    case >= 0 when index + 1 >= accounts.Count:
+                        --index;
+                        break;
+                    default:
+                        await client.SendMessage($"Некому роздавать.", chatMessage.Id);
+                        return;
+                }
+            }
+            
+            bank.Give(receiver.UserId, chatMessage.UserId, quantityPerEach);
+        }
+
+        var word = accounts.Count-1 <= 1 ? "человеку" : "людям";
+        await client.SendMessage($"Роздано {quantity} фантиков {amount} {word}.", chatMessage.Id);
+    }
+    
+    private static async Task BankListRewards(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        var rewards = bank.Options.GetRewards();
+        var reply = new List<string>();
+        
+        for (var i = 0; i < rewards.Count; ++i) {
+            var (id, quantity) = rewards.ElementAt(i);
+            reply.Add($"{i+1}. {id} - {quantity} {(i >= rewards.Count - 1? string.Empty : "\\")} ");
+        }
+
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+    }
+    
+    private static async Task BankCreateReward(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        var err = ParseIntArg(cmdArgs, out var quantity);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        var rewardId = await Helix.CreateChannelReward(
+                                                       title: $"+{quantity}",
+                                                       cost: quantity,
+                                                       credentials: client.Credentials,
+                                                       prompt: "Обмен баллов на фантики..",
+                                                       isEnabled: true,
+                                                       userInputRequired: true,
+                                                       skipQueue: true,
+                                                       callback: (_, message) => {
+                                                                     _logger.Log(LogLevel.Error, message);
+                                                                 }
+                                                       );
+        if (rewardId == null) {
+            await client.SendMessage($"Не удалось создать награду.", chatMessage.Id);
+            return;
+        }
+        
+        bank.Options.AddReward(rewardId, quantity);
+        await client.SendMessage($"Нагарада создана успешно. ({rewardId})", chatMessage.Id);
+    }
+    
+    private static async Task BankDeleteReward(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+
+        var err = ParseIntArg(cmdArgs, out var index);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        if (index <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+
+        var (rewardId, _) = bank.Options.GetReward(index-1);
+        
+        var result = await Helix.DeleteChannelReward(
+                                                     rewardId,
+                                                       client.Credentials,
+                                                       (_, message) => { 
+                                                           _logger.Log(LogLevel.Error, message);
+                                                       }
+                                                      );
+        if (!result) {
+            await client.SendMessage($"Не удалось удалить награду.", chatMessage.Id);
+            return;
+        }
+        
+        bank.Options.RemoveReward(rewardId);
+        await client.SendMessage($"Нагарада удалена успешно.", chatMessage.Id);
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
@@ -2449,7 +2753,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (reply.Count <= 0) {
-            ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
             return;
         }
         
@@ -2492,7 +2796,7 @@ public static class CommandsList {
 
         switch (whisper) {
             case false: {
-                await client.SendReply(chatMessage.Id, message.ToString());
+                await client.SendMessage(message.ToString(), chatMessage.Id);
                 break;
             }
             case true: {
@@ -2500,22 +2804,25 @@ public static class CommandsList {
                                                               _logger.Log(LogLevel.Error, callback);
                                                           });
                 if (!result) {
-                    ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+                    await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
                 }
                 break;
             }
         }
     }
 
-    private static ErrorCode ParseIntArg(ChatCmdArgs cmdArgs, out int value) {
+    private static ErrorCode ParseIntArg(ChatCmdArgs cmdArgs, out int value, int index = 0) {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         value = -1;
-        
-        if (args.Count <= 0) {
+
+        if (index < 0) {
+            return ErrorCode.InvalidInput;
+        }
+        if (args.Count <= index) {
             return ErrorCode.TooFewArgs;
         }
 
-        return int.TryParse(args[0], out value)?
+        return int.TryParse(args[index], out value)?
                    ErrorCode.None :
                    ErrorCode.InvalidInput;
     }

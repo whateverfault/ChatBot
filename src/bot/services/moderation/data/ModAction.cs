@@ -7,7 +7,7 @@ using TwitchAPI.client;
 using TwitchAPI.client.data;
 using TwitchAPI.helix;
 
-namespace ChatBot.bot.services.moderation;
+namespace ChatBot.bot.services.moderation.data;
 
 public class ModAction {
     private static readonly ModerationOptions _options = (ModerationOptions)ServiceManager.GetService(ServiceName.Moderation).Options;
@@ -142,7 +142,7 @@ public class ModAction {
         if (client?.Credentials == null) return;
         
         if (Type == ModerationActionType.Warn) {
-            await client.SendReply(chatMessage.Id, ModeratorComment);
+            await client.SendMessage(ModeratorComment, chatMessage.Id);
             await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
                                                                             _logger.Log(LogLevel.Error, callback);
                                                                         });

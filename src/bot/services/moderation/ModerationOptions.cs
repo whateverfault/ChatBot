@@ -1,5 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.moderation.data;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.moderation;

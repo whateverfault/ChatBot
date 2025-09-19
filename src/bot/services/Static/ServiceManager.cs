@@ -1,4 +1,6 @@
 ﻿using ChatBot.bot.services.ai;
+using ChatBot.bot.services.bank;
+using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.chat_logs;
@@ -11,6 +13,7 @@ using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.presets;
+using ChatBot.bot.services.shop;
 using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.telegram;
 using ChatBot.bot.services.text_generator;
@@ -135,6 +138,27 @@ public static class ServiceManager {
                                                                                  (
                                                                                      new ChatAdsService(),
                                                                                      new ChatAdsEvents()
+                                                                                 )
+                                                                             },
+                                                                             {
+                                                                                 ServiceName.Casino,
+                                                                                 (
+                                                                                     new CasinoService(),
+                                                                                     new CasinoEvents()
+                                                                                 )
+                                                                             },
+                                                                             {
+                                                                                 ServiceName.Bank,
+                                                                                 (
+                                                                                     new BankService(),
+                                                                                     new BankEvents()
+                                                                                 )
+                                                                             },
+                                                                             {
+                                                                                 ServiceName.Shop,
+                                                                                 (
+                                                                                     new ShopService(),
+                                                                                     new ShopEvents()
                                                                                  )
                                                                              },
                                                                          };

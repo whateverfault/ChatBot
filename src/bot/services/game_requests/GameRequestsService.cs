@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.game_requests.Data;
 using ChatBot.bot.services.interfaces;
@@ -25,7 +26,7 @@ public class GameRequestsService : Service {
                 return;
             }
             if (Options.ServiceState == State.Disabled) {
-                ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
+                await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, Client);
                 return;
             }
 
@@ -62,7 +63,7 @@ public class GameRequestsService : Service {
                                                    _logger.Log(LogLevel.Error, message);
                                                });
             if (userId == null) {
-                ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, Client);
+                await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, Client);
                 return;
             }
 
@@ -77,7 +78,7 @@ public class GameRequestsService : Service {
         
         try {
             if (Options.GameRequests.Any(request => string.Equals(request.GameName, gameName, StringComparison.OrdinalIgnoreCase))) {
-                ErrorHandler.ReplyWithError(ErrorCode.AlreadyContains, chatMessage, Client);
+                await ErrorHandler.ReplyWithError(ErrorCode.AlreadyContains, chatMessage, Client);
                 return;
             }
             
@@ -87,7 +88,7 @@ public class GameRequestsService : Service {
                                               );
             
             Options.AddRequest(gameRequest, position-1);
-            await Client.SendReply(chatMessage.Id, $"Игра {gameName} добавлена в очередь на {position} позицию.");
+            await Client.SendMessage($"Игра {gameName} добавлена в очередь на {position} позицию.", chatMessage.Id);
         } catch (Exception e) {
             _logger.Log(LogLevel.Error, $"Exception: {e}");
         }

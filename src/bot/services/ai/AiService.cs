@@ -4,10 +4,14 @@ using ChatBot.bot.services.ai.AiClients.Google;
 using ChatBot.bot.services.ai.AiClients.HuggingFace;
 using ChatBot.bot.services.ai.AiClients.interfaces;
 using ChatBot.bot.services.ai.AiClients.Ollama;
+using ChatBot.bot.services.bank;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
+using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
+using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
+using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.ai;
 
@@ -26,7 +30,30 @@ public class AiService : Service {
     public override AiOptions Options { get; } = new AiOptions();
 
 
-    public async Task<string?> GetResponse(string prompt) {
+    public async Task<Result<string?, ErrorCode?>> GetPaidResponse(string userId, string prompt) {
+        if (Options.ServiceState == State.Disabled) {
+            return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
+        }
+        
+        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+        
+        var aiLot = shop.GetLot(ServiceName.Ai);
+        if (aiLot == null) {
+            return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
+        }
+        if (!bank.TakeOut(userId, aiLot.Cost, gain: false)) {
+            return new Result<string?, ErrorCode?>(null, ErrorCode.TooFewPoints);
+        }
+        
+        return await GetResponse(prompt);
+    }
+    
+    public async Task<Result<string?, ErrorCode?>> GetResponse(string prompt) {
+        if (Options.ServiceState == State.Disabled) {
+            return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
+        }
+        
         var aiIndex = (int)Options.AiKind;
         var aiClient = _aiClients[aiIndex];
         var aiData = Options.AiData[aiIndex];
@@ -36,7 +63,7 @@ public class AiService : Service {
                                                            _logger.Log(LogLevel.Error, message);
                                                        });
         if (response != null || aiData.Fallback.FallbackState != State.Enabled) {
-            return response;
+            return new Result<string?, ErrorCode?>(response, null);
         }
 
         aiIndex = (int)aiData.Fallback.FallbackAi;
@@ -46,7 +73,7 @@ public class AiService : Service {
         response = await aiClient.GetResponse(prompt, aiData, (_, message) => {
                                                                   _logger.Log(LogLevel.Error, message);
                                                               });
-        return response;
+        return new Result<string?, ErrorCode?>(response, null);
     }
     
     #region Ollama
@@ -264,6 +291,14 @@ public class AiService : Service {
     
     public void AiKindNext() {
         Options.SetAiKind((AiKind)(((int)Options.AiKind+1)%Enum.GetValues(typeof(AiKind)).Length));
+    }
+
+    public int GetCasinoIntegrationAsInt() {
+        return (int)Options.CasinoIntegration;
+    }
+
+    public void CasinoIntegrationNext() {
+        Options.SetCasinoIntegrationState((State)(((int)Options.CasinoIntegration+1)%Enum.GetValues(typeof(State)).Length));
     }
     
     public override void Init() {

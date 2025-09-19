@@ -1,7 +1,9 @@
-﻿using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
+using ChatBot.bot.services.moderation.data;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;

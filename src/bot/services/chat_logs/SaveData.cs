@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.chat_logs;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
     

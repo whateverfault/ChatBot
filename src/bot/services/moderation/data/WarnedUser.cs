@@ -1,7 +1,7 @@
 ﻿using ChatBot.bot.services.Static;
 using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.moderation;
+namespace ChatBot.bot.services.moderation.data;
 
 public class WarnedUser {
     [JsonProperty(PropertyName = "user_id")]

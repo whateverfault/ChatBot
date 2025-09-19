@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.level_requests;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; }
     [JsonProperty(PropertyName = "pattern_index")]

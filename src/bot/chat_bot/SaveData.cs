@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using TwitchAPI.client.credentials;
 
-namespace ChatBot.bot;
+namespace ChatBot.bot.chat_bot;
 
-public sealed class SaveData {
+internal sealed class SaveData {
     [JsonProperty("credentials")]
     public ConnectionCredentials Credentials { get; set; }
 

@@ -37,7 +37,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         string description,
         CmdActionHandler action,
         Restriction restriction,
-        int cooldown = 1, 
+        int cooldown = 0, 
         long lastUsed = 0,
         List<string>? aliases = null,
         State state = State.Enabled) {

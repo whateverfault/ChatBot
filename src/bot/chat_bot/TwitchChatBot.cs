@@ -7,7 +7,7 @@ using TwitchAPI.client;
 using TwitchAPI.client.credentials;
 using TwitchAPI.client.data;
 
-namespace ChatBot.bot;
+namespace ChatBot.bot.chat_bot;
 
 public delegate void NoArgs();
 

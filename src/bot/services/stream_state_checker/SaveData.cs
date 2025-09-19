@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.stream_state_checker;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty("service_state")]
     public State ServiceState { get; set; }
     [JsonProperty("stream_state")]

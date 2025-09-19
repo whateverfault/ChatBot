@@ -1,5 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.moderation;
+using ChatBot.bot.services.moderation.data;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 

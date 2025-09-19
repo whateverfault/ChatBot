@@ -5,7 +5,7 @@ using Range = ChatBot.api.basic.Range;
 
 namespace ChatBot.bot.services.message_randomizer;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName ="counter_max")]
     public int CounterMax { get; set; }
     

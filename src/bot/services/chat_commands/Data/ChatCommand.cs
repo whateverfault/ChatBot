@@ -71,6 +71,15 @@ public abstract class ChatCommand {
         ChatCommandsService.Options.Save();
     }
     
+    public virtual long GetLastUsed() {
+        return LastUsed;
+    }
+
+    public virtual void SetLastUsed(long time) {
+        LastUsed = time;
+        ChatCommandsService.Options.Save();
+    }
+    
     public virtual void SetDescription(string desc) {
         Description = desc;
         ChatCommandsService.Options.Save();

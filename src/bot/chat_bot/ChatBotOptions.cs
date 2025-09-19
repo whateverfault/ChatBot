@@ -4,7 +4,7 @@ using ChatBot.bot.shared;
 using TwitchAPI.client;
 using TwitchAPI.client.credentials;
 
-namespace ChatBot.bot;
+namespace ChatBot.bot.chat_bot;
 
 public class ChatBotOptions : Options {
     private static readonly object _fileLock = new object();

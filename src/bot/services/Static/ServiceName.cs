@@ -17,4 +17,7 @@ public static class ServiceName {
     public const string TgNotifications = "Notifications";
     public const string StreamStateChecker = "Stream State Checker";
     public const string ChatAds = "Chat Ads";
+    public const string Casino = "Casino";
+    public const string Bank = "Bank";
+    public const string Shop = "Shop";
 }

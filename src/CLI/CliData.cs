@@ -1,5 +1,8 @@
 ﻿using ChatBot.bot;
+using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.ai;
+using ChatBot.bot.services.bank;
+using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.chat_logs;
@@ -11,6 +14,7 @@ using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.presets;
+using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.telegram;
@@ -37,6 +41,9 @@ public class CliData {
     public StreamStateCheckerService StreamStateChecker { get; }
     public TgNotificationsService TgNotifications { get; }
     public ChatAdsService ChatAds { get; }
+    public CasinoService Casino { get; }
+    public BankService Bank { get; }
+    public ShopService Shop { get; }
 
 
     public CliData() {
@@ -57,5 +64,8 @@ public class CliData {
         StreamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
         TgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
         ChatAds = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
+        Casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+        Bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+        Shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
     }
 }

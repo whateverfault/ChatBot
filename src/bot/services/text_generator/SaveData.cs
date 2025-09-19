@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.text_generator;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName = "service_state")]
     public State ServiceState { get; set; } 
     [JsonProperty(PropertyName = "context_size")]

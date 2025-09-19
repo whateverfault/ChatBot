@@ -1,0 +1,3 @@
+[submodule "src/api/TwitchAPI"]
+	path = src/api/TwitchAPI
+	url = https://github.com/whateverfault/TwitchAPI.git

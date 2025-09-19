@@ -1,10 +1,11 @@
 ﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.moderation.data;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.moderation;
 
-public class SaveData {
+internal class SaveData {
     [JsonProperty(PropertyName ="service_state")] 
     public State ServiceState { get; set; }
     
