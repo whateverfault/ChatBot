@@ -3,6 +3,7 @@ using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.bank;
+using ChatBot.bot.services.calculator;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
@@ -27,6 +28,8 @@ using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 namespace ChatBot.bot.services.chat_commands;
 
 public static class CommandsList {
+    private const int PAGE_TERMINATOR_CMD_ID = -1;
+        
     private static readonly ChatCommandsService _chatCmds = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
     private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static readonly TwitchChatBot _bot = TwitchChatBot.Instance; 
@@ -40,8 +43,8 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                    1,
                                                    "help",
-                                                   string.Empty,
-                                                   "использование комманд.",
+                                                   "[cmd_name]",
+                                                   "использование и описание комманд.",
                                                    Help,
                                                    Restriction.Everyone
                                                   ),
@@ -78,7 +81,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -126,7 +129,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -150,7 +153,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -182,7 +185,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -214,7 +217,7 @@ public static class CommandsList {
                                                       Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -246,7 +249,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -328,7 +331,7 @@ public static class CommandsList {
                                                       aliases: ["rulet",]
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -369,7 +372,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -402,7 +405,7 @@ public static class CommandsList {
                                                       aliases: ["clan-rulet",]
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -459,7 +462,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -483,7 +486,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -515,7 +518,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -563,7 +566,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -619,7 +622,7 @@ public static class CommandsList {
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -643,7 +646,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -675,7 +678,7 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      -1,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -705,6 +708,22 @@ public static class CommandsList {
                                                       "удалить награду.",
                                                       BankDeleteReward,
                                                       Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      PAGE_TERMINATOR_CMD_ID,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      69,
+                                                      "eval",
+                                                      "<equation>",
+                                                      "вычислить значение выражения.",
+                                                      Eval,
+                                                      Restriction.Everyone
                                                      ),
                            ];
     }
@@ -801,26 +820,56 @@ public static class CommandsList {
         
         var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList; 
         var cmdId = cmdArgs.Parsed.CommandIdentifier;
-        
-        var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
-        
-        switch (chatCommands.Options.SendWhisperIfPossible) {
-            case State.Disabled: {
-                await client.SendMessage(usage, chatMessage.Id); break;
-            }
-            case State.Enabled: {
-                var result = await Helix.SendWhisper(cmdArgs.Parsed.ChatMessage.UserId, usage, client.Credentials,
-                                                          (_, message) => {
-                                                              _logger.Log(LogLevel.Error, message);
-                                                          });
-                if (!result) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+
+        switch (args.Count) {
+            case 0: {
+                var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
+                switch (chatCommands.Options.SendWhisperIfPossible) {
+                    case State.Disabled: {
+                        await client.SendMessage(usage, chatMessage.Id); break;
+                    }
+                    case State.Enabled: {
+                        await client.SendWhisper(usage, chatMessage.UserId); break;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException(); 
                 }
                 break;
             }
-            default:
-                throw new ArgumentOutOfRangeException();
+            case > 0: {
+                var cmdName = args[0];
+                if (cmdName.Length > 0 && cmdName[0] == cmdId) {
+                    cmdName = cmdName[1..cmdName.Length];
+                }
+
+                var page = 1;
+                foreach (var cmd in _chatCmds.Options.DefaultCmds) {
+                    if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
+                    if (_chatCmds.Options.DefaultCmds
+                                 .Any(defaultCmd =>
+                                          defaultCmd.Name.Equals(cmd.Name)
+                                       && defaultCmd.Restriction < cmd.Restriction
+                                       && chatMessage.Fits(defaultCmd.Restriction))){
+                        continue;
+                    }
+                    
+                    if (cmd.Id == PAGE_TERMINATOR_CMD_ID) {
+                        ++page;
+                        continue;
+                    }
+                    
+                    if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
+                     && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
+                    
+                    await client.SendMessage($"{cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} | Страница {page}", chatMessage.Id);
+                    return;
+                }
+                
+                await client.SendMessage($"Команда {cmdId}{cmdName} не существует.", chatMessage.Id);
+                break;
+            }
         }
     }
 
@@ -934,7 +983,7 @@ public static class CommandsList {
 
         foreach (var message in messages) {
             await client.SendMessage(message, chatMessage.Id);
-            Thread.Sleep(TimeSpan.FromMilliseconds(250));
+            Thread.Sleep(TimeSpan.FromMilliseconds(500));
         }
     }
 
@@ -2747,7 +2796,7 @@ public static class CommandsList {
                                                        title: $"+{quantity}",
                                                        cost: quantity,
                                                        credentials: client.Credentials,
-                                                       prompt: "Обмен баллов на фантики..",
+                                                       prompt: "Обмен баллов на фантики.",
                                                        isEnabled: true,
                                                        userInputRequired: true,
                                                        skipQueue: true,
@@ -2798,6 +2847,31 @@ public static class CommandsList {
         
         bank.Options.RemoveReward(rewardId);
         await client.SendMessage($"Нагарада удалена успешно.", chatMessage.Id);
+    }
+
+    private static async Task Eval(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var calculator = (CalculatorService)ServiceManager.GetService(ServiceName.Calculator);
+
+        if (args.Count <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var result = calculator.Calculate(cmdArgs.Parsed.CommandMessage);
+        if (!result.Ok) { 
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        } if (result.Value == null) { 
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        await client.SendMessage($"Ответ: {result.Value}");
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
@@ -2859,12 +2933,7 @@ public static class CommandsList {
                 break;
             }
             case true: {
-                var result = await Helix.SendWhisper(chatMessage.UserId, message.ToString(), client.Credentials, (_, callback) => {
-                                                              _logger.Log(LogLevel.Error, callback);
-                                                          });
-                if (!result) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
-                }
+                await client.SendWhisper(message.ToString(), chatMessage.UserId);
                 break;
             }
         }

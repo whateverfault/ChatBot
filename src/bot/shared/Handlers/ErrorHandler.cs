@@ -24,6 +24,9 @@ public enum ErrorCode {
     UserNotFound,
     TooFewPoints,
     AccountNotFound,
+    UnbalancedParentheses,
+    IllegalOperation,
+    DivisionByZero,
     None,
 }
 
@@ -49,6 +52,9 @@ public static class ErrorHandler {
                                                                   "User not found.",
                                                                   "Too few points.",
                                                                   "Account not found.",
+                                                                  "Unbalanced parentheses.",
+                                                                  "Illegal operation.",
+                                                                  "Division by zero.",
                                                               ];
 
 
@@ -71,6 +77,9 @@ public static class ErrorHandler {
                                                                 "Пользователь не найден.",
                                                                 "Слишком мало фантиков.",
                                                                 "Аккаунт не найден.",
+                                                                "Несбалансированные скобки.",
+                                                                "Неизвестная операция.",
+                                                                "Деление на ноль.",
                                                             ];
     
     

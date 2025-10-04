@@ -7,7 +7,7 @@ using TwitchAPI.helix.data.requests;
 namespace ChatBot.bot.services.telegram;
 
 public class TgNotificationsEvents : ServiceEvents {
-    private readonly object _lock = new object();
+    private static readonly object _lock = new object();
     
     private TgNotificationsService _tgNotifications = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
@@ -50,8 +50,11 @@ public class TgNotificationsEvents : ServiceEvents {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Task<int?> sendTask;
         lock (_lock) {
-            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()) return;
+            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
+             || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
+            
             sendTask = _tgNotifications.SendNotification(data);
+            _tgNotifications.Options.SetLastSentTime();
         }
         
         var messageId = await sendTask;

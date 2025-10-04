@@ -4,27 +4,31 @@ using Newtonsoft.Json;
 namespace ChatBot.bot.services.telegram;
 
 internal class SaveData {
-    [JsonProperty(PropertyName ="service_state")]
+    [JsonProperty("service_state")]
     public State ServiceState { get; set; }
 
-    [JsonProperty(PropertyName ="bot_token")]
-    public string BotToken { get; set; } = string.Empty;
+    [JsonProperty("bot_token")]
+    public string BotToken { get; set; }
 
-    [JsonProperty(PropertyName ="chat_id")]
+    [JsonProperty("chat_id")]
     public long ChatId { get; set; }
     
-    [JsonProperty(PropertyName ="notification_prompt")]
-    public string NotificationPrompt { get; set; } = string.Empty;
+    [JsonProperty("notification_prompt")]
+    public string NotificationPrompt { get; set; }
 
-    [JsonProperty(PropertyName ="cooldown")]
+    [JsonProperty("cooldown")]
     public long Cooldown { get; set; }
 
-    [JsonProperty(PropertyName ="last_msg_id")]
+    [JsonProperty("last_sent")]
+    public long? LastSent { get; set; }
+    
+    [JsonProperty("last_msg_id")]
     public int? LastMessageId { get; set; }
 
 
     public SaveData() {
         NotificationPrompt = NotificationPrompt = "Стрим начался! {title}\n{link}";
+        BotToken = string.Empty;
     }
     
     [JsonConstructor]
@@ -34,6 +38,7 @@ internal class SaveData {
         [JsonProperty(PropertyName ="chat_id")] long chatId,
         [JsonProperty(PropertyName ="notification_prompt")] string notificationPrompt,
         [JsonProperty(PropertyName ="cooldown")] long cooldown,
+        [JsonProperty(PropertyName ="last_sent")] int? lastSent,
         [JsonProperty(PropertyName ="last_msg_id")] int? lastMessageId) {
         ServiceState = serviceState;
         BotToken = botToken;

@@ -106,6 +106,10 @@ public class TgNotificationsService : Service {
     public long GetCooldown() {
         return Options.Cooldown;
     }
+
+    public long? GetLastSentTime() {
+        return Options.LastSent;
+    }
     
     public override void Init() {
         base.Init();

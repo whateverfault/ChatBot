@@ -22,6 +22,8 @@ public class TgNotificationsOptions : Options {
 
     public long Cooldown => _saveData!.Cooldown;
 
+    public long? LastSent => _saveData!.LastSent;
+    
     public int? LastMessageId => _saveData!.LastMessageId;
     
     
@@ -67,7 +69,13 @@ public class TgNotificationsOptions : Options {
         Save();
     }
 
+    public void SetLastSentTime() {
+        _saveData!.LastSent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Save();
+    }
+    
     public void SetLastMessageId(int? id) {
+        _saveData!.LastSent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         _saveData!.LastMessageId = id;
         Save();
     }

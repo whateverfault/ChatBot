@@ -90,16 +90,17 @@ public sealed class CustomChatCommand : ChatCommand {
     }
     
     private Task CmdAction(ChatCmdArgs chatArgs) {
+        var client = TwitchChatBot.Instance.GetClient();
+        if (client == null) return Task.CompletedTask;
+        
         var command = (CustomChatCommand)chatArgs.Command;
         var chatMessage = chatArgs.Parsed.ChatMessage;
-        var client = TwitchChatBot.Instance.GetClient();
-
+        
         if (HasIdentifier) {
-            client?.SendMessage(command.Output, chatMessage.Id);
-        }
-        else {
+            client.SendMessage(command.Output, chatMessage.Id);
+        }else {
             if (chatArgs.Parsed.ArgumentsAsList.Count != 0) return Task.CompletedTask;
-            client?.SendMessage(command.Output);
+            client.SendMessage(command.Output);
         }
         return Task.CompletedTask;
     }

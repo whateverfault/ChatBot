@@ -1,5 +1,6 @@
 ﻿using ChatBot.bot.services.ai;
 using ChatBot.bot.services.bank;
+using ChatBot.bot.services.calculator;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
@@ -159,6 +160,13 @@ public static class ServiceManager {
                                                                                  (
                                                                                      new ShopService(),
                                                                                      new ShopEvents()
+                                                                                 )
+                                                                             },
+                                                                             {
+                                                                                 ServiceName.Calculator,
+                                                                                 (
+                                                                                     new CalculatorService(),
+                                                                                     new CalculatorEvents()
                                                                                  )
                                                                              },
                                                                          };
