@@ -17,16 +17,39 @@ public static class OperationList {
     }
     
     public static Result<double?, ErrorCode?> Division(double a, double b) {
-        if (b == 0) return new Result<double?, ErrorCode?>(a / b, ErrorCode.DivisionByZero);
+        if (b == 0) return new Result<double?, ErrorCode?>(null, ErrorCode.Undefined);
         return new Result<double?, ErrorCode?>(a / b, null);
     }
     
     public static Result<double?, ErrorCode?> Modulo(double a, double b) {
-        if (b == 0) return new Result<double?, ErrorCode?>(a / b, ErrorCode.DivisionByZero);
+        if (b == 0) return new Result<double?, ErrorCode?>(null, ErrorCode.Undefined);
         return new Result<double?, ErrorCode?>(a % b, null);
     }
     
     public static Result<double?, ErrorCode?> Exponentiation(double a, double b) {
         return new Result<double?, ErrorCode?>(Math.Pow(a, b), null);
+    }
+    
+    public static Result<double?, ErrorCode?> Sin(double a, double b) {
+        return new Result<double?, ErrorCode?>(Math.Sin(b*Math.PI/180), null);
+    }
+    
+    public static Result<double?, ErrorCode?> Cos(double a, double b) {
+        return new Result<double?, ErrorCode?>(Math.Cos(b*Math.PI/180), null);
+    }
+    
+    public static Result<double?, ErrorCode?> Tan(double a, double b) {
+        if (b == 0) return new Result<double?, ErrorCode?>(null, ErrorCode.Undefined);
+        return new Result<double?, ErrorCode?>(Math.Tan(b*Math.PI/180), null);
+    }
+    
+    public static Result<double?, ErrorCode?> Log(double a, double b) {
+        if (b <= 0) return new Result<double?, ErrorCode?>(null, ErrorCode.Undefined);
+        return new Result<double?, ErrorCode?>(Math.Log2(b), null);
+    }
+    
+    public static Result<double?, ErrorCode?> Lg(double a, double b) {
+        if (b <= 0) return new Result<double?, ErrorCode?>(null, ErrorCode.Undefined);
+        return new Result<double?, ErrorCode?>(Math.Log10(b), null);
     }
 }

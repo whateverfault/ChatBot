@@ -18,6 +18,10 @@ public class CalculatorService : Service {
         expression = expression.Replace(" ", "")
                                .Trim();
 
+        var opened = expression.Count(c => c == '(');
+        var closed = expression.Count(c => c == ')');
+        if (opened != closed)  return new Result<double?, ErrorCode?>(null, ErrorCode.UnbalancedParentheses);
+        
         foreach (var c in expression) {
             ErrorHandler.LogMessage(LogLevel.Info, $"{c}: {(int)c}");
         }
@@ -44,7 +48,7 @@ public class CalculatorService : Service {
 
         for (; pos < expr.Length;) {
             var isDigit = false;
-            while (pos < expr.Length && char.IsDigit(expr[pos])) {
+            while (pos < expr.Length && (char.IsDigit(expr[pos]) || expr[pos] == '.' || expr[pos] == ',')) {
                 sb.Append(expr[pos++]);
                 isDigit = true;
             }
@@ -57,7 +61,7 @@ public class CalculatorService : Service {
                           );
             } else {
                 var subEquation = false;
-                while (pos < expr.Length && !char.IsDigit(expr[pos])) {
+                while (pos < expr.Length && !char.IsDigit(expr[pos]) && Options.GetOperation(sb.ToString()) == null) {
                     if (expr[pos] == ')') {
                         ++pos;
                         return new Result<List<BinaryTreeNode<ExprNode>>, ErrorCode?>(nodes, null);
@@ -104,6 +108,9 @@ public class CalculatorService : Service {
 
     private Result<BinaryTree<ExprNode>, ErrorCode?> BuildTree(List<BinaryTreeNode<ExprNode>> nodes) {
         if (nodes.Count <= 0) return new Result<BinaryTree<ExprNode>, ErrorCode?>(null, ErrorCode.SmthWentWrong);
+        if (nodes is [{ Data.Kind: ExprNodeKind.Num, },]) {
+            return new Result<BinaryTree<ExprNode>, ErrorCode?>(new BinaryTree<ExprNode>(nodes[0].Data), null);
+        }
         
         do {
             var maxPriority = int.MinValue;
@@ -128,12 +135,12 @@ public class CalculatorService : Service {
             var maxOp = Options.GetOperation(nodes[maxIndex].Data.Value);
             if (maxOp == null) return new Result<BinaryTree<ExprNode>, ErrorCode?>(null, ErrorCode.IllegalOperation);
             
-            if (maxIndex > 0 && maxOp.Scope == OpScope.Left || maxOp.Scope == OpScope.LeftRight) {
+            if (maxIndex > 0 && maxOp.Scope is OpScope.Left or OpScope.LeftRight) {
                 nodes[maxIndex].Left = nodes[maxIndex - 1];
                 nodes[maxIndex - 1].Parent = nodes[maxIndex];
                 nodes.RemoveAt(--maxIndex);
             }
-            if (maxIndex < nodes.Count - 1 && maxOp.Scope == OpScope.Right || maxOp.Scope == OpScope.LeftRight) {
+            if (maxIndex < nodes.Count - 1 && maxOp.Scope is OpScope.Right or OpScope.LeftRight) {
                 nodes[maxIndex].Right = nodes[maxIndex + 1];
                 nodes[maxIndex + 1].Parent = nodes[maxIndex];
                 nodes.RemoveAt(maxIndex + 1);
@@ -158,6 +165,12 @@ public class CalculatorService : Service {
 
             var left = current.Left?.Data;
             var right = current.Right?.Data;
+            if (data.Kind == ExprNodeKind.Op
+             && left == null
+             && right == null) {
+                var susOp = Options.GetOperation(data.Value);
+                if (susOp is not { Scope: OpScope.None, }) return new Result<double?, ErrorCode?>(null, ErrorCode.InvalidSyntax);
+            }
 
             var lval = 0.0;
             var rval = 0.0;

@@ -7,4 +7,8 @@ public class BinaryTree<T> {
     public BinaryTree(BinaryTreeNode<T>? root = null) {
         Root = root;
     }
+    
+    public BinaryTree(T data) {
+        Root = new BinaryTreeNode<T>(data);
+    }
 }

@@ -72,6 +72,46 @@ public class CalculatorOptions : Options {
                                                                      OpPriority.Low
                                                                     )
                                                    },
+                                                   {
+                                                       "sin",
+                                                       new Operation(
+                                                                     OperationList.Sin,
+                                                                     OpScope.Right,
+                                                                     OpPriority.Low
+                                                                    )
+                                                   },
+                                                   {
+                                                       "cos",
+                                                       new Operation(
+                                                                     OperationList.Cos,
+                                                                     OpScope.Right,
+                                                                     OpPriority.Low
+                                                                    )
+                                                   },
+                                                   {
+                                                       "tan",
+                                                       new Operation(
+                                                                     OperationList.Tan,
+                                                                     OpScope.Right,
+                                                                     OpPriority.Low
+                                                                    )
+                                                   },
+                                                   {
+                                                       "log",
+                                                       new Operation(
+                                                                     OperationList.Log,
+                                                                     OpScope.Right,
+                                                                     OpPriority.Low
+                                                                    )
+                                                   },
+                                                   {
+                                                       "lg",
+                                                       new Operation(
+                                                                     OperationList.Lg,
+                                                                     OpScope.Right,
+                                                                     OpPriority.Low
+                                                                    )
+                                                   },
                                                };
     }
 
@@ -91,7 +131,7 @@ public class CalculatorOptions : Options {
     }
 
     public Operation? GetOperation(string name) {
-        var result = _operations.FirstOrDefault(op => op.Key.Equals(name));
-        return result.Value;
+        var result = _operations.Where(op => op.Key.Equals(name)).ToList();
+        return result.Count == 1? result[0].Value : null;
     }
 }
