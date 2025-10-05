@@ -26,7 +26,8 @@ public enum ErrorCode {
     AccountNotFound,
     UnbalancedParentheses,
     IllegalOperation,
-    DivisionByZero,
+    Undefined,
+    InvalidSyntax,
     None,
 }
 
@@ -54,7 +55,8 @@ public static class ErrorHandler {
                                                                   "Account not found.",
                                                                   "Unbalanced parentheses.",
                                                                   "Illegal operation.",
-                                                                  "Division by zero.",
+                                                                  "Undefined.",
+                                                                  "Invalid syntax.",
                                                               ];
 
 
@@ -79,7 +81,8 @@ public static class ErrorHandler {
                                                                 "Аккаунт не найден.",
                                                                 "Несбалансированные скобки.",
                                                                 "Неизвестная операция.",
-                                                                "Деление на ноль.",
+                                                                "Неопределенно.",
+                                                                "Ошибка синтаксиса.",
                                                             ];
     
     

@@ -719,11 +719,12 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       69,
-                                                      "eval",
+                                                      "calculate",
                                                       "<equation>",
                                                       "вычислить значение выражения.",
-                                                      Eval,
-                                                      Restriction.Everyone
+                                                      Calculate,
+                                                      Restriction.Everyone,
+                                                      aliases: ["calc", "c", "eval", "evaluate",]
                                                      ),
                            ];
     }
@@ -2849,7 +2850,7 @@ public static class CommandsList {
         await client.SendMessage($"Нагарада удалена успешно.", chatMessage.Id);
     }
 
-    private static async Task Eval(ChatCmdArgs cmdArgs) {
+    private static async Task Calculate(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
 
@@ -2871,7 +2872,7 @@ public static class CommandsList {
             return;
         }
 
-        await client.SendMessage($"Ответ: {result.Value}");
+        await client.SendMessage($"Ответ: {result.Value:g10}");
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {
