@@ -3,13 +3,13 @@ using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.bank;
-using ChatBot.bot.services.calculator;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
 using ChatBot.bot.services.chat_commands.Data;
 using ChatBot.bot.services.demon_list;
 using ChatBot.bot.services.game_requests;
+using ChatBot.bot.services.interpreter;
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_randomizer;
@@ -719,12 +719,12 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       69,
-                                                      "calculate",
-                                                      "<equation>",
-                                                      "вычислить значение выражения.",
-                                                      Calculate,
-                                                      Restriction.Everyone,
-                                                      aliases: ["calc", "c", "eval", "evaluate",]
+                                                      "evaluate",
+                                                      "<expression>",
+                                                      "выполнить выражение.",
+                                                      Evaluate,
+                                                      Restriction.DevBroad,
+                                                      aliases: ["eval", "e",]
                                                      ),
                            ];
     }
@@ -826,7 +826,7 @@ public static class CommandsList {
 
         switch (args.Count) {
             case 0: {
-                var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[0].Name} для списка комманд";
+                var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[1].Name} для списка комманд";
                 switch (chatCommands.Options.SendWhisperIfPossible) {
                     case State.Disabled: {
                         await client.SendMessage(usage, chatMessage.Id); break;
@@ -1124,7 +1124,6 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        
         var clipId = await Helix.CreateClip(client.Credentials, (_, message) => {
                                                                          _logger.Log(LogLevel.Error, message);
                                                                      });
@@ -1944,7 +1943,7 @@ public static class CommandsList {
             return;
         }
                         
-        await client.SendMessage($"[{clanInfo.clan.tag}] {clanInfo.clan.globalName} | https://aredl.net/clans/{clanInfo.clan.id}", chatMessage.Id);
+        await client.SendMessage($"[{clanInfo.clan.Tag}] {clanInfo.clan.GlobalName} | https://aredl.net/clans/{clanInfo.clan.Id}", chatMessage.Id);
     }
     
     private static async Task ClanHardest(ChatCmdArgs cmdArgs) {
@@ -2006,7 +2005,7 @@ public static class CommandsList {
             await client.SendMessage($"Клана не существует.", chatMessage.Id);
             return;
         }
-        var levelInfo = await demonList.GetRandomClanSubmission(clanInfo.clan.id)!;
+        var levelInfo = await demonList.GetRandomClanSubmission(clanInfo.clan.Id)!;
         if (levelInfo == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
@@ -2847,32 +2846,32 @@ public static class CommandsList {
         }
         
         bank.Options.RemoveReward(rewardId);
-        await client.SendMessage($"Нагарада удалена успешно.", chatMessage.Id);
+        await client.SendMessage("Нагарада удалена успешно.", chatMessage.Id);
     }
-
-    private static async Task Calculate(ChatCmdArgs cmdArgs) {
+    
+    private static async Task Evaluate(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
 
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var calculator = (CalculatorService)ServiceManager.GetService(ServiceName.Calculator);
+        var interpreter = (InterpreterService)ServiceManager.GetService(ServiceName.Interpreter);
 
         if (args.Count <= 0) {
             await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
         
-        var result = calculator.Calculate(cmdArgs.Parsed.CommandMessage);
-        if (!result.Ok) { 
+        var result = interpreter.Evaluate(cmdArgs.Parsed.CommandMessage);
+        if (!result.Ok) {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
-        } if (result.Value == null) { 
+        } if (result.Value == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
-
-        await client.SendMessage($"Ответ: {result.Value:g10}");
+        
+        await client.SendMessage(result.Value.Value, chatMessage.Id);
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {

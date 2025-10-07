@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.services.ai;
 using ChatBot.bot.services.bank;
-using ChatBot.bot.services.calculator;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
@@ -8,6 +7,7 @@ using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.demon_list;
 using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.interfaces;
+using ChatBot.bot.services.interpreter;
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
@@ -163,10 +163,10 @@ public static class ServiceManager {
                                                                                  )
                                                                              },
                                                                              {
-                                                                                 ServiceName.Calculator,
+                                                                                 ServiceName.Interpreter,
                                                                                  (
-                                                                                     new CalculatorService(),
-                                                                                     new CalculatorEvents()
+                                                                                     new InterpreterService(),
+                                                                                     new InterpreterEvents()
                                                                                  )
                                                                              },
                                                                          };

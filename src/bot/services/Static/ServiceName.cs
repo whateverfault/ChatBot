@@ -20,5 +20,5 @@ public static class ServiceName {
     public const string Casino = "Casino";
     public const string Bank = "Bank";
     public const string Shop = "Shop";
-    public const string Calculator = "Calculator";
+    public const string Interpreter = "Interpreter";
 }

@@ -28,6 +28,7 @@ public enum ErrorCode {
     IllegalOperation,
     Undefined,
     InvalidSyntax,
+    UnknownIdentifier,
     None,
 }
 
@@ -41,7 +42,7 @@ public static class ErrorHandler {
                                                                   "Function is Disabled.",
                                                                   "Corrupted credentials.",
                                                                   "Invalid data.",
-                                                                  "Initialize the bot first.",
+                                                                  "Not Initialized.",
                                                                   "List is Empty.",
                                                                   "Too Few Data.",
                                                                   "Something Went Wrong.",
@@ -57,6 +58,7 @@ public static class ErrorHandler {
                                                                   "Illegal operation.",
                                                                   "Undefined.",
                                                                   "Invalid syntax.",
+                                                                  "Identifier Doesn't Exist",
                                                               ];
 
 
@@ -67,7 +69,7 @@ public static class ErrorHandler {
                                                                 "Функция отключена.",
                                                                 "Некорректные данные для подключения.",
                                                                 "Некорректные данные.",
-                                                                "Сначала инициализируйте бота.",
+                                                                "Не инициализированно.",
                                                                 "Пусто.",
                                                                 "Слишком мало данных.",
                                                                 "Что-то пошло не так.",
@@ -82,7 +84,8 @@ public static class ErrorHandler {
                                                                 "Несбалансированные скобки.",
                                                                 "Неизвестная операция.",
                                                                 "Неопределенно.",
-                                                                "Ошибка синтаксиса.",
+                                                                "Неверный синтаксис.",
+                                                                "Идентификатор не определен.",
                                                             ];
     
     
@@ -91,7 +94,7 @@ public static class ErrorHandler {
             return false;
         }
         
-        await client.SendMessage(_twitchErrorMessages[(int)error], message.Id);
+        await client.SendMessage($"Ошибка: {_twitchErrorMessages[(int)error]}", message.Id);
         return true;
     }
 

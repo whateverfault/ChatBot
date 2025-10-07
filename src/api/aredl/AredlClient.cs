@@ -554,7 +554,7 @@ public class AredlClient {
 
             var filtered = clans.Data
                                 .AsParallel()
-                                .Where(clanData => clanData.clan.tag.Equals(tag,
+                                .Where(clanData => clanData.clan.Tag.Equals(tag,
                                                                             StringComparison.CurrentCultureIgnoreCase));
             var filteredList = filtered.ToList();
             if (filteredList.Count >= 1) {
