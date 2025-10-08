@@ -1040,7 +1040,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var reqState = levelRequests.GetReqState();
-        await client.SendMessage($"Реквесты {levelRequests.GetReqStateStr(reqState)}", chatMessage.Id); 
+        await client.SendMessage($"Requests {levelRequests.GetReqStateStr(reqState, eng: true)}", chatMessage.Id); 
     }
     
     private static async Task Req(ChatCmdArgs cmdArgs) {
@@ -2863,15 +2863,15 @@ public static class CommandsList {
         }
         
         var result = interpreter.Evaluate(cmdArgs.Parsed.CommandMessage);
-        if (!result.Ok) {
-            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+        if (result is { Ok: false, Error: not null, }) {
+            await client.SendMessage(result.Error, chatMessage.Id);
             return;
         } if (result.Value == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
         
-        await client.SendMessage(result.Value.Value, chatMessage.Id);
+        await client.SendMessage(result.Value, chatMessage.Id);
     }
     
     private static Task PageTerminator(ChatCmdArgs cmdArgs) {

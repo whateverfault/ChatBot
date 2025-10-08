@@ -24,11 +24,6 @@ public enum ErrorCode {
     UserNotFound,
     TooFewPoints,
     AccountNotFound,
-    UnbalancedParentheses,
-    IllegalOperation,
-    Undefined,
-    InvalidSyntax,
-    UnknownIdentifier,
     None,
 }
 
@@ -54,11 +49,6 @@ public static class ErrorHandler {
                                                                   "User not found.",
                                                                   "Too few points.",
                                                                   "Account not found.",
-                                                                  "Unbalanced parentheses.",
-                                                                  "Illegal operation.",
-                                                                  "Undefined.",
-                                                                  "Invalid syntax.",
-                                                                  "Identifier Doesn't Exist",
                                                               ];
 
 
@@ -81,13 +71,15 @@ public static class ErrorHandler {
                                                                 "Пользователь не найден.",
                                                                 "Слишком мало фантиков.",
                                                                 "Аккаунт не найден.",
-                                                                "Несбалансированные скобки.",
-                                                                "Неизвестная операция.",
-                                                                "Неопределенно.",
-                                                                "Неверный синтаксис.",
-                                                                "Идентификатор не определен.",
                                                             ];
-    
+
+
+    public static string? GetErrorString(ErrorCode? error, bool eng = false) {
+        if (error == null) return null;
+        
+        if (eng) return _internalErrorMessages[(int)error];
+        return _twitchErrorMessages[(int)error];
+    }
     
     public static async Task<bool> ReplyWithError(ErrorCode? error, ChatMessage message, ITwitchClient? client) {
         if (client == null || error == null || error == ErrorCode.None) {

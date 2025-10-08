@@ -2,6 +2,7 @@
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interpreter.data;
 using ChatBot.bot.shared;
+using sonlanglib.interpreter.data;
 
 namespace ChatBot.bot.services.interpreter;
 
@@ -14,7 +15,7 @@ public class InterpreterOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
-    private Dictionary<string, Variable> Variables => _saveData!.Variables;
+    private Dictionary<string, StoredVariable> Variables => _saveData!.Variables;
     
     
     public override void Load() {
@@ -38,17 +39,15 @@ public class InterpreterOptions : Options {
         _saveData!.ServiceState = state;
     }
 
-    public Variable SetVariable(string name, VariableType type, string val) {
-        var var = new Variable(name, type, val);
-        if (!Variables.TryAdd(name, var)) {
-            Variables[name] = var;
+    public Dictionary<string, StoredVariable> GetVariables() {
+        return Variables;
+    }
+    
+    public void SaveVariable(Variable variable) {
+        var var = new StoredVariable(variable);
+        if (!Variables.TryAdd(var.Name, var)) {
+            Variables[var.Name] = var;
         }
         Save();
-        return var;
-    }
-
-    public Variable? GetVariable(string name) {
-        Variables.TryGetValue(name, out var var);
-        return var;
     }
 }

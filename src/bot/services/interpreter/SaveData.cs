@@ -9,7 +9,7 @@ public class SaveData {
     public State ServiceState { get; set; }
 
     [JsonProperty("vars")]
-    public Dictionary<string, Variable> Variables { get; set; }
+    public Dictionary<string, StoredVariable> Variables { get; set; }
 
 
     public SaveData() {
@@ -19,7 +19,7 @@ public class SaveData {
     [JsonConstructor]
     public SaveData(
         [JsonProperty("service_state")] State serviceState,
-        [JsonProperty("vars")] Dictionary<string, Variable> vars) {
+        [JsonProperty("vars")] Dictionary<string, StoredVariable> vars) {
         ServiceState = serviceState;
         Variables = vars;
     }

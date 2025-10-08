@@ -80,7 +80,16 @@ public class LevelRequestsService : Service {
         Options.SetRewardId(rewardId);
     }
     
-    public string GetReqStateStr(ReqState reqState) {
+    public string GetReqStateStr(ReqState reqState, bool eng = false) {
+        if (eng) {
+            return reqState switch { 
+                       ReqState.Off    => "Off.", 
+                       ReqState.Points => "For channel points.", 
+                       ReqState.On     => "On.", 
+                       _               => throw new ArgumentOutOfRangeException(),
+                   };
+        }
+        
         return reqState switch { 
                    ReqState.Off    => "отключены.", 
                    ReqState.Points => "за баллы.", 
