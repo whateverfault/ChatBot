@@ -13,7 +13,7 @@ public enum ErrorCode {
     CorruptedCredentials,
     InvalidData,
     NotInitialized,
-    ListIsEmpty,
+    Empty,
     NotEnoughData,
     SmthWentWrong,
     ClipCreationFailed,
@@ -24,6 +24,8 @@ public enum ErrorCode {
     UserNotFound,
     TooFewPoints,
     AccountNotFound,
+    NoAvailable,
+    NotFound,
     None,
 }
 
@@ -49,13 +51,15 @@ public static class ErrorHandler {
                                                                   "User not found.",
                                                                   "Too few points.",
                                                                   "Account not found.",
+                                                                  "No Available.",
+                                                                  "Not Found.",
                                                               ];
 
 
     private static readonly string[] _twitchErrorMessages = [
                                                                 "Неправильный ввод.",
                                                                 "Слишком мало аругментов.",
-                                                                "Такой элемент уже существует.",
+                                                                "Уже существует.",
                                                                 "Функция отключена.",
                                                                 "Некорректные данные для подключения.",
                                                                 "Некорректные данные.",
@@ -69,8 +73,10 @@ public static class ErrorHandler {
                                                                 "Не удалось подключиться к сети.",
                                                                 "Награда не установлена.",
                                                                 "Пользователь не найден.",
-                                                                "Слишком мало фантиков.",
+                                                                "Недостаточно фантиков.",
                                                                 "Аккаунт не найден.",
+                                                                "Нет доступных.",
+                                                                "Не найдено.",
                                                             ];
 
 

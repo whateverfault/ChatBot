@@ -11,22 +11,22 @@ public class StoredVariable {
     public VariableType Type { get; private set; }
     
     [JsonProperty("value")]
-    public string Value { get; private set; }
+    public List<string> Values { get; private set; }
 
 
     public StoredVariable(Variable variable) {
         Name = variable.Name;
         Type = variable.Type;
-        Value = variable.Value;
+        Values = variable.Values;
     }
     
     [JsonConstructor]
     public StoredVariable(
         [JsonProperty("name")] string name,
         [JsonProperty("type")] VariableType type,
-        [JsonProperty("value")] string value) {
+        [JsonProperty("value")] List<string> values) {
         Name = name;
         Type = type;
-        Value = value;
+        Values = values;
     }
 }

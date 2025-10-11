@@ -1,6 +1,6 @@
-[submodule "src/api/TwitchAPI"]
-	path = src/api/TwitchAPI
-	url = https://github.com/whateverfault/TwitchAPI.git
-[submodule "src/api/songlang"]
-	path = src/api/songlang
+[submodule "src/api/songlang-lib"]
+	path = src/api/songlang-lib
 	url = https://github.com/whateverfault/sonlanglib.git
+[submodule "src/api/twitchapi"]
+	path = src/api/twitchapi
+	url = https://github.com/whateverfault/TwitchAPI.git

@@ -67,7 +67,7 @@ public class BankOptions : Options {
     }
 
     public bool TakeOut(string userId, long quantity, bool gain = true) {
-        if (quantity == 0) return true;
+        if (quantity == 0) return false;
         return quantity > 0 && BankAdd(userId, -quantity, gain);
     }
 

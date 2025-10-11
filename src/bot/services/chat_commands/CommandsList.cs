@@ -102,7 +102,7 @@ public static class CommandsList {
                                                       "[title]",
                                                       "посмотреть/изменить название стрима.",
                                                       Title,
-                                                      Restriction.Vip
+                                                      Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
                                                       5,
@@ -630,6 +630,14 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      63,
+                                                      "gamble",
+                                                      "<money>",
+                                                      "слить баллы.",
+                                                      Gamble,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
                                                       61,
                                                       "balance",
                                                       string.Empty,
@@ -646,6 +654,22 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      64,
+                                                      "give",
+                                                      "<money;username>",
+                                                      "отдать нищему фантики.",
+                                                      Give,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      65,
+                                                      "giveaway",
+                                                      "[money]",
+                                                      "раздать нищим фантики.",
+                                                      Giveaway,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
@@ -654,27 +678,43 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      63,
-                                                      "gamble",
-                                                      "<quantity>",
-                                                      "слить баллы.",
-                                                      Gamble,
+                                                      70,
+                                                      "duel",
+                                                      "<money;username>",
+                                                      "парный гемблинг.",
+                                                      Duel,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      64,
-                                                      "give",
-                                                      "<quantity;username>",
-                                                      "отдать нищему фантики.",
-                                                      Give,
+                                                      71,
+                                                      "accept-duel",
+                                                      "[username]",
+                                                      "принять предложение погемблить.",
+                                                      AcceptDuel,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      65,
-                                                      "giveaway",
-                                                      "[quantity]",
-                                                      "раздать нищим фантики.",
-                                                      Giveaway,
+                                                      72,
+                                                      "decline-duel",
+                                                      "[username]",
+                                                      "отказать в предложении погемблить.",
+                                                      DeclineDuel,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      73,
+                                                      "remove-duels",
+                                                      "[username]",
+                                                      "удалить все дуэли.",
+                                                      RemoveDuels,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      74,
+                                                      "list-duels",
+                                                      string.Empty,
+                                                      "предложения погемблить.",
+                                                      ListDuels,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -743,7 +783,7 @@ public static class CommandsList {
             if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.DefaultCmds
                          .Any(defaultCmd =>
-                                  defaultCmd.Name.Equals(cmd.Name)
+                                  defaultCmd.Name.Equals(cmd.Name, StringComparison.InvariantCultureIgnoreCase)
                                && defaultCmd.Restriction < cmd.Restriction
                                && chatMessage.Fits(defaultCmd.Restriction))){
                 continue;
@@ -756,7 +796,7 @@ public static class CommandsList {
                 continue;
             }
             
-            var desc = string.IsNullOrEmpty(cmd.Args) || cmd.Description.Equals("--") ? 
+            var desc = string.IsNullOrEmpty(cmd.Description) || cmd.Description.Equals("--") ? 
                            string.Empty :
                            $"- {cmd.Description}";
 
@@ -783,7 +823,7 @@ public static class CommandsList {
             if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
             if (_chatCmds.Options.CustomCmds
                          .Any(customCmd =>
-                                  customCmd.Name.Equals(cmd.Name)
+                                  customCmd.Name.Equals(cmd.Name, StringComparison.InvariantCultureIgnoreCase)
                                && customCmd.Restriction < cmd.Restriction
                                && chatMessage.Fits(customCmd.Restriction))){
                 continue;
@@ -825,7 +865,7 @@ public static class CommandsList {
         var cmdId = cmdArgs.Parsed.CommandIdentifier;
 
         switch (args.Count) {
-            case 0: {
+            case <= 0: {
                 var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[1].Name} для списка комманд";
                 switch (chatCommands.Options.SendWhisperIfPossible) {
                     case State.Disabled: {
@@ -842,29 +882,42 @@ public static class CommandsList {
             case > 0: {
                 var cmdName = args[0];
                 if (cmdName.Length > 0 && cmdName[0] == cmdId) {
-                    cmdName = cmdName[1..cmdName.Length];
+                    cmdName = cmdName[1..];
                 }
 
                 var page = 1;
+                var prevId = int.MinValue;
+                
                 foreach (var cmd in _chatCmds.Options.DefaultCmds) {
-                    if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
-                    if (_chatCmds.Options.DefaultCmds
-                                 .Any(defaultCmd =>
-                                          defaultCmd.Name.Equals(cmd.Name)
-                                       && defaultCmd.Restriction < cmd.Restriction
-                                       && chatMessage.Fits(defaultCmd.Restriction))){
+                    if (cmd.Id == PAGE_TERMINATOR_CMD_ID) {
+                        if (prevId == PAGE_TERMINATOR_CMD_ID) continue;
+                        ++page;
+                        prevId = cmd.Id;
                         continue;
                     }
                     
-                    if (cmd.Id == PAGE_TERMINATOR_CMD_ID) {
-                        ++page;
+                    prevId = cmd.Id;
+                    if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
+                    if (_chatCmds.Options.DefaultCmds
+                                 .Any(defaultCmd =>
+                                          defaultCmd.Name.Equals(cmd.Name, StringComparison.InvariantCultureIgnoreCase)
+                                       && defaultCmd.Restriction < cmd.Restriction
+                                       && chatMessage.Fits(defaultCmd.Restriction))){
                         continue;
                     }
                     
                     if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
                      && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
                     
-                    await client.SendMessage($"{cmdId}{cmd.Name} {cmd.Args} - {cmd.Description} | Страница {page}", chatMessage.Id);
+                    var desc = string.IsNullOrEmpty(cmd.Args) || cmd.Description.Equals("--") ? 
+                                   string.Empty :
+                                   $"- {cmd.Description}";
+
+                    var arguments = string.IsNullOrEmpty(cmd.Args) || cmd.Args.Equals("--") ?
+                                   string.Empty :
+                                   cmd.Args;
+                    
+                    await client.SendMessage($"{cmdId}{cmd.Name} {arguments} {desc} | Страница {page}", chatMessage.Id);
                     return;
                 }
                 
@@ -2025,7 +2078,7 @@ public static class CommandsList {
         var gameRequests = gameRequestService.GetGameRequests();
 
         if (gameRequests?.Count <= 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client) ;
+            await ErrorHandler.ReplyWithError(ErrorCode.Empty, chatMessage, client) ;
             return;
         }
         
@@ -2263,7 +2316,7 @@ public static class CommandsList {
 
         var cmds = _chatCmds.Options.GetCustomCommands();
         if (cmds.Count == 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.Empty, chatMessage, client);
             return;
         }
         
@@ -2595,6 +2648,163 @@ public static class CommandsList {
         await client.SendMessage($"{balance} -> {newBalance} | x{gambleResult.Value.Multiplier:F}{arrow}", chatMessage.Id);
     }
     
+    private static async Task Duel(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+
+        var err = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        } if (args.Length < 2) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        if (!long.TryParse(args[0], out var quantity)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+
+        var userId = await Helix.GetUserId(args[1], client.Credentials, (_, message) => {
+                                                                            _logger.Log(LogLevel.Error, message);
+                                                                        });
+        if (userId == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+        
+        var result = casino.CreateDuel(chatMessage.UserId, userId, quantity);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage($"Отправлен запрос на дуэль с {args[1]} со ставкой {args[0]} {Declensioner.Points(quantity)}.", chatMessage.Id);
+    }
+    
+    private static async Task AcceptDuel(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+
+        var userId = string.Empty;
+        if (args.Count > 0) {
+            userId = await Helix.GetUserId(args[0], client.Credentials,
+                                               (_, message) => { _logger.Log(LogLevel.Error, message); });
+            if (userId == null) {
+                await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+                return;
+            }
+        }
+
+        var result = casino.AcceptDuel(chatMessage.UserId, userId);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        } if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        var duelResult = result.Value.Value;
+        var username = await Helix.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
+                                               (_, message) => {
+                                                   _logger.Log(LogLevel.Error, message);
+                                               });
+        if (username == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage($"{username} выиграл {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+    }
+    
+    private static async Task DeclineDuel(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+        
+        var userId = string.Empty;
+        if (args.Count > 0) {
+            userId = await Helix.GetUserId(args[1], client.Credentials,
+                                           (_, message) => { _logger.Log(LogLevel.Error, message); });
+            if (userId == null) {
+                await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+                return;
+            }
+        }
+
+        var result = casino.DeclineDuel(chatMessage.UserId, userId);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage("Дуэль отменена.", chatMessage.Id);
+    }
+    
+    private static async Task RemoveDuels(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+
+        var result = casino.RemoveDuels(chatMessage.UserId);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage("Все ваши дуэли отменены.", chatMessage.Id);
+    }
+    
+    private static async Task ListDuels(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
+
+        var result = casino.ListDuels(chatMessage.UserId);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        } if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        var duels = result.Value;
+        var reply = new List<string>();
+        
+        for (var i = 0; i < duels.Count; ++i) { 
+            var duel = duels[i];
+            var username = await Helix.GetUsername(duel.Subject, client.Credentials, displayName: true, 
+                                                   (_, message) => {
+                                                       _logger.Log(LogLevel.Error, message);
+                                                   });
+            if (username == null) {
+                await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+                return;
+            }
+            
+            reply.Add($"{i+1}. {username} - {duel.Quantity} {(i >= duels.Count - 1? string.Empty : "\\")} ");
+        }
+
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+    }
+    
     private static async Task Balance(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
@@ -2608,7 +2818,7 @@ public static class CommandsList {
         }
 
         var arrow = account.Gain >= 0 ? "↑" : "↓";
-        await client.SendMessage($"Баланс: {account.Money} фантиков | За все время: {Math.Abs(account.Gain)}{arrow}.", chatMessage.Id);
+        await client.SendMessage($"Баланс: {account.Money} {Declensioner.Points(account.Money)} | За все время: {Math.Abs(account.Gain)}{arrow}.", chatMessage.Id);
     }
     
     private static async Task Shop(ChatCmdArgs cmdArgs) {
@@ -2643,7 +2853,7 @@ public static class CommandsList {
             return;
         }
 
-        if (!long.TryParse(parsed[0], out var quantity)) {
+        if (!long.TryParse(parsed[0], out var money)) {
             await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
@@ -2660,12 +2870,12 @@ public static class CommandsList {
                                                                          });
         if (string.IsNullOrEmpty(userId)) return;
 
-        var result = bank.Give(userId, chatMessage.UserId, quantity);
+        var result = bank.Give(userId, chatMessage.UserId, money);
         if (!result.Ok) {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Успешно отправлено {quantity} фантиков пользователю {username}", chatMessage.Id);
+        await client.SendMessage($"Успешно отправлено {money} {Declensioner.Points(money)} пользователю {username}", chatMessage.Id);
     }
     
     private static async Task Giveaway(ChatCmdArgs cmdArgs) {
@@ -2682,19 +2892,19 @@ public static class CommandsList {
         }
         
         var err = ParseIntArg(cmdArgs, out var temp);
-        long quantity = temp;
+        long money = temp;
         if (err != ErrorCode.None) {
-            quantity = account.Money;
+            money = account.Money;
         }
 
-        if (account.Money < quantity) {
+        if (account.Money < money) {
             await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
             return;
         }
         
         var random = Random.Shared;
         var amount = accounts.Count switch {
-                         > 1 => (int)random.NextInt64(2, Math.Min(quantity, accounts.Count)%int.MaxValue),
+                         > 1 => (int)random.NextInt64(2, Math.Min(money, accounts.Count)%int.MaxValue),
                          _   => 0,
                      };
 
@@ -2704,14 +2914,14 @@ public static class CommandsList {
         }
         if (amount > 6) amount = 6;
         
-        var quantityPerEach = quantity / amount;
+        var quantityPerEach = money / amount;
         if (quantityPerEach <= 0) {
             await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
             return;
         }
 
         var map = new Dictionary<string, long>();
-        var left = quantity;
+        var left = money;
         var retries = 0;
         
         for (var i = 0; i < amount; ++i) {
@@ -2759,7 +2969,7 @@ public static class CommandsList {
             sb.Append($"{username} - {points} {(i >= map.Count-1? string.Empty : "/ ")}");
         }
         
-        await client.SendMessage($"Роздано {quantity} фантиков - {sb}", chatMessage.Id);
+        await client.SendMessage($"Роздано: {money} {Declensioner.Points(money)} - {sb}", chatMessage.Id);
     }
     
     private static async Task BankListRewards(ChatCmdArgs cmdArgs) {
@@ -2886,7 +3096,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (reply.Count <= 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.ListIsEmpty, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.Empty, chatMessage, client);
             return;
         }
         

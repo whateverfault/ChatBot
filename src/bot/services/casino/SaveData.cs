@@ -1,4 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.casino.data;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.casino;
@@ -15,9 +16,13 @@ internal class SaveData {
     
     [JsonProperty("additional")]
     public float AdditionalMultiplier { get; set; }
-    
+
+    [JsonProperty("duels")]
+    public List<Duel> Duels { get; set; }
+
 
     public SaveData() {
+        Duels = [];
         BaseMultiplier = 1.51f;
         AdditionalMultiplier = 1.3f;
     }
@@ -27,10 +32,12 @@ internal class SaveData {
         [JsonProperty("service_state")] State state,
         [JsonProperty("random_val")] float randomValue,
         [JsonProperty("base")] float baseMultiplier,
-        [JsonProperty("additional")] float additional) {
+        [JsonProperty("additional")] float additional,
+        [JsonProperty("duels")] List<Duel> duels) {
         ServiceState = state;
         RandomValue = randomValue;
         BaseMultiplier = baseMultiplier;
         AdditionalMultiplier = additional;
+        Duels = duels;
     }
 }

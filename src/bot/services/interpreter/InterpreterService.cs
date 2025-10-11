@@ -32,7 +32,7 @@ public class InterpreterService : Service {
         var casted = new Dictionary<string, Variable>();
         
         foreach (var (name, var) in vars) {
-            casted.Add(name, new Variable(var.Name, var.Type, var.Value));
+            casted.Add(name, new Variable(var.Name, var.Type, var.Values));
         }
         
         Interpreter.LoadVars(casted);

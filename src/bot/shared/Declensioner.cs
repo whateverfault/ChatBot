@@ -1,7 +1,7 @@
 ﻿namespace ChatBot.bot.shared;
 
 public static class Declensioner {
-    public static string Years(int years) {
+    public static string Years(long years) {
         var lastTwoDigits = years%100;
         var lastDigit = years%10;
         
@@ -64,6 +64,17 @@ public static class Declensioner {
                    1 when lastTwoDigits != 11                                     => "секунду",
                    > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "секунды",
                    _                                                              => "секунд",
+               };
+    }
+
+    public static string Points(long amount) {
+        var lastTwoDigits = amount%100;
+        var lastDigit = amount%10;
+        
+        return lastDigit switch {
+                   1 when lastTwoDigits != 11                                     => "фантик",
+                   > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "фантика",
+                   _                                                              => "фантиков",
                };
     }
 }

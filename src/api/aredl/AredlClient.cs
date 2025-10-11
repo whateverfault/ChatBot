@@ -513,7 +513,7 @@ public class AredlClient {
                                                             Method = HttpMethod.Get,
                                                             RequestUri =
                                                                 new
-                                                                    Uri("https://api.aredl.net/v2/api/aredl/leaderboard/clans"),
+                                                                    Uri($"https://api.aredl.net/v2/api/aredl/leaderboard/clans?per_page={int.MaxValue}"),
                                                         };
 
             var response = await _httpClient.SendAsync(requestMessage);

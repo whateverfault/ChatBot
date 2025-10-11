@@ -42,7 +42,9 @@ public class AiService : Service {
         if (aiLot == null) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
-        if (!bank.TakeOut(userId, aiLot.Cost, gain: false)) {
+
+        var takeOutResult = bank.TakeOut(userId, aiLot.Cost, gain: false);
+        if (!takeOutResult.Ok) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.TooFewPoints);
         }
         
