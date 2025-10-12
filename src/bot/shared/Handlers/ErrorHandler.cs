@@ -8,7 +8,7 @@ namespace ChatBot.bot.shared.handlers;
 public enum ErrorCode {
     InvalidInput = 0,
     TooFewArgs,
-    AlreadyContains,
+    AlreadyExists,
     ServiceDisabled,
     CorruptedCredentials,
     InvalidData,
@@ -26,6 +26,7 @@ public enum ErrorCode {
     AccountNotFound,
     NoAvailable,
     NotFound,
+    NotEnough,
     None,
 }
 
@@ -35,7 +36,7 @@ public static class ErrorHandler {
     private static readonly string[] _internalErrorMessages = [
                                                                   "Invalid Input.",
                                                                   "Too Few Arguments.",
-                                                                  "List already contains such element.",
+                                                                  "Already exists.",
                                                                   "Function is Disabled.",
                                                                   "Corrupted credentials.",
                                                                   "Invalid data.",
@@ -53,6 +54,7 @@ public static class ErrorHandler {
                                                                   "Account not found.",
                                                                   "No Available.",
                                                                   "Not Found.",
+                                                                  "Not Enough.",
                                                               ];
 
 
@@ -77,6 +79,7 @@ public static class ErrorHandler {
                                                                 "Аккаунт не найден.",
                                                                 "Нет доступных.",
                                                                 "Не найдено.",
+                                                                "Недостаточно.",
                                                             ];
 
 

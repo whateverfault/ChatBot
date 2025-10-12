@@ -128,7 +128,7 @@ public class ModAction {
                 break;
             }
             case ModerationActionType.Timeout: {
-                await Helix.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
+                await Helix.TimeoutUserHelix(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
                                                       _logger.Log(LogLevel.Error, message);
                                                   });
                 break;
@@ -186,7 +186,7 @@ public class ModAction {
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
-                await Helix.TimeoutUserHelix(chatMessage.Username, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
+                await Helix.TimeoutUserHelix(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
                                                       _logger.Log(LogLevel.Error, callback);
                                                   });
                 _options.RemoveWarnedUser(userIndex);

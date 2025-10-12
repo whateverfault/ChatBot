@@ -10,19 +10,20 @@ public class SaveData {
     public State ServiceState { get; set; }
     
     [JsonProperty("lots")]
-    public ShopLot[] Lots{ get; }
+    public List<ShopLot> Lots{ get; }
     
     
     public SaveData() {
         Lots = [
-                   new ShopLot(ServiceName.Ai, 0),
+                   new ShopLot(ServiceName.Ai, 0, isDefault: true, state: State.Disabled),
+                   new ShopLot("Mute", 0, isDefault: true, state: State.Disabled),
                ];
     }
 
     [JsonConstructor]
     public SaveData(
         [JsonProperty("service_state")] State state,
-        [JsonProperty("lots")] ShopLot[] shop) {
+        [JsonProperty("lots")] List<ShopLot> shop) {
         ServiceState = state;
         Lots = shop;
     }
