@@ -14,6 +14,7 @@ using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.shop;
+using ChatBot.bot.services.shop.data;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.telegram;
 using ChatBot.bot.services.text_generator;
@@ -142,7 +143,7 @@ public static class CommandsList {
                                                       "[text]",
                                                       "Waiting",
                                                       When,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       11,
@@ -150,7 +151,15 @@ public static class CommandsList {
                                                       "[text]",
                                                       "SillyJail",
                                                       Ban,
-                                                      Restriction.Vip
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      79,
+                                                      "mute",
+                                                      "<username>",
+                                                      "Замутить пользователя.",
+                                                      Mute,
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -630,6 +639,54 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
+                                                      62,
+                                                      "shop",
+                                                      string.Empty,
+                                                      "список лотов.",
+                                                      Shop,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      77,
+                                                      "add-lot",
+                                                      "<lot_name;cost>",
+                                                      "добавить лот.",
+                                                      ShopAdd,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      78,
+                                                      "remove-lot",
+                                                      "<lot_name>",
+                                                      "удалить лот.",
+                                                      ShopRemove,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      75,
+                                                      "buy",
+                                                      "<lot_name>;[amount]",
+                                                      "купить лот.",
+                                                      Buy,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      76,
+                                                      "use",
+                                                      "<lot_name>",
+                                                      "использовать лот.",
+                                                      Use,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      PAGE_TERMINATOR_CMD_ID,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
                                                       63,
                                                       "gamble",
                                                       "<money>",
@@ -641,16 +698,8 @@ public static class CommandsList {
                                                       61,
                                                       "balance",
                                                       string.Empty,
-                                                      "ваш баланс.",
+                                                      "вывести баланс.",
                                                       Balance,
-                                                      Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
-                                                      62,
-                                                      "shop",
-                                                      string.Empty,
-                                                      "список лотов.",
-                                                      Shop,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -859,7 +908,6 @@ public static class CommandsList {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
-        var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var args = cmdArgs.Parsed.ArgumentsAsList; 
         var cmdId = cmdArgs.Parsed.CommandIdentifier;
@@ -867,7 +915,7 @@ public static class CommandsList {
         switch (args.Count) {
             case <= 0: {
                 var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[1].Name} для списка комманд";
-                switch (chatCommands.Options.SendWhisperIfPossible) {
+                switch (_chatCmds.Options.SendWhisperIfPossible) {
                     case State.Disabled: {
                         await client.SendMessage(usage, chatMessage.Id); break;
                     }
@@ -886,17 +934,28 @@ public static class CommandsList {
                 }
 
                 var page = 1;
-                var prevId = int.MinValue;
+                var prevWasTerminator = false;
                 
                 foreach (var cmd in _chatCmds.Options.DefaultCmds) {
-                    if (cmd.Id == PAGE_TERMINATOR_CMD_ID) {
-                        if (prevId == PAGE_TERMINATOR_CMD_ID) continue;
+                    var isExplicitTerminator = cmd.Id == PAGE_TERMINATOR_CMD_ID || string.IsNullOrEmpty(cmd.Name);
+                    
+                    if (isExplicitTerminator) {
+                        if (prevWasTerminator) continue;
+                        if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
+                        if (_chatCmds.Options.DefaultCmds
+                                     .Any(defaultCmd =>
+                                              defaultCmd.Name.Equals(cmd.Name, StringComparison.InvariantCultureIgnoreCase)
+                                           && defaultCmd.Restriction < cmd.Restriction
+                                           && chatMessage.Fits(defaultCmd.Restriction))) {
+                            continue;
+                        }
+                        
                         ++page;
-                        prevId = cmd.Id;
+                        prevWasTerminator = true;
                         continue;
                     }
                     
-                    prevId = cmd.Id;
+                    prevWasTerminator = false;
                     if (cmd.State == State.Disabled || !chatMessage.Fits(cmd.Restriction)) continue;
                     if (_chatCmds.Options.DefaultCmds
                                  .Any(defaultCmd =>
@@ -974,10 +1033,50 @@ public static class CommandsList {
         await client.SendMessage($"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL", chatMessage.Id);
     }
 
+    private static async Task Mute(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        if (args.Count <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var username = args[0];
+        var userId = await Helix.GetUserId(username, client.Credentials, (_, message) => {
+                                                                             _logger.Log(LogLevel.Error, message);
+                                                                         });
+        if (userId == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
+            return;
+        }
+
+        var result = await DefaultLots.Mute(chatMessage.UserId, userId);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+
+        var random = Random.Shared.Next(0, 5);
+        var message = random switch {
+                          0 => $"{username} отошел поспать.",
+                          1 => $"{username} решил передохнуть.",
+                          2 => $"{username} bb.",
+                          3 => $"{username} очень устал.",
+                          _ => $"{username} пошел посрать.",
+                      };
+
+        await client.SendMessage(message, chatMessage.Id);
+    }
+    
     private static async Task Ai(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
         
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
         var ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var args = cmdArgs.Parsed.ArgumentsAsList;
@@ -992,11 +1091,19 @@ public static class CommandsList {
             prompt.Append($"{word} ");
         }
 
+        var lot = shop.Get(0);
+        if (lot == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+        
         Result<string?, ErrorCode?> result;
-        if (ai.Options.CasinoIntegration == State.Enabled) {
-            result = await ai.GetPaidResponse(chatMessage.UserId, prompt.ToString().Trim());
-        }else {
-            result = await ai.GetResponse(prompt.ToString().Trim());
+
+        var promptStr = prompt.ToString().Trim();
+        if (lot.State == State.Enabled) {
+            result = await DefaultLots.Ai(chatMessage.UserId, promptStr);
+        } else {
+            result = await ai.GetResponse(promptStr);
         }
         
         if (!result.Ok) {
@@ -2683,7 +2790,7 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage($"Отправлен запрос на дуэль с {args[1]} со ставкой {args[0]} {Declensioner.Points(quantity)}.", chatMessage.Id);
+        await client.SendMessage($"Вы вызвали {args[1]} на дуэль со ставкой {args[0]} {Declensioner.Points(quantity)}.", chatMessage.Id);
     }
     
     private static async Task AcceptDuel(ChatCmdArgs cmdArgs) {
@@ -2714,16 +2821,42 @@ public static class CommandsList {
         }
 
         var duelResult = result.Value.Value;
-        var username = await Helix.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
+        var winnerUsername = await Helix.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
                                                (_, message) => {
                                                    _logger.Log(LogLevel.Error, message);
                                                });
-        if (username == null) {
+        if (winnerUsername == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+
+        var looserId = duelResult.UserId.Equals(chatMessage.UserId)?
+                           userId :
+                           chatMessage.UserId;
+        var looserUsername = await Helix.GetUsername(looserId, client.Credentials, displayName: true, 
+                                                     (_, message) => {
+                                                         _logger.Log(LogLevel.Error, message);
+                                                     });
+        if (looserUsername == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
         
-        await client.SendMessage($"{username} выиграл {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+        var random = Random.Shared.Next(0, 3);
+        switch (random) {
+            case 0: {
+                await client.SendMessage($"{winnerUsername} выигрывает в дуэли и получает {duelResult.Win} {Declensioner.Points(duelResult.Win)}");
+                break;
+            }
+            case 1: {
+                await client.SendMessage($"{winnerUsername} залутал {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+                break;
+            }
+            default: {
+                await client.SendMessage($"{winnerUsername} заовнил {looserUsername} и выиграл {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+                break;
+            }
+        }
     }
     
     private static async Task DeclineDuel(ChatCmdArgs cmdArgs) {
@@ -2824,15 +2957,151 @@ public static class CommandsList {
     private static async Task Shop(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
-        
+
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
         var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
         var lots = shop.Lots;
 
         var reply = lots.Select(
-                                (lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost} {(i >= lots.Length - 1 ? string.Empty : "/")}")
+                                (lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost}" +
+                                            $"{(lot.Buyers.TryGetValue(chatMessage.UserId, out var val)? $"({val})" : string.Empty)}" +
+                                            $" {(i >= lots.Count - 1 ? string.Empty : "/")}")
                         .ToList();
 
         await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+    }
+
+    private static async Task ShopAdd(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+
+        var err = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        if (args.Length < 2) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var lotName = args[0];
+        if (!long.TryParse(args[1], out var cost)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+        
+        var result = shop.Add(lotName, cost);
+        if (!result) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AlreadyExists, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage($"Успешно создан лот '{lotName}'", chatMessage.Id);
+    }
+    
+    private static async Task ShopRemove(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+
+        if (args.Count <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var result = shop.Remove(args[0]);
+        if (!result) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage($"Лот '{args[0]}' успешно удалён", chatMessage.Id);
+    }
+    
+    private static async Task Buy(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+
+        var err = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        } if (args.Length < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var lotName = args[0];
+        if (args.Length < 2 || !long.TryParse(args[1], out var amount)) {
+            amount = 1;
+        }
+        
+        var result = shop.Buy(chatMessage.UserId, lotName, amount);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        } if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        var lot = result.Value;
+        await client.SendMessage($"Куплено '{lot.Name}'. Всего: {lot.Buyers[chatMessage.UserId]}", chatMessage.Id);
+    }
+    
+    private static async Task Use(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+
+        if (args.Count <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var sb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            if (i == args.Count-1) {
+                sb.Append($"{args[i]}");
+                break;
+            }
+            sb.Append($"{args[i]} ");
+        }
+
+        var lotName = sb.ToString();
+        var lot = shop.Get(lotName);
+        if (lot == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        } if (lot.IsDefault) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+        
+        var result = shop.Use(chatMessage.UserId, lotName);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        } if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+        
+        await client.SendMessage($"Использовано {lot.Name}", chatMessage.Id);
     }
     
     private static async Task Give(ChatCmdArgs cmdArgs) {

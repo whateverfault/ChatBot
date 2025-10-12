@@ -13,7 +13,7 @@ public class ShopOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    public ShopLot[] Lots => _saveData!.Lots;
+    public List<ShopLot> Lots => _saveData!.Lots;
     
     
     public override void Load() {
@@ -36,5 +36,33 @@ public class ShopOptions : Options {
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
         Save();
+    }
+
+    public bool AddLot(ShopLot lot) {
+        if (GetLot(lot.Name) != null) return false;
+        
+        Lots.Add(lot);
+        Save(); return true;
+    }
+    
+    public bool RemoveLot(string lotName) {
+        var lot = GetLot(lotName);
+        if (lot == null) return false; 
+        
+        for (var i = 0; i < Lots.Count; ++i) {
+            if (Lots[i].Id == lot.Id) {
+                Lots.RemoveAt(i);
+                Save(); return true;
+            }
+        }
+        return false;
+    }
+    
+    public ShopLot? GetLot(string name) {
+        return Lots.FirstOrDefault(lot => lot.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+    }
+    
+    public ShopLot? GetLot(int id) {
+        return Lots.FirstOrDefault(lot => lot.Id == id);
     }
 }

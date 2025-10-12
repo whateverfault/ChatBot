@@ -38,7 +38,7 @@ public class AiService : Service {
         var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
         var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
         
-        var aiLot = shop.GetLot(ServiceName.Ai);
+        var aiLot = shop.Get(ServiceName.Ai);
         if (aiLot == null) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
@@ -293,14 +293,6 @@ public class AiService : Service {
     
     public void AiKindNext() {
         Options.SetAiKind((AiKind)(((int)Options.AiKind+1)%Enum.GetValues(typeof(AiKind)).Length));
-    }
-
-    public int GetCasinoIntegrationAsInt() {
-        return (int)Options.CasinoIntegration;
-    }
-
-    public void CasinoIntegrationNext() {
-        Options.SetCasinoIntegrationState((State)(((int)Options.CasinoIntegration+1)%Enum.GetValues(typeof(State)).Length));
     }
     
     public override void Init() {

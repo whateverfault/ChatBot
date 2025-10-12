@@ -16,7 +16,6 @@ public class AiOptions : Options {
     public List<AiData> AiData => _saveData!.AiData;
     public string GoogleProjectId => _saveData!.GoogleProjectId;
     public AiKind AiKind => _saveData!.AiKind;
-    public State CasinoIntegration => _saveData!.CasinoIntegration;
 
     
     public override void Load() {

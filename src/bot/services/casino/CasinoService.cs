@@ -93,7 +93,7 @@ public class CasinoService : Service {
         var result = Options.AddDuel(subjectId, objectId, quantity);
         return result?
                    new Result<bool?, ErrorCode?>(true, null) : 
-                   new Result<bool?, ErrorCode?>(false, ErrorCode.AlreadyContains);
+                   new Result<bool?, ErrorCode?>(false, ErrorCode.AlreadyExists);
     }
     
     public Result<GambleResult?, ErrorCode?> AcceptDuel(string objectId, string? subjectId = null) {

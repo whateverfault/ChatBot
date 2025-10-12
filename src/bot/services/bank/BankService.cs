@@ -36,7 +36,11 @@ public class BankService : Service {
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
         
         if (userId.Equals(client.Credentials.ChannelId)) return new Result<bool, ErrorCode?>(true,null);
-        return new Result<bool, ErrorCode?>(Options.TakeOut(userId, quantity, gain), null);
+        
+        var result = Options.TakeOut(userId, quantity, gain);
+        return result? 
+                   new Result<bool, ErrorCode?>(true, null) :
+                   new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
     }
 
     public Result<bool, ErrorCode?> Deposit(string userId, long quantity, bool gain = true) {

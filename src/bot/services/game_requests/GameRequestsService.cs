@@ -78,7 +78,7 @@ public class GameRequestsService : Service {
         
         try {
             if (Options.GameRequests.Any(request => string.Equals(request.GameName, gameName, StringComparison.OrdinalIgnoreCase))) {
-                await ErrorHandler.ReplyWithError(ErrorCode.AlreadyContains, chatMessage, Client);
+                await ErrorHandler.ReplyWithError(ErrorCode.AlreadyExists, chatMessage, Client);
                 return;
             }
             

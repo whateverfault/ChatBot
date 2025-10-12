@@ -19,7 +19,7 @@ public static class Page {
             }
             
             charCounter += t.Length;
-            pages.Add(charCounter/(Constants.MaxMessageCapacity-20)+1+pageTerminatorsCount);
+            pages.Add(charCounter/Constants.MaxMessageCapacity+1+pageTerminatorsCount);
         }
 
         return pages.ToArray();

@@ -589,13 +589,6 @@ public class CliNodeSystem {
                                                                               ]
                                                                              ),
                                                    new CliNodeEnum(
-                                                                   "Shop Integration",
-                                                                   _state.Data.Ai.GetCasinoIntegrationAsInt,
-                                                                   typeof(State),
-                                                                   CliNodePermission.Default,
-                                                                   _state.Data.Ai.CasinoIntegrationNext
-                                                                  ),
-                                                   new CliNodeEnum(
                                                                    "Service State",
                                                                    _state.Data.Ai.GetServiceStateAsInt,
                                                                    typeof(State),
@@ -814,6 +807,13 @@ public class CliNodeSystem {
                                                                       CliNodePermission.Default,
                                                                       lot.ChangeCost
                                                                      ),
+                                                                 new CliNodeEnum(
+                                                                      "State",
+                                                                      lot.GetStateAsInt,
+                                                                      typeof(State),
+                                                                      CliNodePermission.Default,
+                                                                      lot.StateNext
+                                                                     ),
                                                              ],
                                                              lot.GetName
                                                             )
@@ -834,14 +834,16 @@ public class CliNodeSystem {
                                                  );
         
         var casinoDir = new CliNodeStaticDirectory(
-                                                 ServiceName.Bank,
+                                                 ServiceName.Casino,
                                                  _state,
                                                  true,
                                                  [
-                                                     new CliNodeLong(
-                                                                     "Money Supply",
-                                                                     _state.Data.Bank.GetMoneySupply,
-                                                                     CliNodePermission.ReadOnly
+                                                     new CliNodeEnum(
+                                                                     "State",
+                                                                     _state.Data.Casino.GetServiceStateAsInt,
+                                                                     typeof(State),
+                                                                     CliNodePermission.Default,
+                                                                     _state.Data.Casino.ServiceStateNext
                                                                     ),
                                                  ]
                                                 );
@@ -853,6 +855,7 @@ public class CliNodeSystem {
                                                    [
                                                        bankDir,
                                                        shopDir,
+                                                       casinoDir,
                                                        new CliNodeEnum(
                                                                        "Service State",
                                                                        _state.Data.Casino.GetServiceStateAsInt,
