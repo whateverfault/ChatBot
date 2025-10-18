@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.services.interfaces;
-using sonlanglib.interpreter.data;
+using sonlanglib.interpreter.data.vars;
 
 namespace ChatBot.bot.services.interpreter;
 

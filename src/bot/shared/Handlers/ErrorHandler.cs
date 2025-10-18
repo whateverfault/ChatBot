@@ -27,6 +27,7 @@ public enum ErrorCode {
     NoAvailable,
     NotFound,
     NotEnough,
+    PermissionDenied,
     None,
 }
 
@@ -55,6 +56,7 @@ public static class ErrorHandler {
                                                                   "No Available.",
                                                                   "Not Found.",
                                                                   "Not Enough.",
+                                                                  "Permission denied.",
                                                               ];
 
 
@@ -80,6 +82,7 @@ public static class ErrorHandler {
                                                                 "Нет доступных.",
                                                                 "Не найдено.",
                                                                 "Недостаточно.",
+                                                                "Недостаточно прав.",
                                                             ];
 
 

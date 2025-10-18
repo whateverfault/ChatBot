@@ -3,6 +3,7 @@ using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interpreter.data;
 using ChatBot.bot.shared;
 using sonlanglib.interpreter.data;
+using sonlanglib.interpreter.data.vars;
 
 namespace ChatBot.bot.services.interpreter;
 

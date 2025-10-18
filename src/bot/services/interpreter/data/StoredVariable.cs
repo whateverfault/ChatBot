@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using sonlanglib.interpreter.data;
+using sonlanglib.interpreter.data.vars;
 
 namespace ChatBot.bot.services.interpreter.data;
 
@@ -11,22 +11,22 @@ public class StoredVariable {
     public VariableType Type { get; private set; }
     
     [JsonProperty("value")]
-    public List<string> Values { get; private set; }
+    public StoredVarValue Value { get; private set; }
 
 
     public StoredVariable(Variable variable) {
         Name = variable.Name;
         Type = variable.Type;
-        Values = variable.Values;
+        Value = new StoredVarValue(variable.Value);
     }
     
     [JsonConstructor]
     public StoredVariable(
         [JsonProperty("name")] string name,
         [JsonProperty("type")] VariableType type,
-        [JsonProperty("value")] List<string> values) {
+        [JsonProperty("value")] StoredVarValue value) {
         Name = name;
         Type = type;
-        Values = values;
+        Value = value;
     }
 }

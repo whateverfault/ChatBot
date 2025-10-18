@@ -52,17 +52,26 @@ public static class DefaultLots {
             return new Result<bool, ErrorCode?>(false, ErrorCode.ServiceDisabled);
         }
 
+        var boughtNow = false;
         var result = _shop.Use(subjectId, lot.Name);
         if (!result.Ok) {
             var takeOutResult = _bank.TakeOut(subjectId, lot.Cost, gain: false);
             if (!takeOutResult.Ok) {
                 return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
             }
+            boughtNow = true;
         }
         
-        await Helix.TimeoutUserHelix(objectId, "За фантики", TimeSpan.FromMinutes(5), client.Credentials, (_, message) => {
-                                         _logger.Log(LogLevel.Error, message);
-                                     });
-        return new Result<bool, ErrorCode?>(true, null);
+        var timeoutResult = await Helix.TimeoutUser(objectId, "За фантики", TimeSpan.FromMinutes(5), client.Credentials, 
+                                                    (_, message) => { 
+                                                        _logger.Log(LogLevel.Error, message); 
+                                                    });
+
+        if (timeoutResult) return new Result<bool, ErrorCode?>(true, null);
+        
+        _bank.Deposit(subjectId, lot.Cost, gain: false);
+        if (!boughtNow) _shop.Buy(subjectId, lot.Name, 1);
+        
+        return new Result<bool, ErrorCode?>(false, ErrorCode.PermissionDenied);
     }
 }

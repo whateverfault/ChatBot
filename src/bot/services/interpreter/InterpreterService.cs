@@ -3,6 +3,7 @@ using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using sonlanglib.interpreter;
 using sonlanglib.interpreter.data;
+using sonlanglib.interpreter.data.vars;
 using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.interpreter;
@@ -19,7 +20,7 @@ public class InterpreterService : Service {
         if (!result.Ok) return new Result<string?, string?>(null, result.Error);
         if (result.Value == null) return new Result<string?, string?>(null, ErrorHandler.GetErrorString(ErrorCode.SmthWentWrong));
         
-        return new Result<string?, string?>(result.Value.Value, result.Error);
+        return new Result<string?, string?>(result.Value, result.Error);
     }
 
     public override void Init() {
@@ -32,7 +33,8 @@ public class InterpreterService : Service {
         var casted = new Dictionary<string, Variable>();
         
         foreach (var (name, var) in vars) {
-            casted.Add(name, new Variable(var.Name, var.Type, var.Values));
+            var varVal = new VarValue(var.Name, var.Type);
+            casted.Add(name, new Variable(var.Name, varVal));
         }
         
         Interpreter.LoadVars(casted);
