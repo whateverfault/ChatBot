@@ -588,6 +588,12 @@ public class CliNodeSystem {
                                                                                        ),
                                                                               ]
                                                                              ),
+                                                   new CliNodeLong(
+                                                                   "Remove Chat In (sec)",
+                                                                   _state.Data.Ai.GetRemoveChatIn,
+                                                                   CliNodePermission.Default,
+                                                                   _state.Data.Ai.SetRemoveChatIn
+                                                                  ),
                                                    new CliNodeEnum(
                                                                    "Service State",
                                                                    _state.Data.Ai.GetServiceStateAsInt,

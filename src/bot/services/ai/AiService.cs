@@ -1,13 +1,11 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.bot.services.ai.AiClients.DeepSeek;
-using ChatBot.bot.services.ai.AiClients.Google;
-using ChatBot.bot.services.ai.AiClients.HuggingFace;
-using ChatBot.bot.services.ai.AiClients.interfaces;
-using ChatBot.bot.services.ai.AiClients.Ollama;
-using ChatBot.bot.services.bank;
+using ChatBot.bot.services.ai.data.clients.DeepSeek;
+using ChatBot.bot.services.ai.data.clients.Google;
+using ChatBot.bot.services.ai.data.clients.HuggingFace;
+using ChatBot.bot.services.ai.data.clients.interfaces;
+using ChatBot.bot.services.ai.data.clients.Ollama;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.logger;
-using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
@@ -29,29 +27,8 @@ public class AiService : Service {
     public override string Name => ServiceName.Ai;
     public override AiOptions Options { get; } = new AiOptions();
 
-
-    public async Task<Result<string?, ErrorCode?>> GetPaidResponse(string userId, string prompt) {
-        if (Options.ServiceState == State.Disabled) {
-            return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
-        }
-        
-        var bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
-        var shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
-        
-        var aiLot = shop.Get(ServiceName.Ai);
-        if (aiLot == null) {
-            return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
-        }
-
-        var takeOutResult = bank.TakeOut(userId, aiLot.Cost, gain: false);
-        if (!takeOutResult.Ok) {
-            return new Result<string?, ErrorCode?>(null, ErrorCode.TooFewPoints);
-        }
-        
-        return await GetResponse(prompt);
-    }
     
-    public async Task<Result<string?, ErrorCode?>> GetResponse(string prompt) {
+    public async Task<Result<string?, ErrorCode?>> GetResponse(string prompt, string? id = null) {
         if (Options.ServiceState == State.Disabled) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
@@ -59,12 +36,17 @@ public class AiService : Service {
         var aiIndex = (int)Options.AiKind;
         var aiClient = _aiClients[aiIndex];
         var aiData = Options.AiData[aiIndex];
+        var chat = Options.GetChat(id) ?? Options.CreateChat();
+
+        RemoveUnusedChats(id);
         
         var response = 
-            await aiClient.GetResponse(prompt, aiData, (_, message) => {
-                                                           _logger.Log(LogLevel.Error, message);
-                                                       });
+            await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
+                                                         _logger.Log(LogLevel.Error, message);
+                                                     });
         if (response != null || aiData.Fallback.FallbackState != State.Enabled) {
+            if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);
+            response += $" #{chat.Id}";
             return new Result<string?, ErrorCode?>(response, null);
         }
 
@@ -72,10 +54,25 @@ public class AiService : Service {
         aiClient = _aiClients[aiIndex];
         aiData = Options.AiData[aiIndex];
         
-        response = await aiClient.GetResponse(prompt, aiData, (_, message) => {
-                                                                  _logger.Log(LogLevel.Error, message);
-                                                              });
+        response = await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
+                                                                _logger.Log(LogLevel.Error, message);
+                                                            });
+        
+        if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);
+        response += $" #{chat.Id}";
         return new Result<string?, ErrorCode?>(response, null);
+    }
+
+    private void RemoveUnusedChats(string? id = null) {
+        var chats = Options.Chats;
+        var now = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        
+        for (var i = 0; i < chats.Count; i++) {
+            if (!string.IsNullOrEmpty(id) && chats[i].Id.Equals(id)) continue;
+            if (now.Subtract(chats[i].LastUsed) <= TimeSpan.FromSeconds(Options.RemoveChatAfter)) continue;
+            
+            Options.RemoveChat(chats[i].Id);
+        }
     }
     
     #region Ollama
@@ -286,6 +283,16 @@ public class AiService : Service {
     }
 
     #endregion
+
+    public long GetRemoveChatIn() {
+        return Options.RemoveChatAfter;
+    }
+
+    public void SetRemoveChatIn(long value) {
+        if (value <= 0) return;
+        
+        Options.SetRemoveChatIn(value);
+    }
     
     public int GetAiKindAsInt() {
         return (int)Options.AiKind;

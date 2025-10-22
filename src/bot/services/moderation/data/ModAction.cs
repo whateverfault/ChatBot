@@ -16,24 +16,31 @@ public class ModAction {
     [JsonProperty("name")] 
     public string Name { get; private set; } = null!;
 
-    [JsonProperty(PropertyName = "pattern_index")]
+    [JsonProperty("pattern_index")]
     public int PatternIndex { get; private set; }
-    [JsonProperty(PropertyName = "duration")]
+    
+    [JsonProperty("duration")]
     public int Duration { get; private set; }
-    [JsonProperty(PropertyName = "max_warn_count")]
+    
+    [JsonProperty("clear_after_stream")]
+    public bool ClearAfterStream { get; private set; }
+    
+    [JsonProperty("max_warn_count")]
     public int MaxWarnCount { get; private set; }
-    [JsonProperty(PropertyName = "moderator_comment")]
+    
+    [JsonProperty("moderator_comment")]
     public string ModeratorComment { get; private set; } = null!;
-
-    [JsonProperty(PropertyName = "type")]
+    
+    [JsonProperty("type")]
     public ModerationActionType Type { get; private set; }
-    [JsonProperty(PropertyName = "restriction")]
+    
+    [JsonProperty("restriction")]
     public Restriction Restriction { get; private set; }
     
-    [JsonProperty(PropertyName = "is_default")]
+    [JsonProperty("is_default")]
     public bool IsDefault { get; private set; }
     
-    [JsonProperty(PropertyName = "state")]
+    [JsonProperty("state")]
     public State State { get; private set; }
 
     
@@ -41,21 +48,23 @@ public class ModAction {
     
     public ModAction(string name, int patternIndex, int duration, string moderatorComment, Restriction restriction, bool isDefault = false) {
         Name = name;
-        Type = ModerationActionType.Timeout;
         PatternIndex = patternIndex;
         Duration = duration;
-        ModeratorComment = moderatorComment;
-        Restriction = restriction;
+        ClearAfterStream = false;
         MaxWarnCount = 1;
+        ModeratorComment = moderatorComment;
+        Type = ModerationActionType.Timeout;
+        Restriction = restriction;
         IsDefault = isDefault;
         State = State.Disabled;
     }
 
     public ModAction(string name, int patternIndex, string moderatorComment, Restriction restriction, bool isDefault = false) {
         Name = name;
-        Type = ModerationActionType.Ban;
         PatternIndex = patternIndex;
+        ClearAfterStream = false;
         ModeratorComment = moderatorComment;
+        Type = ModerationActionType.Ban;
         Restriction = restriction;
         MaxWarnCount = 1;
         IsDefault = isDefault;
@@ -64,33 +73,36 @@ public class ModAction {
     
     public ModAction(string name, int patternIndex, string moderatorComment, ModerationActionType actionType, Restriction restriction, bool isDefault = false) {
         Name = name;
-        Type = actionType;
         PatternIndex = patternIndex;
+        ClearAfterStream = false;
         ModeratorComment = moderatorComment;
-        Restriction = restriction;
         MaxWarnCount = 1;
-        IsDefault = isDefault;
-        State = State.Disabled;
-    }
-    
-    public ModAction(string name, int patternIndex, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false) {
-        Name = name;
-        Type = ModerationActionType.WarnWithBan;
-        PatternIndex = patternIndex;
-        ModeratorComment = moderatorComment;
-        MaxWarnCount = maxWarnCount;
+        Type = actionType;
         Restriction = restriction;
         IsDefault = isDefault;
         State = State.Disabled;
     }
     
-    public ModAction(string name, int patternIndex, int duration, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false) {
+    public ModAction(string name, int patternIndex, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false, bool clearAfterStream = false) {
         Name = name;
-        Type = ModerationActionType.WarnWithTimeout;
+        PatternIndex = patternIndex;
+        ClearAfterStream = clearAfterStream;
+        MaxWarnCount = maxWarnCount;
+        ModeratorComment = moderatorComment;
+        Type = ModerationActionType.WarnWithBan;
+        Restriction = restriction;
+        IsDefault = isDefault;
+        State = State.Disabled;
+    }
+    
+    public ModAction(string name, int patternIndex, int duration, string moderatorComment, int maxWarnCount, Restriction restriction, bool isDefault = false, bool clearAfterStream = false) {
+        Name = name;
         PatternIndex = patternIndex;
         Duration = duration;
-        ModeratorComment = moderatorComment;
+        ClearAfterStream = clearAfterStream;
         MaxWarnCount = maxWarnCount;
+        ModeratorComment = moderatorComment;
+        Type = ModerationActionType.WarnWithTimeout;
         Restriction = restriction;
         IsDefault = isDefault;
         State = State.Disabled;
@@ -101,6 +113,7 @@ public class ModAction {
         [JsonProperty("name")] string name, 
         [JsonProperty("pattern_index")] int patternIndex,
         [JsonProperty("duration")] int duration,
+        [JsonProperty("clear_after_stream")] bool clearAfterStream,
         [JsonProperty("max_warn_count")] int maxWarnCount,
         [JsonProperty("moderator_comment")] string moderatorComment,
         [JsonProperty("type")] ModerationActionType type,
@@ -109,6 +122,7 @@ public class ModAction {
         Name = name;
         PatternIndex = patternIndex;
         Duration = duration;
+        ClearAfterStream = clearAfterStream;
         MaxWarnCount = maxWarnCount;
         ModeratorComment = moderatorComment;
         Type = type;
@@ -216,6 +230,15 @@ public class ModAction {
         PatternIndex = index;
         _options.Save();
         return true;
+    }
+
+    public bool GetClearAfterStream() {
+        return ClearAfterStream;
+    }
+    
+    public void SetClearAfterStream(bool value) {
+        ClearAfterStream = value;
+        _options.Save();
     }
     
     public int GetDuration() {

@@ -25,7 +25,8 @@ internal class SaveData {
                                               "Реквесты только для випов и выше",
                                               2,
                                               Restriction.Vip,
-                                              true
+                                              isDefault: true,
+                                              clearAfterStream: true
                                              ),
                             ];
         WarnedUsers = [];

@@ -1,28 +1,29 @@
 ﻿using System.Text;
-using ChatBot.bot.services.ai.AiClients.interfaces;
+using ChatBot.bot.services.ai.data.clients.interfaces;
 using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.ai.AiClients.DeepSeek;
+namespace ChatBot.bot.services.ai.data.clients.DeepSeek;
 
 public class DeepSeekClient : AiClient {
     private readonly HttpClient _httpClient = new HttpClient();
     
     
-    public override async Task<string?> GetResponse(string prompt, AiData aiData, EventHandler<string>? callback = null) {
+    public override async Task<string?> GetResponse(string prompt, AiChatHistory chatHistory, AiData aiData, EventHandler<string>? callback = null) {
+        var messages = new List<DeepSeekMessage> {
+                                                     new DeepSeekMessage("system", aiData.BasePrompt),
+                                                 };
+
+        foreach (var message in chatHistory.Messages) {
+            messages.Add(new DeepSeekMessage("user", message.UserPrompt));
+            messages.Add(new DeepSeekMessage("assistant", message.AiResponse));
+        }
+        
+        messages.Add(new DeepSeekMessage("user", prompt));
+        
         var requestBody = new
                           {
                               model = aiData.Model,
-                              messages = new[]
-                                         {
-                                             new {
-                                                     role = "system",
-                                                     content = aiData.BasePrompt,
-                                                 },
-                                             new {
-                                                     role = "user",
-                                                     content = prompt,
-                                                 },
-                                         },
+                              messages,
                               stream = false,
                           };
 
@@ -44,7 +45,7 @@ public class DeepSeekClient : AiClient {
             dynamic responseData = JsonConvert.DeserializeObject(responseJson)!;
             return responseData.choices[0].message.content;
         } catch (Exception e) {
-            callback?.Invoke(this,  $"Caught an Exception. {e}");
+            callback?.Invoke(this,  $"Caught an Exception. {e.Message}");
             return null;
         }
     }

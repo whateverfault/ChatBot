@@ -69,4 +69,16 @@ public class ModerationOptions : Options {
         Save();
         return true;
     }
+    
+    public void RemoveWarnedUsers(List<string> userIds) {
+        for (var i = 0; i < userIds.Count; i++) {
+            for (var j = 0; j < WarnedUsers.Count; j++) {
+                if (!WarnedUsers[j].UserId.Equals(userIds[i])) continue;
+
+                WarnedUsers.RemoveAt(j);
+            }
+        }
+
+        Save();
+    }
 }

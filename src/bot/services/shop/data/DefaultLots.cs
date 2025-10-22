@@ -18,7 +18,7 @@ public static class DefaultLots {
     private static readonly AiService     _ai   = (AiService)ServiceManager.GetService(ServiceName.Ai);
     
     
-    public static async Task<Result<string?, ErrorCode?>> Ai(string userId, string prompt) {
+    public static async Task<Result<string?, ErrorCode?>> Ai(string userId, string prompt, string? id = null) {
         if (_ai.Options.ServiceState == State.Disabled) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
@@ -31,14 +31,14 @@ public static class DefaultLots {
         }
         
         var result = _shop.Use(userId, lot.Name);
-        if (result.Ok) return await _ai.GetResponse(prompt);
+        if (result.Ok) return await _ai.GetResponse(prompt, id);
 
         var takeOutResult = _bank.TakeOut(userId, lot.Cost, gain: false);
         if (!takeOutResult.Ok) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.TooFewPoints);
         }
 
-        return await _ai.GetResponse(prompt);
+        return await _ai.GetResponse(prompt, id);
     }
     
     public static async Task<Result<bool, ErrorCode?>> Mute(string subjectId, string objectId) {

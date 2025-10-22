@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.ai.AiClients.interfaces;
+namespace ChatBot.bot.services.ai.data;
 
 public class AiData {
     [JsonProperty("api_key")]

@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.ai.AiClients.interfaces;
+using ChatBot.bot.services.ai.data;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.ai;
@@ -12,11 +12,16 @@ public class AiOptions : Options {
     
     protected override string Name => "ai";
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    
     public override State ServiceState => _saveData!.ServiceState;
     public List<AiData> AiData => _saveData!.AiData;
     public string GoogleProjectId => _saveData!.GoogleProjectId;
     public AiKind AiKind => _saveData!.AiKind;
 
+    public long RemoveChatAfter => _saveData!.RemoveChatIn;
+    
+    public List<AiChatHistory> Chats = [];
+    
     
     public override void Load() {
         if (!Json.TryRead(OptionsPath, out _saveData!)) {
@@ -50,8 +55,32 @@ public class AiOptions : Options {
         Save();
     }
 
-    public void SetCasinoIntegrationState(State state) {
-        _saveData!.CasinoIntegration = state;
+    public AiChatHistory CreateChat() {
+        var generatedId = Random.Shared.NextInt64(0, 65536);
+        var id = generatedId.ToString("X4");
+        RemoveChat(id);
+
+        var chat = new AiChatHistory(id);
+        Chats.Add(chat);
+        return chat;
+    }
+    
+    public AiChatHistory? GetChat(string? id) {
+        if (string.IsNullOrEmpty(id)) return null;
+        return Chats.FirstOrDefault(ch => ch.Id.Equals(id));
+    }
+    
+    public void RemoveChat(string id) {
+        for (var i = 0; i < Chats.Count; ++i) {
+            if (!Chats[i].Id.Equals(id)) continue;
+            
+            Chats.RemoveAt(i);
+            break;
+        }
+    }
+
+    public void SetRemoveChatIn(long value) {
+        _saveData!.RemoveChatIn = value;
         Save();
     }
 }

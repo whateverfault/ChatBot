@@ -175,7 +175,8 @@ public static class CommandsList {
                                                       "[prompt]",
                                                       "задать вопрос ии.",
                                                       Ai,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["ask",]
                                                      ),
                                new DefaultChatCommand(
                                                       13,
@@ -1087,7 +1088,16 @@ public static class CommandsList {
         }
 
         var prompt = new StringBuilder();
+        string? id = null;
+        
         foreach (var word in args) {
+            if (prompt.Length <= 0
+             && word.Length > 0
+             && word[0] == '#') {
+                id = word[1..word.Length];
+                continue;
+            }
+            
             prompt.Append($"{word} ");
         }
 
@@ -1101,9 +1111,9 @@ public static class CommandsList {
 
         var promptStr = prompt.ToString().Trim();
         if (lot.State == State.Enabled) {
-            result = await DefaultLots.Ai(chatMessage.UserId, promptStr);
+            result = await DefaultLots.Ai(chatMessage.UserId, promptStr, id);
         } else {
-            result = await ai.GetResponse(promptStr);
+            result = await ai.GetResponse(promptStr, id);
         }
         
         if (!result.Ok) {
@@ -1141,7 +1151,7 @@ public static class CommandsList {
             
             messages.Add(sb.ToString());
         } while (remainingLenght > 0);
-
+        
         foreach (var message in messages) {
             await client.SendMessage(message, chatMessage.Id);
             Thread.Sleep(TimeSpan.FromMilliseconds(500));
@@ -3284,12 +3294,12 @@ public static class CommandsList {
                                                                  }
                                                        );
         if (rewardId == null) {
-            await client.SendMessage($"Не удалось создать награду.", chatMessage.Id);
+            await client.SendMessage("Не удалось создать награду.", chatMessage.Id);
             return;
         }
         
         bank.Options.AddReward(rewardId, quantity);
-        await client.SendMessage($"Нагарада создана успешно. ({rewardId})", chatMessage.Id);
+        await client.SendMessage($"Награда создана успешно. ({rewardId})", chatMessage.Id);
     }
     
     private static async Task BankDeleteReward(ChatCmdArgs cmdArgs) {

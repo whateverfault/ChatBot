@@ -1,5 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.bot.services.ai.AiClients.interfaces;
+using ChatBot.bot.services.ai.data;
+using ChatBot.bot.services.ai.data.clients.interfaces;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.ai;
@@ -16,14 +17,14 @@ public class SaveData {
     
     [JsonProperty("google_project_id")]
     public string GoogleProjectId { get; set; }
-
-    [JsonProperty("casino_integration")]
-    public State CasinoIntegration { get; set; }
+    
+    [JsonProperty("remove_chat_in")]
+    public long RemoveChatIn { get; set; }
 
 
     public SaveData() {
         GoogleProjectId = string.Empty;
-        CasinoIntegration = State.Disabled;
+        RemoveChatIn = 3600;
         
         AiData = [
                      new AiData(
@@ -63,15 +64,15 @@ public class SaveData {
 
     [JsonConstructor]
     public SaveData(
-        [JsonProperty(PropertyName = "service_state")] State serviceState,
-        [JsonProperty(PropertyName = "ai_mode")] AiKind aiKind,
-        [JsonProperty(PropertyName = "ai_data")] List<AiData> aiData,
-        [JsonProperty(PropertyName = "google_project_id")] string googleProjectId,
-        [JsonProperty("casino_integration")] State casinoIntegration) {
+        [JsonProperty("service_state")] State serviceState,
+        [JsonProperty("ai_mode")] AiKind aiKind,
+        [JsonProperty("ai_data")] List<AiData> aiData,
+        [JsonProperty("google_project_id")] string googleProjectId,
+        [JsonProperty("remove_chat_in")] long removeChatIn) {
         ServiceState = serviceState;
         AiKind = aiKind;
         AiData = aiData;
         GoogleProjectId = googleProjectId;
-        CasinoIntegration = casinoIntegration;
+        RemoveChatIn = removeChatIn;
     }
 }
