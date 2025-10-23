@@ -181,7 +181,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       13,
                                                       "potato",
-                                                      string.Empty,
+                                                      "[entry]",
                                                       "сгенерировать сообщение",
                                                       Potato,
                                                       Restriction.Everyone
@@ -291,7 +291,7 @@ public static class CommandsList {
                                                       Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
-                                                      24,
+                                                      PAGE_TERMINATOR_CMD_ID,
                                                       string.Empty,
                                                       string.Empty,
                                                       string.Empty,
@@ -334,7 +334,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       27,
                                                       "roulette",
-                                                      "<from> <to>",
+                                                      "<from to>",
                                                       "зарандомить экстрим.",
                                                       Roulette,
                                                       Restriction.Everyone,
@@ -425,7 +425,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       36,
                                                       "games",
-                                                      "[page]",
+                                                      "[--page number]",
                                                       "список заказов игр.",
                                                       Games,
                                                       Restriction.Everyone
@@ -482,7 +482,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       42,
                                                       "create-reward",
-                                                      "<title;cost;> [is_input_required (true/false)]",
+                                                      "<title;cost> [;is_input_required (true/false)]",
                                                       "создать награду.",
                                                       CreateReward,
                                                       Restriction.DevBroad
@@ -642,7 +642,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       62,
                                                       "shop",
-                                                      string.Empty,
+                                                      "[--page number]",
                                                       "список лотов.",
                                                       Shop,
                                                       Restriction.Everyone
@@ -778,7 +778,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       66,
                                                       "bank-list-rewards",
-                                                      "[--page]",
+                                                      "[--page number]",
                                                       "вывести список наград.",
                                                       BankListRewards,
                                                       Restriction.DevBroad
@@ -786,7 +786,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       67,
                                                       "bank-create-reward",
-                                                      "<quantity>",
+                                                      "<money>",
                                                       "создать награду.",
                                                       BankCreateReward,
                                                       Restriction.DevBroad
@@ -1274,19 +1274,38 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendMessage($"Используйте эту комманду внутри награды.", chatMessage.Id);
+            await client.SendMessage("Используйте эту комманду внутри награды.", chatMessage.Id);
             return;
         }
         
         levelRequests.SetRewardId(chatMessage.RewardId);
-        await client.SendMessage($"Награда для реквестов успешно установлена.", chatMessage.Id);
+        await client.SendMessage("Награда для реквестов успешно установлена.", chatMessage.Id);
     }
     
-    private static Task Potato(ChatCmdArgs chatCmdArgs) {
-        var textGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
+    private static async Task Potato(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
         
-        textGenerator.GenerateAndSend();
-        return Task.CompletedTask;
+        var textGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        if (args.Count <= 0) {
+            textGenerator.GenerateAndSend();
+        }else {
+            var sb = new StringBuilder();
+            foreach (var arg in args) {
+                sb.Append(arg);
+            }
+            
+            var err = textGenerator.Generate(out var message, sb.ToString());
+            if (err != ErrorCode.None) {
+                await ErrorHandler.ReplyWithError(err, chatMessage, client);
+                return;
+            }
+
+            await client.SendMessage(message);
+        }
     }
 
     private static async Task Clip(ChatCmdArgs cmdArgs) {
@@ -3451,7 +3470,7 @@ public static class CommandsList {
         if (args.Count <= 0) {
             return ErrorCode.TooFewArgs;
         }
-
+        
         var sb = new StringBuilder();
         foreach (var arg in args) {
             sb.Append($"{arg} ");

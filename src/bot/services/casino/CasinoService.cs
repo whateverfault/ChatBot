@@ -63,7 +63,7 @@ public class CasinoService : Service {
         var result = new GambleResult { Ok = true, Result = false, Win = -quantity, };
         
         var (chances, multiplier) = CalculateChances(quantity, balance, Bank.MoneySupply);
-        var potentialWin = (long)(quantity * multiplier);
+        var potentialWin = (long)Math.Ceiling(quantity * multiplier);
         
         var random = Random.Shared.NextSingle();
         if (random <= chances) {

@@ -63,26 +63,4 @@ public class TextGeneratorOptions : Options {
     public int GetMaxLength() {
         return MaxLength;
     }
-    
-    public void Train(string text) {
-        var words = text.Split([' ', '\n', '\r', '\t',], StringSplitOptions.RemoveEmptyEntries);
-        if (words.Length <= ContextSize) return;
-
-        for (var i = 0; i < words.Length - ContextSize; i++) {
-            var context = string.Join(" ", words.Skip(i).Take(ContextSize));
-            var nextWord = words[i + ContextSize];
-
-            if (!Model.ContainsKey(context)) {
-                Model[context] = new Dictionary<string, int>();
-            }
-
-            if (!Model[context].ContainsKey(nextWord)) {
-                Model[context][nextWord] = 0;
-            }
-
-            Model[context][nextWord]++;
-        }
-        
-        Save();
-    }
 }
