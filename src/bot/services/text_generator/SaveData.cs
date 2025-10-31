@@ -16,7 +16,7 @@ internal class SaveData {
 
     public SaveData() {
         ServiceState = State.Disabled;
-        ContextSize = 2;
+        ContextSize = 1;
         MaxLength = 10;
         Model = [];
     }
@@ -26,8 +26,7 @@ internal class SaveData {
         [JsonProperty(PropertyName = "service_state")] State serviceState,
         [JsonProperty(PropertyName = "context_size")] int contextSize,
         [JsonProperty(PropertyName = "max_length")] int maxLength,
-        [JsonProperty(PropertyName = "model")] Dictionary<string, Dictionary<string, int>> model
-        ) {
+        [JsonProperty(PropertyName = "model")] Dictionary<string, Dictionary<string, int>> model) {
         ServiceState = serviceState;
         ContextSize = contextSize;
         MaxLength = maxLength;

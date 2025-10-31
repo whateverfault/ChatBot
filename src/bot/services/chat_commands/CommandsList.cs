@@ -1005,13 +1005,19 @@ public static class CommandsList {
             argSb.Append($"{arg} ");
         }
 
-        var random = Random.Shared.Next(0, 2);
-        var randomizedMessage = 
-            random == 0 ? 
-                $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew" : 
-                $"{argSb} никогда GAGAGA GAGAGA GAGAGA";
+        var random = Random.Shared.Next(0, 6);
+        var randomizedMessage = random switch {
+                                    0 => $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew",
+                                    1 => $"{argSb} на этой неделе! LIKE LIKE LIKE",
+                                    2 => $"{argSb} в следующем месяце! waga waga waga",
+                                    3 => $"{argSb} через год Sadge Sadge Sadge",
+                                    4 => $"{argSb} через 69 лет SadgeCry SadgeCry SadgeCry",
+                                    5 => $"{argSb} никогда GAGAGA GAGAGA GAGAGA",
+                                    _ => string.Empty,
+                                };
+        
         await client.SendMessage(randomizedMessage, chatMessage.Id); 
-        }
+    }
 
     private static async Task Ban(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();

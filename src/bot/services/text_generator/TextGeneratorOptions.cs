@@ -31,12 +31,7 @@ public class TextGeneratorOptions : Options {
     }
 
     public override void SetDefaults() {
-        _saveData = new SaveData(
-                                    State.Disabled,
-                                    2,
-                                    50,
-                                    []
-                                );
+        _saveData = new SaveData();
         Save();
     }
 

@@ -11,6 +11,7 @@ public class TgNotificationsEvents : ServiceEvents {
     
     private TgNotificationsService _tgNotifications = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
+    private bool _messageSent;
 
     public override bool Initialized { get; protected set; }
     
@@ -47,6 +48,11 @@ public class TgNotificationsEvents : ServiceEvents {
             return;
         }
 
+        lock (_lock) {
+            if (_messageSent) return;
+            _messageSent = true;
+        }
+        
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Task<int?> sendTask;
         lock (_lock) {
@@ -65,7 +71,11 @@ public class TgNotificationsEvents : ServiceEvents {
 
     private Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
         lock (_lock) {
-            if (streamState.WasOnline || streamState.OfflineTime < _tgNotifications.GetCooldown()) return Task.CompletedTask;
+            if (streamState.WasOnline
+             || streamState.OfflineTime < _tgNotifications.GetCooldown()
+             || !_messageSent) return Task.CompletedTask;
+
+            _messageSent = false;
         }
 
         int? lastMessageId;
