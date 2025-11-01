@@ -23,7 +23,7 @@ public static class DefaultLots {
             return new Result<string?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
         
-        var lot = _shop.Get(ServiceName.Ai);
+        var lot = _shop.Get(Lot.Ai);
         if (lot == null) {
             return new Result<string?, ErrorCode?>(null, ErrorCode.NotFound);
         } if (lot.State == State.Disabled) {
@@ -45,32 +45,47 @@ public static class DefaultLots {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
         
-        var lot = _shop.Get(1);
-        if (lot == null) {
+        var muteLot = _shop.Get(Lot.Mute);
+        if (muteLot == null) {
             return new Result<bool, ErrorCode?>(false, ErrorCode.NotFound);
-        } if (lot.State == State.Disabled) {
+        } if (muteLot.State == State.Disabled) {
             return new Result<bool, ErrorCode?>(false, ErrorCode.ServiceDisabled);
         }
 
+        var antiMuteLot = _shop.Get(Lot.AntiMute);
+        
         var boughtNow = false;
-        var result = _shop.Use(subjectId, lot.Name);
+        var result = _shop.Use(subjectId, muteLot.Name);
         if (!result.Ok) {
-            var takeOutResult = _bank.TakeOut(subjectId, lot.Cost, gain: false);
+            var takeOutResult = _bank.TakeOut(subjectId, muteLot.Cost, gain: false);
             if (!takeOutResult.Ok) {
                 return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
             }
             boughtNow = true;
         }
-        
-        var timeoutResult = await Helix.TimeoutUser(objectId, "За фантики", TimeSpan.FromMinutes(5), client.Credentials, 
-                                                    (_, message) => { 
-                                                        _logger.Log(LogLevel.Error, message); 
-                                                    });
 
-        if (timeoutResult) return new Result<bool, ErrorCode?>(true, null);
-        
-        _bank.Deposit(subjectId, lot.Cost, gain: false);
-        if (!boughtNow) _shop.Buy(subjectId, lot.Name, 1);
+        result = _shop.Use(objectId, antiMuteLot?.Name ?? string.Empty);
+        if (!result.Ok || antiMuteLot == null) {
+            var timeoutResult = await Helix.TimeoutUser(objectId, "For points", TimeSpan.FromMinutes(5), client.Credentials, 
+                                                        (_, message) => { 
+                                                            _logger.Log(LogLevel.Error, message); 
+                                                        });
+
+            if (timeoutResult) {
+                return new Result<bool, ErrorCode?>(true, null);
+            } if (antiMuteLot != null && result.Ok) {
+                _shop.Give(objectId, antiMuteLot.Name);
+                return new Result<bool, ErrorCode?>(false, ErrorCode.PermissionDenied);
+            }
+        }
+
+        if (antiMuteLot != null) return new Result<bool, ErrorCode?>(false, ErrorCode.AntiMute);
+
+        if (boughtNow) {
+            _bank.Deposit(subjectId, muteLot.Cost, gain: false);
+        }else {
+            _shop.Give(subjectId, muteLot.Name);
+        }
         
         return new Result<bool, ErrorCode?>(false, ErrorCode.PermissionDenied);
     }

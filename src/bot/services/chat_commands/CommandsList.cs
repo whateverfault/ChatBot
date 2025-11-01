@@ -16,7 +16,7 @@ using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.shop;
 using ChatBot.bot.services.shop.data;
 using ChatBot.bot.services.Static;
-using ChatBot.bot.services.telegram;
+using ChatBot.bot.services.telegram_notifications;
 using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
@@ -1008,10 +1008,10 @@ public static class CommandsList {
         var random = Random.Shared.Next(0, 6);
         var randomizedMessage = random switch {
                                     0 => $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew",
-                                    1 => $"{argSb} на этой неделе! LIKE LIKE LIKE",
-                                    2 => $"{argSb} в следующем месяце! waga waga waga",
-                                    3 => $"{argSb} через год Sadge Sadge Sadge",
-                                    4 => $"{argSb} через 69 лет SadgeCry SadgeCry SadgeCry",
+                                    1 => $"{argSb} на этой неделе! waga waga waga",
+                                    2 => $"{argSb} в следующем месяце! LIKE LIKE LIKE",
+                                    3 => $"{argSb} через год Waiting Waiting Waiting",
+                                    4 => $"{argSb} через 69 лет Sadge Sadge Sadge",
                                     5 => $"{argSb} никогда GAGAGA GAGAGA GAGAGA",
                                     _ => string.Empty,
                                 };

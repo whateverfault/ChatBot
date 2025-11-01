@@ -18,9 +18,9 @@ public class ModAction {
 
     [JsonProperty("pattern_index")]
     public int PatternIndex { get; private set; }
-    
+
     [JsonProperty("duration")]
-    public int Duration { get; private set; }
+    public long Duration { get; private set; }
     
     [JsonProperty("clear_after_stream")]
     public bool ClearAfterStream { get; private set; }
@@ -241,12 +241,12 @@ public class ModAction {
         _options.Save();
     }
     
-    public int GetDuration() {
+    public long GetDuration() {
         return Duration;
     }
 
-    public void SetDuration(int index) {
-        Duration = index;
+    public void SetDuration(long value) {
+        Duration = value;
         _options.Save();
     }
 

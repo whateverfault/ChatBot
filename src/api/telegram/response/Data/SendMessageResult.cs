@@ -4,5 +4,5 @@ namespace ChatBot.api.telegram.response.Data;
 
 public class SendMessageResult {
     [JsonProperty("message_id")]
-    public int MessageId { get; set; }
+    public long MessageId { get; set; }
 }

@@ -28,6 +28,7 @@ public enum ErrorCode {
     NotFound,
     NotEnough,
     PermissionDenied,
+    AntiMute,
     None,
 }
 
@@ -57,6 +58,7 @@ public static class ErrorHandler {
                                                                   "Not Found.",
                                                                   "Not Enough.",
                                                                   "Permission denied.",
+                                                                  "AntiMute Activated.",
                                                               ];
 
 
@@ -83,6 +85,7 @@ public static class ErrorHandler {
                                                                 "Не найдено.",
                                                                 "Недостаточно.",
                                                                 "Недостаточно прав.",
+                                                                "Сработала защита от мута.",
                                                             ];
 
 

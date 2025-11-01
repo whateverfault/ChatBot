@@ -15,11 +15,11 @@ public abstract class Service {
         return Options.GetState();
     }
 
-    public virtual int GetServiceStateAsInt() {
+    public int GetServiceStateAsInt() {
         return (int)Options.GetState();
     }
     
-    public virtual void ServiceStateNext() {
+    public void ServiceStateNext() {
         Options.SetState(Options.ServiceState == State.Enabled ? State.Disabled : State.Enabled);
     }
 }

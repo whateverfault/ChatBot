@@ -20,7 +20,7 @@ public class ChatAd {
     private long Cooldown { get; set; }
     
     [JsonProperty("threshold")]
-    private int MessageThreshold { get; set; }
+    private long MessageThreshold { get; set; }
 
     [JsonProperty("counter")]
     private int Counter { get; set; }
@@ -82,7 +82,7 @@ public class ChatAd {
         _options.Save();
     }
 
-    public void SetThreshold(int threshold) {
+    public void SetThreshold(long threshold) {
         MessageThreshold = threshold;
     }
     
@@ -119,7 +119,7 @@ public class ChatAd {
         return Cooldown;
     }
 
-    public int GetThreshold() {
+    public long GetThreshold() {
         return MessageThreshold;
     }
 
