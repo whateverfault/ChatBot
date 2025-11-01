@@ -14,12 +14,21 @@ public class LoggerService : Service {
     public override LoggerOptions Options { get; } = new LoggerOptions();
     
     
-    public void Log(LogLevel level, string message) {
+    public void Log(LogLevel logLevel, string message) {
         if (Options.ServiceState == State.Disabled) return;
+        if (logLevel < Options.LogLevel) return;
         
-        var log = new Log(level, DateTime.Now, message);
+        var log = new Log(logLevel, DateTime.Now, message);
         
         Options.AddLog(log);
         OnLog?.Invoke(log);
+    }
+
+    public int GetLogLevelAsInt() {
+        return (int)Options.LogLevel;
+    }
+
+    public void LogLevelNext() {
+        Options.SetLogLevel(((int)Options.LogLevel+1)%Enum.GetValues(typeof(LogLevel)).Length);
     }
 }

@@ -8,6 +8,12 @@ using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.shop;
 
+public enum Lot {
+    Ai = 0,
+    Mute = 1,
+    AntiMute = 2,
+}
+
 public class ShopService : Service {
     private static readonly BankService _bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
     
@@ -49,6 +55,23 @@ public class ShopService : Service {
         }
         return new Result<ShopLot?, ErrorCode?>(lot, null);
     }
+
+    public Result<ShopLot?, ErrorCode?> Give(string userId, string lotName, long amount = 1) {
+        var lot = Get(lotName);
+        if (lot == null) {
+            return new Result<ShopLot?, ErrorCode?>(null, ErrorCode.NotFound);
+        } if (lot.State == State.Disabled) {
+            return new Result<ShopLot?, ErrorCode?>(lot, ErrorCode.ServiceDisabled);
+        } 
+        
+        var depositResult = _bank.Deposit(userId, lot.Cost * amount, gain: false);
+        if (!depositResult.Ok) return new Result<ShopLot?, ErrorCode?>(null, depositResult.Error);
+        
+        var buyResult = Buy(userId, lot.Name, amount);
+        if (!buyResult.Ok) return new Result<ShopLot?, ErrorCode?>(null, buyResult.Error);
+            
+        return new Result<ShopLot?, ErrorCode?>(lot, null);
+    }
     
     public bool Add(string name, long cost) {
         var lot = new ShopLot(name, cost);
@@ -63,7 +86,7 @@ public class ShopService : Service {
         return Options.GetLot(name);
     }
     
-    public ShopLot? Get(int id) {
-        return Options.GetLot(id);
+    public ShopLot? Get(Lot lot) {
+        return Options.GetLot(lot);
     }
 }

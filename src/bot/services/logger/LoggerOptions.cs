@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.shared;
+using TwitchAPI.client;
 
 namespace ChatBot.bot.services.logger;
 
@@ -13,7 +14,10 @@ public class LoggerOptions : Options {
     protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
-    public List<Log> Logs => _saveData!.Logs;
+    
+    private List<Log> Logs => _saveData!.Logs;
+
+    public LogLevel LogLevel => _saveData!.LogLevel; 
     
 
     public override void Load() {
@@ -42,6 +46,11 @@ public class LoggerOptions : Options {
         Save();
     }
 
+    public void SetLogLevel(int logLevel) {
+        _saveData!.LogLevel = (LogLevel)logLevel;
+        Save();
+    }
+    
     public void AddLog(Log log) {
         Logs.Add(log);
         Save();

@@ -11,6 +11,7 @@ using ChatBot.cli.CliNodes.Directories.ChatCommands;
 using ChatBot.cli.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.CliNodes.Directories.Moderation;
 using ChatBot.cli.CliNodes.Directories.Presets;
+using TwitchAPI.client;
 
 namespace ChatBot.cli;
 
@@ -342,6 +343,13 @@ public class CliNodeSystem {
                                                                                _state.Data.Logger
                                                                                ),
                                                        new CliNodeEnum(
+                                                                       "Log Level",
+                                                                       _state.Data.Logger.GetLogLevelAsInt,
+                                                                       typeof(LogLevel),
+                                                                       CliNodePermission.Default,
+                                                                       _state.Data.Logger.LogLevelNext
+                                                                      ),
+                                                       new CliNodeEnum(
                                                                        "Service State",
                                                                        _state.Data.Logger.GetServiceStateAsInt,
                                                                        typeof(State),
@@ -588,11 +596,12 @@ public class CliNodeSystem {
                                                                                        ),
                                                                               ]
                                                                              ),
-                                                   new CliNodeLong(
-                                                                   "Remove Chat In (sec)",
+                                                   new CliNodeTime(
+                                                                   "Remove Chat In",
                                                                    _state.Data.Ai.GetRemoveChatIn,
                                                                    CliNodePermission.Default,
-                                                                   _state.Data.Ai.SetRemoveChatIn
+                                                                   _state.Data.Ai.SetRemoveChatIn,
+                                                                   isUnixEpoch: false
                                                                   ),
                                                    new CliNodeEnum(
                                                                    "Service State",
@@ -704,36 +713,41 @@ public class CliNodeSystem {
                                                                _state,
                                                                true,
                                                                [
-                                                                   new CliNodeLong(
+                                                                   new CliNodeTime(
                                                                         "Check Cooldown",
                                                                         _state.Data.StreamStateChecker.Options.GetCheckCooldown,
                                                                         CliNodePermission.Default,
-                                                                        _state.Data.StreamStateChecker.Options.SetCheckCooldown
+                                                                        _state.Data.StreamStateChecker.Options.SetCheckCooldown,
+                                                                        isUnixEpoch: false
                                                                        ),
                                                                    new CliNodeStaticDirectory(
                                                                         "Info For Nerds",
                                                                         _state,
                                                                         true,
                                                                         [
-                                                                            new CliNodeLong(
+                                                                            new CliNodeTime(
                                                                                  "Last Time Checked", 
                                                                                  _state.Data.StreamStateChecker.Options.GetLastCheckTime,
-                                                                                 CliNodePermission.ReadOnly
+                                                                                 CliNodePermission.ReadOnly,
+                                                                                 isUnixEpoch: true
                                                                                 ),
-                                                                            new CliNodeLong(
+                                                                            new CliNodeTime(
                                                                                 "Last Time Was Online",
                                                                                 _state.Data.StreamStateChecker.Options.GetLastOnline,
-                                                                                CliNodePermission.ReadOnly
+                                                                                CliNodePermission.ReadOnly,
+                                                                                isUnixEpoch: true
                                                                                ),
-                                                                           new CliNodeLong(
+                                                                           new CliNodeTime(
                                                                                 "Online Time",
                                                                                 _state.Data.StreamStateChecker.Options.GetOnlineTime,
-                                                                                CliNodePermission.ReadOnly
+                                                                                CliNodePermission.ReadOnly,
+                                                                                isUnixEpoch: false
                                                                                ),
-                                                                           new CliNodeLong(
+                                                                           new CliNodeTime(
                                                                                 "Offline Time",
                                                                                 _state.Data.StreamStateChecker.Options.GetOfflineTime,
-                                                                                CliNodePermission.ReadOnly
+                                                                                CliNodePermission.ReadOnly,
+                                                                                isUnixEpoch: false
                                                                                ),
                                                                         ]
                                                                         ),
@@ -757,12 +771,13 @@ public class CliNodeSystem {
                                                                                 CliNodePermission.Default,
                                                                                 _state.Data.TgNotifications.SetNotificationPrompt
                                                                                ),
-                                                                new CliNodeLong(
+                                                                new CliNodeTime(
                                                                                 "Cooldown", 
                                                                                 _state.Data.TgNotifications.GetCooldown, 
                                                                                 CliNodePermission.Default, 
-                                                                                _state.Data.TgNotifications.Options.SetCooldown
-                                                                                 ),
+                                                                                _state.Data.TgNotifications.Options.SetCooldown,
+                                                                                isUnixEpoch: false
+                                                                                ),
                                                                 new CliNodeStaticDirectory(
                                                                                            "Secret",
                                                                                            _state,

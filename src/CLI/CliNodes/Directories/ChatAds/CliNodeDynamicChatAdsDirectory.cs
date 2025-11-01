@@ -94,13 +94,14 @@ public class CliNodeDynamicChatAdsDirectory : CliNodeDirectory {
                                                                 CliNodePermission.Default,
                                                                 chatAd.SetOutput
                                                                ),
-                                              new CliNodeLong(
+                                              new CliNodeTime(
                                                                 "Cooldown",
                                                                 chatAd.GetCooldown,
                                                                 CliNodePermission.Default,
-                                                                chatAd.SetCooldown
+                                                                chatAd.SetCooldown,
+                                                                isUnixEpoch: false
                                                                ),
-                                              new CliNodeInt(
+                                              new CliNodeLong(
                                                               "Message Threshold",
                                                               chatAd.GetThreshold,
                                                               CliNodePermission.Default,

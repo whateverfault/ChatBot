@@ -4,14 +4,14 @@ using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.stream_state_checker.Data;
 using TwitchAPI.helix.data.requests;
 
-namespace ChatBot.bot.services.telegram;
+namespace ChatBot.bot.services.telegram_notifications;
 
+#pragma warning disable InconsistentlySynchronizedField
 public class TgNotificationsEvents : ServiceEvents {
     private static readonly object _lock = new object();
     
     private TgNotificationsService _tgNotifications = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
-    private bool _messageSent;
 
     public override bool Initialized { get; protected set; }
     
@@ -49,45 +49,34 @@ public class TgNotificationsEvents : ServiceEvents {
         }
 
         lock (_lock) {
-            if (_messageSent) return;
-            _messageSent = true;
+            if (_tgNotifications.GetIsSent()) return;
+            _tgNotifications.Options.SetIsSent(true);
         }
         
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Task<int?> sendTask;
-        lock (_lock) {
-            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
-             || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
+        if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
+         || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
             
-            sendTask = _tgNotifications.SendNotification(data);
-            _tgNotifications.Options.SetLastSentTime();
-        }
+        var messageId = await _tgNotifications.SendNotification(data); 
         
-        var messageId = await sendTask;
-        lock (_lock) {
-            _tgNotifications.Options.SetLastMessageId(messageId);
-        }
+        _tgNotifications.Options.SetLastSentTime();
+        _tgNotifications.Options.SetLastMessageId(messageId ?? -1);
     }
 
-    private Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
+    private async Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
         lock (_lock) {
             if (streamState.WasOnline
              || streamState.OfflineTime < _tgNotifications.GetCooldown()
-             || !_messageSent) return Task.CompletedTask;
-
-            _messageSent = false;
+             || !_tgNotifications.GetIsSent()) return;
+            
+            _tgNotifications.Options.SetIsSent(false);
         }
 
-        int? lastMessageId;
-        lock (_lock) {
-            lastMessageId = _tgNotifications.Options.LastMessageId;
-        }
-
-        if (!lastMessageId.HasValue) return Task.CompletedTask;
-        lock (_lock) {
-            _ = _tgNotifications.DeleteNotification(lastMessageId.Value);
-            _tgNotifications.Options.SetLastMessageId(null);
-        }
-        return Task.CompletedTask;
+        var lastMessageId = _tgNotifications.Options.LastMessageId;
+        if (lastMessageId < 0) return;
+        
+        var result = await _tgNotifications.DeleteNotification(lastMessageId);
+        if (result) _tgNotifications.Options.SetLastMessageId(-1);
     }
+#pragma warning restore InconsistentlySynchronizedField
 }

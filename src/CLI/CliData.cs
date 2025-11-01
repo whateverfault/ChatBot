@@ -16,7 +16,7 @@ using ChatBot.bot.services.presets;
 using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
-using ChatBot.bot.services.telegram;
+using ChatBot.bot.services.telegram_notifications;
 using ChatBot.bot.services.text_generator;
 using ChatBot.bot.services.translator;
 

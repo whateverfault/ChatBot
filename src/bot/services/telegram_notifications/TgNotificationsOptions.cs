@@ -2,7 +2,7 @@
 using ChatBot.bot.interfaces;
 using ChatBot.bot.shared;
 
-namespace ChatBot.bot.services.telegram;
+namespace ChatBot.bot.services.telegram_notifications;
 
 public class TgNotificationsOptions : Options {
     private readonly object _fileLock = new object();
@@ -22,9 +22,11 @@ public class TgNotificationsOptions : Options {
 
     public long Cooldown => _saveData!.Cooldown;
 
-    public long? LastSent => _saveData!.LastSent;
+    public bool IsSent => _saveData!.IsSent;
     
-    public int? LastMessageId => _saveData!.LastMessageId;
+    public long LastSent => _saveData!.LastSent;
+    
+    public long LastMessageId => _saveData!.LastMessageId;
     
     
     public override void Load() {
@@ -69,12 +71,17 @@ public class TgNotificationsOptions : Options {
         Save();
     }
 
+    public void SetIsSent(bool value) {
+        _saveData!.IsSent = value;
+        Save();
+    }
+    
     public void SetLastSentTime() {
         _saveData!.LastSent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Save();
     }
     
-    public void SetLastMessageId(int? id) {
+    public void SetLastMessageId(long id) {
         _saveData!.LastSent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         _saveData!.LastMessageId = id;
         Save();

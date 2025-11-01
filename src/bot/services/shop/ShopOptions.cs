@@ -62,7 +62,7 @@ public class ShopOptions : Options {
         return Lots.FirstOrDefault(lot => lot.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
     }
     
-    public ShopLot? GetLot(int id) {
-        return Lots.FirstOrDefault(lot => lot.Id == id);
+    public ShopLot? GetLot(Lot lotId) {
+        return Lots.FirstOrDefault(lot => lot.Id == (int)lotId);
     }
 }

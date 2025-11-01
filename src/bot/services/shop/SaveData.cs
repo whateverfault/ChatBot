@@ -15,8 +15,9 @@ public class SaveData {
     
     public SaveData() {
         Lots = [
-                   new ShopLot(ServiceName.Ai, 0, isDefault: true, state: State.Disabled),
-                   new ShopLot("Mute", 0, isDefault: true, state: State.Disabled),
+                   new ShopLot(ServiceName.Ai, 50, isDefault: true, state: State.Disabled),
+                   new ShopLot("Mute", 10000, isDefault: true, state: State.Disabled),
+                   new ShopLot("AntiMute", 7500, isDefault: true, state: State.Disabled),
                ];
     }
 
