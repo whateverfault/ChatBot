@@ -2,34 +2,9 @@
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.chat_commands.Data;
+namespace ChatBot.bot.services.chat_commands.data;
 
 public sealed class DefaultChatCommand : ChatCommand {
-    [JsonProperty(PropertyName = "id")]
-    public override int Id { get; protected set; }
-    [JsonProperty(PropertyName = "name")]
-    public override string Name { get; protected set; }
-    [JsonProperty(PropertyName = "args")]
-    public override string Args { get; protected set; }
-    [JsonProperty(PropertyName = "description")]
-    public override string Description { get; protected set; }
-    [JsonProperty(PropertyName = "aliases")]
-    public override List<string>? Aliases { get; protected set; }
-    [JsonProperty(PropertyName = "cooldown")]
-    public override int Cooldown { get; protected set; }
-    [JsonIgnore]
-    public override bool HasIdentifier { get; protected set; }
-    [JsonIgnore]
-    public override long LastUsed { get; protected set; }
-    [JsonIgnore]
-    public override CmdActionHandler Action { get; protected set; } = null!;
-
-    [JsonProperty(PropertyName = "restriction")]
-    public override Restriction Restriction { get; protected set; }
-    [JsonProperty(PropertyName = "state")]
-    public override State State { get; protected set; }
-    
-    
     public DefaultChatCommand(
         int id,
         string name,
@@ -37,48 +12,60 @@ public sealed class DefaultChatCommand : ChatCommand {
         string description,
         CmdActionHandler action,
         Restriction restriction,
-        int cooldown = 0, 
-        long lastUsed = 0,
+        int cooldown = 1, 
         List<string>? aliases = null,
-        State state = State.Enabled) {
-        Id = id;
-        Name = name.Replace(" ", "-");
-        Args = args;
-        Description = description;
-        HasIdentifier = true;
-        Action = action;
-        Restriction = restriction;
-        Cooldown = cooldown;
-        LastUsed = lastUsed;
-        Aliases = aliases;
-        State = state;
+        bool hasIdentifier = true) : base(
+                                          id,
+                                          name,
+                                          args,
+                                          description,
+                                          hasIdentifier,
+                                          aliases ?? [],
+                                          cooldown,
+                                          true,
+                                          [],
+                                          0,
+                                          action,
+                                          restriction,
+                                          State.Enabled) {
     }
     
     [JsonConstructor]
     public DefaultChatCommand(
-        [JsonProperty(PropertyName = "id")] int id,
-        [JsonProperty(PropertyName = "name")] string name,
-        [JsonProperty(PropertyName = "args")] string args,
-        [JsonProperty(PropertyName = "description")] string description,
-        [JsonProperty(PropertyName = "last_used")] List<string>? aliases,
-        [JsonProperty(PropertyName = "restriction")] Restriction restriction,
-        [JsonProperty(PropertyName = "cooldown")] int cooldown,
-        [JsonProperty(PropertyName = "state")] State state) {
-        Id = id;
-        Name = name;
-        Args = args;
-        Description = description;
-        HasIdentifier = true;
-        foreach (var cmd in CommandsList.DefaultsCommands) {
-            if (cmd.Id != Id) continue;
+        [JsonProperty("id")] int id,
+        [JsonProperty("name")] string name,
+        [JsonProperty("args")] string args,
+        [JsonProperty("description")] string description,
+        [JsonProperty("has_identifier")] bool hasIdentifier,
+        [JsonProperty("aliases")] List<string> aliases,
+        [JsonProperty("cooldown")] int cooldown,
+        [JsonProperty("cooldown_per_user")] bool cooldownPerUser,
+        [JsonProperty("cooldown_users")] List<CooldownUser> cooldownUsers,
+        [JsonProperty("last_used")] long lastUsed,
+        [JsonProperty("restriction")] Restriction restriction,
+        [JsonProperty("state")] State state) : base(
+                                                    id,
+                                                    name,
+                                                    args,
+                                                    description,
+                                                    hasIdentifier,
+                                                    aliases,
+                                                    cooldown,
+                                                    cooldownPerUser,
+                                                    cooldownUsers,
+                                                    lastUsed,
+                                                    GetDefaultCmdActionHandler(id),
+                                                    restriction,
+                                                    State.Enabled) {
+    }
 
-            Action = cmd.Action;
-            break;
+    private static CmdActionHandler GetDefaultCmdActionHandler(int id) {
+        foreach (var cmd in CommandsList.DefaultsCommands) {
+            if (cmd.Id != id) continue;
+
+            return cmd.Action;
         }
-        Restriction = restriction;
-        Cooldown = cooldown;
-        LastUsed = 0;
-        Aliases = aliases;
-        State = state;
+        
+        return _ => Task.CompletedTask;
     }
 }

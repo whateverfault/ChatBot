@@ -1,114 +1,173 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
+using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.chat_commands.Data;
+namespace ChatBot.bot.services.chat_commands.data;
 
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
 
 public abstract class ChatCommand {
     protected static readonly ChatCommandsService ChatCommandsService = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
     
-    public abstract int Id { get; protected set; }
-    public abstract string Name { get; protected set; }
-    public abstract string Args { get; protected set; }
-    public abstract string Description { get; protected set; }
-    public abstract bool HasIdentifier { get; protected set; }
-    public abstract List<string>? Aliases { get; protected set; }
-    public abstract int Cooldown { get; protected set; }
-    public abstract long LastUsed { get; protected set; }
-    public abstract CmdActionHandler Action { get; protected set; }
-    public abstract Restriction Restriction { get; protected set; }
-    public abstract State State { get; protected set; }
+    [JsonProperty("id")]
+    public int Id { get; protected set; }
+    
+    [JsonProperty("name")]
+    public string Name { get; protected set; }
+    
+    [JsonProperty("args")]
+    public string Args { get; protected set; }
+    
+    [JsonProperty("description")]
+    public string Description { get; protected set; }
+    
+    [JsonProperty("has_identifier")]
+    public bool HasIdentifier { get; protected set; }
+    
+    [JsonProperty("aliases")]
+    public List<string> Aliases { get; protected set; }
+    
+    [JsonProperty("cooldown")]
+    public long Cooldown { get; protected set; }
+    
+    [JsonProperty("cooldown_per_user")]
+    public bool CooldownPerUser { get; protected set; }
+    
+    [JsonProperty("cooldown_users")]
+    public List<CooldownUser> CooldownUsers { get; protected set; }
+    
+    [JsonProperty("last_used")]
+    public long LastUsed { get; private set; }
+    
+    [JsonIgnore]
+    public CmdActionHandler Action { get; }
+    
+    [JsonProperty("restriction")]
+    public Restriction Restriction { get; protected set; }
+    
+    [JsonProperty("state")]
+    public State State { get; protected set; }
 
+    
+    protected ChatCommand(
+        int id,
+        string name,
+        string args,
+        string description,
+        bool hasIdentifier,
+        List<string> aliases,
+        int cooldown,
+        bool cooldownPerUser,
+        List<CooldownUser> cooldownUsers,
+        long lastUsed,
+        CmdActionHandler action,
+        Restriction restriction,
+        State state) {
+        Id = id;
+        Name = name;
+        Args = args;
+        Description = description;
+        HasIdentifier = hasIdentifier;
+        Aliases = aliases;
+        Cooldown = cooldown;
+        CooldownPerUser = cooldownPerUser;
+        CooldownUsers = cooldownUsers;
+        LastUsed = lastUsed;
+        Action = action;
+        Restriction = restriction;
+        State = state;
+    }
 
-    public virtual string GetName() {
+    public string GetName() {
         return Name;
     }
 
-    public virtual void SetName(string name) {
+    public void SetName(string name) {
         Name = name;
         ChatCommandsService.Options.Save();
     }
     
-    public virtual string GetArgs() {
+    public string GetArgs() {
         return Args;
     }
 
-    public virtual void SetArgs(string args) {
+    public void SetArgs(string args) {
         Args = args;
         ChatCommandsService.Options.Save();
     }
     
-    public virtual string GetDescription() {
+    public string GetDescription() {
         return Description;
     }
+    
+    public void SetDescription(string desc) {
+        Description = desc;
+        ChatCommandsService.Options.Save();
+    }
 
-    public virtual List<string>? GetAliases() {
+    public List<string> GetAliases() {
         return Aliases;
     }
 
-    public virtual void SetAliases(List<string> aliases) {
+    public void SetAliases(List<string> aliases) {
         Aliases = aliases;
-    }
-    
-    public virtual void AddAlias(string alias) {
-        Aliases?.Add(alias);
         ChatCommandsService.Options.Save();
     }
     
-    public virtual void RemoveAlias(int index) {
-        Aliases?.RemoveAt(index);
-        ChatCommandsService.Options.Save();
-    }
-    
-    public virtual int GetCooldown() {
+    public long GetCooldown() {
         return Cooldown;
     }
 
-    public virtual void SetCooldown(int cooldown) {
+    public void SetCooldown(long cooldown) {
         Cooldown = cooldown;
         ChatCommandsService.Options.Save();
     }
-    
-    public virtual long GetLastUsed() {
-        return LastUsed;
+
+    public bool GetCooldownPerUser() {
+        return CooldownPerUser;
     }
 
-    public virtual void SetLastUsed(long time) {
+    public void SetCooldownPerUser(bool value) {
+        CooldownPerUser = value;
+        ChatCommandsService.Options.Save();
+    }
+    
+    public void AddCooldownUser(string userId) {
+        CooldownUsers.RemoveAll(x => x.UserId.Equals(userId));
+        CooldownUsers.Add(new CooldownUser(userId));
+        ChatCommandsService.Options.Save();
+    }
+    
+    public void SetLastUsed(long time) {
         LastUsed = time;
         ChatCommandsService.Options.Save();
     }
     
-    public virtual void SetDescription(string desc) {
-        Description = desc;
-        ChatCommandsService.Options.Save();
-    }
-    
-    public virtual int GetRestrictionAsInt() {
+    public int GetRestrictionAsInt() {
         return (int)Restriction;
     }
 
-    public virtual void RestrictionNext() {
+    public void RestrictionNext() {
         Restriction = (Restriction)(((int)Restriction+1)%Enum.GetValues(typeof(Restriction)).Length);
         ChatCommandsService.Options.Save();
     }
     
-    public virtual int GetStateAsInt() {
+    public int GetStateAsInt() {
         return (int)State;
     }
 
-    public virtual void StateNext() {
+    public void StateNext() {
         State = (State)(((int)State+1)%Enum.GetValues(typeof(State)).Length);
         ChatCommandsService.Options.Save();
     }
 
-    public virtual void SetHasIdentifier(bool state) {
+    public void SetHasIdentifier(bool state) {
         HasIdentifier = state;
         ChatCommandsService.Options.Save();
     }
 
-    public virtual bool GetHasIdentifier() {
+    public bool GetHasIdentifier() {
         return HasIdentifier;
     }
 }

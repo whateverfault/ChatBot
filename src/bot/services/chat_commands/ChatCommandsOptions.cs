@@ -1,6 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_commands.Data;
+using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -30,13 +30,21 @@ public class ChatCommandsOptions : Options {
     
     
     public override void Load() {
+        var shouldSave = false;
+        
         if (!Json.TryRead(OptionsPath, out _saveData!)) {
-            SetDefaults();
+            _saveData = new SaveData();
+            shouldSave = true;
         } if (!Json.TryRead(DefaultCmdsPath, out _defaultCmds!)) {
-            SetDefaults();
+            _defaultCmds = [];
+            CommandsList.SetDefaults();
+            shouldSave = true;
         } if (!Json.TryRead(CustomCmdsPath, out _customCmds!)) {
-            SetDefaults();
+            _customCmds = [];
+            shouldSave = true;
         }
+        
+        if (shouldSave) Save();
     }
 
     public override void Save() {
@@ -49,8 +57,8 @@ public class ChatCommandsOptions : Options {
 
     public override void SetDefaults() {
         _saveData = new SaveData();
-        _defaultCmds = [];
         _customCmds = [];
+        _defaultCmds = [];
         CommandsList.SetDefaults();
         Save();
     }

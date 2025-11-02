@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_commands.Data;
+using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatCommands;
@@ -119,11 +119,17 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                                                     CliNodePermission.Default,
                                                                     cmd.SetOutput
                                                                    ),
-                                                  new CliNodeInt(
+                                                  new CliNodeTime(
                                                                  "Cooldown",
                                                                  cmd.GetCooldown,
                                                                  CliNodePermission.Default,
                                                                  cmd.SetCooldown
+                                                                 ),
+                                                  new CliNodeBool(
+                                                                  "Cooldown Per User",
+                                                                  cmd.GetCooldownPerUser,
+                                                                  CliNodePermission.Default,
+                                                                  cmd.SetCooldownPerUser
                                                                  ),
                                                   new CliNodeEnum(
                                                                   "Permission",

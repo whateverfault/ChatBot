@@ -56,7 +56,7 @@ public static class Declensioner {
                };
     }
     
-    public static string Secs(int secs) {
+    public static string Secs(long secs) {
         var lastTwoDigits = secs%100;
         var lastDigit = secs%10;
         

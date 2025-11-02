@@ -1,11 +1,13 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_commands.Data;
+using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
+using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.commands.data;
+using TwitchAPI.client.data;
 
 namespace ChatBot.bot.services.chat_commands;
 
@@ -23,13 +25,14 @@ public class ChatCommandsService : Service {
     public async void HandleCommand(object? sender, Command parsedCommand) {
         try {
             if (Options.ServiceState == State.Disabled) return;
+            if (Client == null) return;
 
             bool found;
             var cmdName = parsedCommand.CommandText;
             var chatMessage = parsedCommand.ChatMessage;
             var chatArgs = new ChatCmdArgs(parsedCommand);
 
-            if (parsedCommand.CommandIdentifier != ' ') {
+            if (!char.IsWhiteSpace(parsedCommand.CommandIdentifier)) {
                 var defaultCmds = new List<ChatCommand>(Options.DefaultCmds);
                 found = await TryActivateCommand(cmdName, defaultCmds, chatArgs);
                 if (found) return;
@@ -40,49 +43,49 @@ public class ChatCommandsService : Service {
             if (found) return;
 
             if (Options.VerboseState == State.Enabled) {
-                Client?.SendMessage($"Неизвестная комманда: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
+                await Client.SendMessage($"Unknown command: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
             }
         } catch (Exception) {
-            if (Options.VerboseState == State.Enabled) {
-                Client?.SendMessage($"Ошибка при обработке команды {Options.CommandIdentifier}{parsedCommand.CommandText}.");
-            }
+            var msg = $"Failed to handle a command: {Options.CommandIdentifier}{parsedCommand.CommandText}.";
+            ErrorHandler.LogMessage(LogLevel.Error, msg);
+            
+            if (Client == null) return;
+            await Client.SendMessage(msg);
         }
     }
     
-    private Task<bool> TryActivateCommand(string cmdName, List<ChatCommand> cmds, ChatCmdArgs args) {
+    private async Task<bool> TryActivateCommand(string cmdName, List<ChatCommand> cmds, ChatCmdArgs args) {
         var chatMessage = args.Parsed.ChatMessage;
 
         foreach (var cmd in cmds) {
             if (!chatMessage.Fits(cmd.Restriction)) continue;
-            
-            if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
-             && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
-        
+
+            if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
+             && !cmd.Aliases.Contains(cmdName)) continue;
+
             if (cmds
-               .Any(defaultCmd =>
-                        string.Equals(defaultCmd.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
-                     && defaultCmd.Restriction < cmd.Restriction
-                     && chatMessage.Fits(defaultCmd.Restriction))
+               .Any(command =>
+                        string.Equals(command.Name, cmd.Name, StringComparison.InvariantCultureIgnoreCase)
+                     && command.Restriction < cmd.Restriction
+                     && chatMessage.Fits(command.Restriction))
                ) continue;
 
-            if (cmd.State == State.Disabled) return Task.FromResult(false);
-            
-            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (now-cmd.LastUsed < cmd.Cooldown) continue;
-            
+            if (cmd.State == State.Disabled) return false;
             args.UpdateCommand(cmd);
+
+            var onCooldown = await OnCooldown(cmd, chatMessage);
+            if (onCooldown) continue;
             
             if ((args.Command.HasIdentifier && args.Parsed.CommandIdentifier == ' ')
              || (!args.Command.HasIdentifier && args.Parsed.CommandIdentifier != ' ')) {
-                return Task.FromResult(false);
+                return false;
             }
-            
-            _ = cmd.Action.Invoke(args);
-            cmd.SetLastUsed(now);
-            return Task.FromResult(true);
+
+            await cmd.Action.Invoke(args);
+            return true;
         }
 
-        return Task.FromResult(false);
+        return false;
     }
     
     public int GetVerboseStateAsInt() {
@@ -154,5 +157,40 @@ public class ChatCommandsService : Service {
 
     public List<CustomChatCommand> GetCustomChatCommands() {
         return Options.GetCustomCommands();
+    }
+
+    private async Task SendCooldownLeft(long usedAt, long cooldown, string replyId) {
+        if (Client == null) return;
+        
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var elapsed = now - usedAt;
+        
+        if (elapsed >= cooldown) return;
+        
+        await Client.SendMessage($"{cooldown - elapsed}...", replyId);
+    }
+
+    private async Task<bool> OnCooldown(ChatCommand cmd, ChatMessage chatMessage) {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        
+        var lastUsed = cmd.CooldownPerUser ? -1 : cmd.LastUsed;
+        if (cmd.CooldownPerUser) {
+            var index = cmd.CooldownUsers.FindIndex(x => x.UserId.Equals(chatMessage.UserId));
+            if (index >= 0) {
+                var user = cmd.CooldownUsers[index];
+                lastUsed = user.UsedAt;
+                
+                cmd.CooldownUsers.RemoveAt(index);
+            }
+        }
+        
+        if (now - lastUsed < cmd.Cooldown) {
+            await SendCooldownLeft(lastUsed, cmd.Cooldown, chatMessage.Id);
+            return true;
+        }
+
+        if (cmd.CooldownPerUser) cmd.AddCooldownUser(chatMessage.UserId);
+        cmd.SetLastUsed(now);
+        return false;
     }
 }

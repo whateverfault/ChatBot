@@ -1,6 +1,6 @@
 ﻿using TwitchAPI.client.commands.data;
 
-namespace ChatBot.bot.services.chat_commands.Data;
+namespace ChatBot.bot.services.chat_commands.data;
 
 public class ChatCmdArgs {
     public readonly Command Parsed;

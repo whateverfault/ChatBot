@@ -1,4 +1,4 @@
-﻿using ChatBot.bot.services.chat_commands.Data;
+﻿using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatCommands;

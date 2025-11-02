@@ -6,7 +6,7 @@ using ChatBot.bot.services.bank;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.Data;
-using ChatBot.bot.services.chat_commands.Data;
+using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.services.demon_list;
 using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.interpreter;
@@ -39,7 +39,6 @@ public static class CommandsList {
 
 
     static CommandsList() {
-        // 60
         DefaultsCommands = [
                                new DefaultChatCommand(
                                                    1,
@@ -967,7 +966,7 @@ public static class CommandsList {
                     }
                     
                     if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
-                     && (cmd.Aliases == null || !cmd.Aliases.Contains(cmdName))) continue;
+                     && (!cmd.Aliases.Contains(cmdName))) continue;
                     
                     var desc = string.IsNullOrEmpty(cmd.Args) || cmd.Description.Equals("--") ? 
                                    string.Empty :

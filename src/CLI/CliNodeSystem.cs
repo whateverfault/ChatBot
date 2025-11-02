@@ -209,12 +209,18 @@ public class CliNodeSystem {
                                                                     CliNodePermission.Default,
                                                                     cmd.SetDescription
                                                                    ),
-                                                  new CliNodeInt(
+                                                  new CliNodeTime(
                                                                  "Cooldown",
                                                                  cmd.GetCooldown,
                                                                  CliNodePermission.Default,
                                                                  cmd.SetCooldown
                                                                  ),
+                                                  new CliNodeBool(
+                                                                  "Cooldown Per User",
+                                                                  cmd.GetCooldownPerUser,
+                                                                  CliNodePermission.Default,
+                                                                  cmd.SetCooldownPerUser
+                                                                  ),
                                                   new CliNodeEnum(
                                                                   "Permission",
                                                                   cmd.GetRestrictionAsInt,
