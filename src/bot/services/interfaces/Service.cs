@@ -3,7 +3,6 @@
 namespace ChatBot.bot.services.interfaces;
 
 public abstract class Service {
-    public abstract string Name { get; }
     public abstract Options Options { get; }
 
 

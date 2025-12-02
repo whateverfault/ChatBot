@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.services.chat_ads.Data;
+﻿using ChatBot.bot.services.chat_ads.data;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatAds;
 
@@ -16,16 +17,14 @@ public class CliNodeChatAdAdd : CliNode {
     }
     
     public override void Activate(CliState state) {
-        Console.Write("Ad Name: ");
-        var name = Console.ReadLine();
+        var name = IoHandler.ReadLine("Ad Name: ");
         if (string.IsNullOrEmpty(name)) return;
         
-        Console.Write("Ad Output: ");
-        var output = Console.ReadLine();
+        var output = IoHandler.ReadLine("Ad Output: ");
         if (string.IsNullOrEmpty(output)) return;
         
-        Console.Write("Ad Cooldown: ");
-        if (!long.TryParse(Console.ReadLine(), out var cooldown)) {
+        var cooldownStr = IoHandler.ReadLine("Ad Cooldown: ");
+        if (!long.TryParse(cooldownStr, out var cooldown)) {
             return;
         }
         

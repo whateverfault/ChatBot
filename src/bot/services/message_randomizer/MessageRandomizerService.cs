@@ -1,6 +1,7 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_logs;
+using ChatBot.bot.services.chat_logs.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
@@ -11,9 +12,8 @@ namespace ChatBot.bot.services.message_randomizer;
 
 public class MessageRandomizerService : Service {
     private static ITwitchClient? Client => TwitchChatBot.Instance.GetClient();
-    private static ChatLogsService ChatLogs => (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
-
-    public override string Name => ServiceName.MessageRandomizer;
+    private static ChatLogsService ChatLogs => (ChatLogsService)Services.Get(ServiceId.ChatLogs);
+    
     public override MessageRandomizerOptions Options { get; } = new MessageRandomizerOptions();
 
 

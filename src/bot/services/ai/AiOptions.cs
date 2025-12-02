@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai.data;
+using ChatBot.bot.services.ai.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.ai;
@@ -9,9 +10,9 @@ public class AiOptions : Options {
     private readonly object _fileLock = new object();
     
     private SaveData? _saveData;
-    
-    protected override string Name => "ai";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+
+    private static string Name => "ai";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     public List<AiData> AiData => _saveData!.AiData;

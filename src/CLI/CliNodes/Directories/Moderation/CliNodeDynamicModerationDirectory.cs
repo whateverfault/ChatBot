@@ -46,7 +46,7 @@ public class CliNodeDynamicModerationDirectory : CliNodeDirectory {
                                         )
                          );
 
-        _moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
+        _moderation = (ModerationService)Services.Get(ServiceId.Moderation);
 
         var nodesContent = _state.Data.Moderation.GetModActions();
         foreach (var node in nodesContent) {

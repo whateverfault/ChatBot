@@ -1,5 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.message_filter.data;
+using ChatBot.bot.services.message_filter.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.message_filter;
@@ -10,8 +12,8 @@ public class MessageFilterOptions : Options {
     private SaveData? _saveData;
     private List<Filter> Filters => _saveData!.Filters;
     
-    protected override string Name => "messageFilter";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "messageFilter";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.State;
     

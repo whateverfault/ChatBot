@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
+using ChatBot.bot.services.message_filter.data;
 using TwitchAPI.client.data;
 
 namespace ChatBot.bot.services.message_filter;
@@ -14,7 +14,6 @@ public enum FilterStatus {
 public delegate void MessageHandler(ChatMessage message, FilterStatus status, int patternIndex);
 
 public class MessageFilterService : Service {
-    public override string Name => ServiceName.MessageFilter;
     public override MessageFilterOptions Options { get; } = new MessageFilterOptions();
     public event MessageHandler? OnMessageFiltered;
 

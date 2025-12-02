@@ -15,7 +15,7 @@ public class TextGeneratorEvents : ServiceEvents {
 
     public override void Init(Service service) {
         _textGenerator = (TextGeneratorService)service;
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
         base.Init(service);
     }
     

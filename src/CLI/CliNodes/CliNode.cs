@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public enum CliNodePermission {
     Default,
@@ -13,7 +15,7 @@ public abstract class CliNode {
 
     public virtual int PrintValue(int index, out string end) {
         end = "\n";
-        Console.Write($"{index}. {Text}");
+        IoHandler.Write($"{index}. {Text}");
         return 0;
     }
     

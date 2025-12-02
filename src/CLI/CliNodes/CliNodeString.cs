@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate string StringGetter();
 public delegate void StringSetter(string value);
@@ -23,17 +25,16 @@ public class CliNodeString : CliNode {
 
     public override int PrintValue(int index, out string end) {
         base.PrintValue(index, out end);
-        Console.Write($" - {_getter.Invoke()}");
+        IoHandler.Write($" - {_getter.Invoke()}");
         return 0;
     }
 
     public override void Activate(CliState state) {
         if (_permission == CliNodePermission.ReadOnly) return;
 
-        Console.WriteLine($"Value: {_getter.Invoke()}");
-        Console.Write("New Value: ");
+        IoHandler.WriteLine($"Value: {_getter.Invoke()}");
 
-        var line = Console.ReadLine();
+        var line = IoHandler.ReadLine("New Value: ");
         if (string.IsNullOrEmpty(line)) {
             return;
         }

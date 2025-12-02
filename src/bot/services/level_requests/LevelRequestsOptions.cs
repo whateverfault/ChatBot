@@ -4,6 +4,7 @@ using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
+using SaveData = ChatBot.bot.services.level_requests.data.saved.SaveData;
 
 namespace ChatBot.bot.services.level_requests;
 
@@ -11,10 +12,11 @@ public class LevelRequestsOptions : Options {
     private readonly object _fileLock = new object();
     
     private SaveData? _saveData;
-    protected override string Name => "level_requests";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
-    public static ModerationService ModerationService => (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
+    private static string Name => "level_requests";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    
+    public static ModerationService ModerationService => (ModerationService)Services.Get(ServiceId.Moderation);
     
     public override State ServiceState => _saveData!.ServiceState;
     public int PatternIndex => _saveData!.PatternIndex;

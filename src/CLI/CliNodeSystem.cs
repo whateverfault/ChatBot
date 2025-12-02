@@ -42,7 +42,7 @@ public class CliNodeSystem {
 
     public void InitNodes() {
         var chatLogsDir = new CliNodeStaticDirectory(
-                                                     ServiceName.ChatLogs,
+                                                     "Chat Logs",
                                                      _state,
                                                      true,
                                                      [
@@ -62,7 +62,7 @@ public class CliNodeSystem {
                                                      );
         
         var randomMsgsDir = new CliNodeStaticDirectory(
-                                                       ServiceName.MessageRandomizer,
+                                                       "Message Randomizer",
                                                        _state,
                                                        true,
                                                        [
@@ -109,7 +109,7 @@ public class CliNodeSystem {
                                                        ]);
         
         var textGeneratorDir = new CliNodeStaticDirectory(
-                                                          ServiceName.TextGenerator,
+                                                          "Text Generator",
                                                           _state,
                                                           true,
                                                           [
@@ -151,7 +151,7 @@ public class CliNodeSystem {
                                                           );
 
         var chatAdsDir = new CliNodeStaticDirectory(
-                                                    ServiceName.ChatAds,
+                                                    "Chat Ads",
                                                     _state,
                                                     true,
                                                     [
@@ -240,7 +240,7 @@ public class CliNodeSystem {
         }
         
         var chatCmdsDir = new CliNodeStaticDirectory(
-                                                     ServiceName.ChatCommands,
+                                                     "Chat Commands",
                                                       _state, 
                                                       true,
                                                       [
@@ -295,7 +295,7 @@ public class CliNodeSystem {
                                                       ]);
         
         var moderationDir = new CliNodeStaticDirectory(
-                                                       ServiceName.Moderation,
+                                                       "Moderation",
                                                        _state,
                                                        true,
                                                        [
@@ -323,7 +323,7 @@ public class CliNodeSystem {
                                                                      );
         
         var messageFilterDir = new CliNodeStaticDirectory(
-                                                  ServiceName.MessageFilter,
+                                                  "Message Filter",
                                                   _state,
                                                   true,
                                                   [
@@ -338,7 +338,7 @@ public class CliNodeSystem {
                                                   ]);
 
         var loggerDir = new CliNodeStaticDirectory(
-                                                   ServiceName.Logger,
+                                                   "Logger",
                                                    _state,
                                                    true,
                                                    [
@@ -366,7 +366,7 @@ public class CliNodeSystem {
                                                    );
 
         var levelReqsDir = new CliNodeStaticDirectory(
-                                                      ServiceName.LevelRequests,
+                                                      "Level Requests",
                                                       _state,
                                                       true,
                                                       [
@@ -407,7 +407,7 @@ public class CliNodeSystem {
                                                      );
 
         var demonListDir = new CliNodeStaticDirectory(
-                                                      ServiceName.DemonList,
+                                                      "Demon List",
                                                       _state,
                                                       true,
                                                       [
@@ -422,7 +422,7 @@ public class CliNodeSystem {
                                                       );
 
         var aiDir = new CliNodeStaticDirectory(
-                                               ServiceName.Ai,
+                                               "Ai",
                                                _state,
                                                true,
                                                [
@@ -620,7 +620,7 @@ public class CliNodeSystem {
                                                );
 
         var translatorDir = new CliNodeStaticDirectory(
-                                                       ServiceName.Translator,
+                                                       "Translator",
                                                        _state,
                                                        true,
                                                        [
@@ -700,7 +700,7 @@ public class CliNodeSystem {
                                                        );
 
         var gameReqsDir = new CliNodeStaticDirectory(
-                                                     ServiceName.GameRequests,
+                                                     "Game Requests",
                                                      _state,
                                                      true,
                                                      [
@@ -715,7 +715,7 @@ public class CliNodeSystem {
                                                      );
         
         var streamStateCheckerDir = new CliNodeStaticDirectory(
-                                                               ServiceName.StreamStateChecker,
+                                                               "Stream State Checker",
                                                                _state,
                                                                true,
                                                                [
@@ -761,7 +761,7 @@ public class CliNodeSystem {
                                                                );
         
         var tgNotificationsDir = new CliNodeStaticDirectory(
-                                                            ServiceName.TgNotifications,
+                                                            "Telegram Notifications",
                                                             _state,
                                                             true,
                                                             [
@@ -848,7 +848,7 @@ public class CliNodeSystem {
         }
 
         var bankDir = new CliNodeStaticDirectory(
-                                                 ServiceName.Bank,
+                                                 "Bank",
                                                  _state,
                                                  true,
                                                  [
@@ -861,7 +861,7 @@ public class CliNodeSystem {
                                                  );
         
         var casinoDir = new CliNodeStaticDirectory(
-                                                 ServiceName.Casino,
+                                                 "Casino",
                                                  _state,
                                                  true,
                                                  [
@@ -894,7 +894,7 @@ public class CliNodeSystem {
                                                    );
         
         var presetsDir = new CliNodeStaticDirectory(
-                                                    ServiceName.Presets,
+                                                    "Presets",
                                                     _state,
                                                     true,
                                                     [

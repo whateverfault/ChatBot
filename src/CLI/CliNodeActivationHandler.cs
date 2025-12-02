@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli;
 
 public class CliNodeActivationHandler {
     private readonly CliState _state;
@@ -24,8 +26,8 @@ public class CliNodeActivationHandler {
             }
         }
         index += indexIncrease;
-        
-        Console.Clear();
+
+        IoHandler.Clear();
         if (index >= currentNodes.Count) return;
         currentNodes[index].Activate(_state);
     }

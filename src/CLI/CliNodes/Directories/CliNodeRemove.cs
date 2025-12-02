@@ -16,9 +16,7 @@ public class CliNodeRemove : CliNode {
     }
     
     public override void Activate(CliState state) {
-        Console.Write("Index: ");
-        
-        var line = Console.ReadLine();
+        var line = IoHandler.ReadLine("Index: ");
         if (string.IsNullOrEmpty(line)) {
             return;
         }

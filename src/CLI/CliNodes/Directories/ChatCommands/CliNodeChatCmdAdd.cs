@@ -19,12 +19,10 @@ public class CliNodeChatCmdAdd : CliNode {
     }
     
     public override void Activate(CliState state) {
-        Console.Write("Command Name: ");
-        var name = Console.ReadLine();
+        var name = IoHandler.ReadLine("Command Name: ");
         if (string.IsNullOrEmpty(name)) return;
         
-        Console.Write("Chat Output: ");
-        var output = Console.ReadLine();
+        var output = IoHandler.ReadLine("Chat Output: ");
         if (string.IsNullOrEmpty(output)) return;
         
         var chatCmd = new CustomChatCommand(

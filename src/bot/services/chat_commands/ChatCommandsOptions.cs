@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands.data;
+using ChatBot.bot.services.chat_commands.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.chat_commands;
@@ -11,14 +12,13 @@ public class ChatCommandsOptions : Options {
     private SaveData? _saveData;
 
     private List<DefaultChatCommand> _defaultCmds = null!;
-    private string DefaultCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_defaultCmds.json");
+    private static string DefaultCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_defaultCmds.json");
 
     private List<CustomChatCommand> _customCmds = null!;
-    private string CustomCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_customCmds.json");
+    private static string CustomCmdsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_customCmds.json");
 
-
-    protected override string Name => "chat_commands";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "chat_commands";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     public char CommandIdentifier => _saveData!.CommandIdentifier;

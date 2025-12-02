@@ -1,8 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
@@ -16,9 +14,6 @@ public enum ReqState {
 }
 
 public class LevelRequestsService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    
-    public override string Name => ServiceName.LevelRequests;
     public override LevelRequestsOptions Options { get; } = new LevelRequestsOptions();
 
 
@@ -35,9 +30,9 @@ public class LevelRequestsService : Service {
                     return;
             }
             
-            await LevelRequestsOptions.ModerationService.WarnUser(chatMessage, Options.PatternIndex, $"Реквесты {GetReqStateStr(Options.ReqState)}");
+            await LevelRequestsOptions.ModerationService.WarnUser(chatMessage, Options.PatternIndex, $"Req {GetReqStateStr(Options.ReqState)}");
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"[LevelRequests] Error while handling a message. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Error while handling a potential level request: {e.Data}");
         }
     }
 
@@ -83,9 +78,9 @@ public class LevelRequestsService : Service {
     public string GetReqStateStr(ReqState reqState, bool eng = false) {
         if (eng) {
             return reqState switch { 
-                       ReqState.Off    => "Off.", 
-                       ReqState.Points => "For channel points.", 
-                       ReqState.On     => "On.", 
+                       ReqState.Off    => "off.", 
+                       ReqState.Points => "for channel points.", 
+                       ReqState.On     => "on.", 
                        _               => throw new ArgumentOutOfRangeException(),
                    };
         }

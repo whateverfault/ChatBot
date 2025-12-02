@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.services.message_filter;
+﻿using ChatBot.bot.services.message_filter.data;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
 
@@ -16,12 +17,10 @@ public class CliNodeFilterAdd : CliNode {
     }
     
     public override void Activate(CliState state) {
-        Console.Write("Enter Name: ");
-        var name = Console.ReadLine();
+        var name = IoHandler.ReadLine("Enter Name: ");
         if (string.IsNullOrEmpty(name)) return;
         
-        Console.Write("Enter Pattern: ");
-        var pattern = Console.ReadLine();
+        var pattern = IoHandler.ReadLine("Enter Pattern: ");
         if (string.IsNullOrEmpty(pattern)) return;
         
         var filter = new Filter(name, pattern);

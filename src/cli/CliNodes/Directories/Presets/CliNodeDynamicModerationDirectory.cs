@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.services.moderation;
-using ChatBot.bot.services.presets;
+using ChatBot.bot.services.presets.data;
 using ChatBot.bot.services.Static;
 
 namespace ChatBot.cli.CliNodes.Directories.Presets;
@@ -44,7 +44,7 @@ public class CliNodeDynamicPresetsDirectory : CliNodeDirectory {
                                         )
                          );
 
-        _moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
+        _moderation = (ModerationService)Services.Get(ServiceId.Moderation);
 
         var presets = _state.Data.Presets.GetPresets();
         foreach (var preset in presets) {

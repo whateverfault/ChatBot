@@ -1,5 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.presets.data;
+using ChatBot.bot.services.presets.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.presets;
@@ -9,8 +11,8 @@ public class PresetsOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "presets";
-    protected override string OptionsPath => Path.Combine(Directories.ConfigDirectory, $"{Name}.json");
+    private static string Name => "presets";
+    private static string OptionsPath => Path.Combine(Directories.ConfigDirectory, $"{Name}.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public List<Preset> Presets => _saveData!.Presets;

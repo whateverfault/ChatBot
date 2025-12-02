@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate long TimeGetter();
 public delegate void TimeSetter(long value);
@@ -27,7 +29,7 @@ public class CliNodeTime : CliNode {
     public override int PrintValue(int index, out string end) {
         base.PrintValue(index, out end);
         var parsedGetter = ParseGetter(_getter.Invoke());
-        Console.Write($" - {parsedGetter}");
+        IoHandler.Write($" - {parsedGetter}");
         return 0;
     }
 
@@ -35,10 +37,9 @@ public class CliNodeTime : CliNode {
         if (_permission == CliNodePermission.ReadOnly) return;
 
         var parsedGetter = ParseGetter(_getter.Invoke());
-        Console.WriteLine($"Value: {parsedGetter}");
-        Console.Write("New Value: ");
-        
-        var line = Console.ReadLine();
+        IoHandler.WriteLine($"Value: {parsedGetter}");
+
+        var line = IoHandler.ReadLine("New Value: ");
         if (string.IsNullOrEmpty(line)) {
             return;
         }
@@ -82,8 +83,8 @@ public class CliNodeTime : CliNode {
     }
 
     private void HandleWrongFormat() {
-        Console.WriteLine("Wrong format.");
-        Console.ReadKey();
-        Console.Clear();
+        IoHandler.WriteLine("Wrong format.");
+        IoHandler.ReadKey(true);
+        IoHandler.Clear();
     }
 }

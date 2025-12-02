@@ -9,8 +9,8 @@ namespace ChatBot.api.aredl;
 public class AredlClient {
     private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
                                                               {
-                                                                  PooledConnectionLifetime  = TimeSpan.Zero,
-                                                                  PooledConnectionIdleTimeout = TimeSpan.Zero,
+                                                                  PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+                                                                  PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
                                                                   MaxConnectionsPerServer = 50,
                                                                   UseCookies = false,
                                                                   AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -23,6 +23,8 @@ public class AredlClient {
         if (caching) {
             _cache = new AredlCache();
         }
+        
+        _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
     public void ResetCache() {
@@ -35,12 +37,9 @@ public class AredlClient {
                 return _cache.Levels;
             }
             
-            var requestMessage = new HttpRequestMessage { 
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new Uri("https://api.aredl.net/v2/api/aredl/levels"),
-                                                        };
-
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, "https://api.aredl.net/v2/api/aredl/levels");
+            
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
 
@@ -58,7 +57,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching list levels data: {e}");
+            callback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
             return null;
         }
     }
@@ -75,11 +74,11 @@ public class AredlClient {
                 return result.ToList();
             }
 
-            callback?.Invoke(null, "Such level does not exist");
+            callback?.Invoke(null, "Such level does not exist.");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e}");
+            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
@@ -121,7 +120,7 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e}");
+            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
@@ -144,7 +143,7 @@ public class AredlClient {
 
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by placement. {e}");
+            callback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
             return null;
         }
     }
@@ -154,12 +153,9 @@ public class AredlClient {
             if (_cache is { PlatformerLevels: not null, }) {
                 return _cache.PlatformerLevels;
             }
-            
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new Uri("https://api.aredl.net/v2/api/arepl/levels"),
-                                                        };
+
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, "https://api.aredl.net/v2/api/arepl/levels");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -178,7 +174,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching list levels data: {e}");
+            callback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
             return null;
         }
     }
@@ -201,7 +197,7 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e}");
+            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
@@ -243,7 +239,7 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e}");
+            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
@@ -266,19 +262,15 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by placement. {e}");
+            callback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
             return null;
         }
     }
 
     public async Task<UserProfile?> FindProfile(string username, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/aredl/leaderboard?name_filter={username}&page=1"),
-                                                        };
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/leaderboard?name_filter={username}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -299,7 +291,7 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user profile data: {e}");
+            callback?.Invoke(null, $"Error while fetching user profile data: {e.Message}");
             return null;
         }
     }
@@ -314,31 +306,27 @@ public class AredlClient {
             }
 
             foreach (var record in levelRecords?.verified!) {
-                if (record.level.id != levelId) continue;
+                if (record.Level.Id != levelId) continue;
                 return record;
             }
 
             foreach (var record in levelRecords.records) {
-                if (record.level.id != levelId) continue;
+                if (record.Level.Id != levelId) continue;
                 return record;
             }
 
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user record data: {e}");
+            callback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
             return null;
         }
     }
 
     public async Task<UserProfile?> FindPlatformerProfile(string username, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/arepl/leaderboard?name_filter={username}&page=1"),
-                                                        };
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/leaderboard?name_filter={username}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -359,7 +347,7 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching platformer profile data: {e}");
+            callback?.Invoke(null, $"Error while fetching platformer profile data: {e.Message}");
             return null;
         }
     }
@@ -376,19 +364,19 @@ public class AredlClient {
             }
 
             foreach (var record in levelRecords.verified) {
-                if (record.level.id != levelId) continue;
+                if (record.Level.Id != levelId) continue;
                 return record;
             }
 
             foreach (var record in levelRecords.records) {
-                if (record.level.id != levelId) continue;
+                if (record.Level.Id != levelId) continue;
                 return record;
             }
 
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user record data: {e}");
+            callback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
             return null;
         }
     }
@@ -396,12 +384,8 @@ public class AredlClient {
     public async Task<ListUserRecordsResponse?> ListUserRecords(string userId,
                                                                 EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/aredl/profile/{userId}"),
-                                                        };
+            var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/profile/{userId}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -416,7 +400,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e}");
+            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
@@ -424,12 +408,8 @@ public class AredlClient {
     public async Task<ListUserRecordsResponse?> ListUserPlatformerRecords(
         string userId, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/arepl/profile/{userId}"),
-                                                        };
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/profile/{userId}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -444,19 +424,15 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e}");
+            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
     public async Task<LevelDetails?> GetLevelDetails(string id, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/aredl/levels/{id}"),
-                                                        };
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/levels/{id}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -471,19 +447,15 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e}");
+            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
     public async Task<LevelDetails?> GetPlatformerLevelDetails(string id, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/arepl/levels/{id}"),
-                                                        };
+            using var requestMessage =
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/levels/{id}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -498,7 +470,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e}");
+            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
@@ -509,12 +481,8 @@ public class AredlClient {
                 return _cache.Clans;
             }
             
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new
-                                                                    Uri($"https://api.aredl.net/v2/api/aredl/leaderboard/clans?per_page={int.MaxValue}"),
-                                                        };
+            using var requestMessage =
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/leaderboard/clans?per_page={int.MaxValue}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -539,7 +507,7 @@ public class AredlClient {
 
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while listing clans info: {e}");
+            callback?.Invoke(null, $"Error while listing clans info: {e.Message}");
             return null;
         }
     }
@@ -554,7 +522,7 @@ public class AredlClient {
 
             var filtered = clans.Data
                                 .AsParallel()
-                                .Where(clanData => clanData.clan.Tag.Equals(tag,
+                                .Where(clanData => clanData.Clan.Tag.Equals(tag,
                                                                             StringComparison.CurrentCultureIgnoreCase));
             var filteredList = filtered.ToList();
             if (filteredList.Count >= 1) {
@@ -565,18 +533,15 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching clan info: {e}");
+            callback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
             return null;
         }
     }
 
     public async Task<ClanRecordsResponse?> GetClanRecords(string id, EventHandler<string>? callback = null) {
         try {
-            var requestMessage = new HttpRequestMessage {
-                                                            Method = HttpMethod.Get,
-                                                            RequestUri =
-                                                                new Uri($"https://api.aredl.net/v2/api/aredl/clan/{id}"),
-                                                        };
+            using var requestMessage =
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/clan/{id}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
@@ -591,7 +556,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching clan info: {e}");
+            callback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
             return null;
         }
     }

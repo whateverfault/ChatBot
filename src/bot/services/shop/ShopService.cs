@@ -15,9 +15,8 @@ public enum Lot {
 }
 
 public class ShopService : Service {
-    private static readonly BankService _bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
+    private static readonly BankService _bank = (BankService)Services.Get(ServiceId.Bank);
     
-    public override string Name => ServiceName.Shop;
     public override ShopOptions Options { get; } = new ShopOptions();
 
     public List<ShopLot> Lots => Options.Lots;

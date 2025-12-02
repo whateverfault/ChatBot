@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate bool BoolGetter();
 public delegate void BoolSetter(bool value);
@@ -23,7 +25,7 @@ public class CliNodeBool : CliNode {
 
     public override int PrintValue(int index, out string end) {
         base.PrintValue(index, out end);
-        Console.Write($" - {_getter.Invoke()}");
+        IoHandler.Write($" - {_getter.Invoke()}");
         return 0;
     }
 

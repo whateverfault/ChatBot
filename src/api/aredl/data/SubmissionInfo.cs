@@ -3,10 +3,10 @@
 namespace ChatBot.api.aredl.data;
 
 public class SubmissionInfo {
-    public string? id;
-    public UserInfo? submittedBy;
-    public bool? mobile;
-    public string? videoUrl;
+    public string? Id;
+    public UserInfo? SubmittedBy;
+    public bool? Mobile;
+    public readonly string? VideoUrl;
 
     
     [JsonConstructor]
@@ -15,9 +15,9 @@ public class SubmissionInfo {
         [JsonProperty(PropertyName = "submitted_by")] UserInfo? submittedBy,
         [JsonProperty(PropertyName = "mobile")] bool? mobile,
         [JsonProperty(PropertyName = "video_url")] string? videoUrl) {
-        this.submittedBy = submittedBy;
-        this.id = id;
-        this.mobile = mobile;
-        this.videoUrl = videoUrl;
+        Id = id;
+        Mobile = mobile;
+        SubmittedBy = submittedBy;
+        VideoUrl = videoUrl;
     }
 }

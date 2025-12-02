@@ -45,6 +45,8 @@ public class LevelInfo {
     [JsonProperty("nlw_tier")]
     public string? NlwTier { get; private set; }
     
+    public bool Platformer { get; set; }
+    
     
     [JsonConstructor]
     public LevelInfo(

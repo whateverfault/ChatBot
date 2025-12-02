@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.bank.data;
+using ChatBot.bot.services.bank.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.bank;
@@ -10,8 +11,8 @@ public class BankOptions : Options {
     
     private SaveData? _saveData;
 
-    protected override string Name => "bank";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "bank";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public long MoneySupply => _saveData!.MoneySupply;

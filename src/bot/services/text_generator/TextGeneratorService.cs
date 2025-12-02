@@ -13,13 +13,12 @@ public class TextGeneratorService : Service {
     private static ITwitchClient? Client => Bot.GetClient();
     
     private readonly Random _random = new Random();
-
-    public override string Name => ServiceName.TextGenerator;
+    
     public override TextGeneratorOptions Options { get; } = new TextGeneratorOptions();
 
 
     public void Train() {
-        var chatLogsService = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        var chatLogsService = (ChatLogsService)Services.Get(ServiceId.ChatLogs);
         var chatLogs = chatLogsService.GetLogs();
         if (chatLogs.Count == 0) return;
 

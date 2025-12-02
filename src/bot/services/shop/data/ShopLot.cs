@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace ChatBot.bot.services.shop.data;
 
 public class ShopLot {
-    private static readonly ShopService _shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
+    private static readonly ShopService _shop = (ShopService)Services.Get(ServiceId.Shop);
     private static int _id;
     
     [JsonProperty("state")]

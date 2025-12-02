@@ -1,5 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_ads.Data;
+using ChatBot.bot.services.chat_ads.data;
 
 namespace ChatBot.cli.CliNodes.Directories.ChatAds;
 

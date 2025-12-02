@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate int EnumGetter();
 public delegate void EnumNext();
@@ -23,7 +25,7 @@ public class CliNodeEnum : CliNode {
     public override int PrintValue(int index, out string end) {
         end = "\n";
         var enumValue = _getter.Invoke();
-        Console.Write($"{index}. {Text} - {Enum.ToObject(_enumType, enumValue)}");
+        IoHandler.Write($"{index}. {Text} - {Enum.ToObject(_enumType, enumValue)}");
         return 0;
     }
 

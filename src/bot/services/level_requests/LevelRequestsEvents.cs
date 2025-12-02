@@ -13,7 +13,7 @@ public class LevelRequestsEvents : ServiceEvents {
     
     public override void Init(Service service) {
         _levelRequests = (LevelRequestsService)service;
-        _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        _messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
         
         base.Init(service);
     }

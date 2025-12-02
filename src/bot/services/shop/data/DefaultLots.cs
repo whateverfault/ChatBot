@@ -12,10 +12,10 @@ using TwitchAPI.shared;
 namespace ChatBot.bot.services.shop.data;
 
 public static class DefaultLots {
-    private static readonly ShopService   _shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
-    private static readonly BankService   _bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    private static readonly AiService     _ai   = (AiService)ServiceManager.GetService(ServiceName.Ai);
+    private static readonly ShopService _shop = (ShopService)Services.Get(ServiceId.Shop);
+    private static readonly BankService _bank = (BankService)Services.Get(ServiceId.Bank);
+    private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
+    private static readonly AiService _ai = (AiService)Services.Get(ServiceId.Ai);
     
     
     public static async Task<Result<string?, ErrorCode?>> Ai(string userId, string prompt, string? id = null) {

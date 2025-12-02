@@ -1,6 +1,6 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
+using ChatBot.bot.services.logger.data;
 using TwitchAPI.client;
 
 namespace ChatBot.bot.services.logger;
@@ -8,20 +8,23 @@ namespace ChatBot.bot.services.logger;
 public delegate void LogHandler(Log log);
 
 public class LoggerService : Service {
+    private readonly object _logLock = new object();
+    
     public event LogHandler? OnLog;
     
-    public override string Name => ServiceName.Logger;
     public override LoggerOptions Options { get; } = new LoggerOptions();
     
     
     public void Log(LogLevel logLevel, string message) {
-        if (Options.ServiceState == State.Disabled) return;
-        if (logLevel < Options.LogLevel) return;
-        
-        var log = new Log(logLevel, DateTime.Now, message);
-        
-        Options.AddLog(log);
-        OnLog?.Invoke(log);
+        lock (_logLock) {
+            if (Options.ServiceState == State.Disabled) return;
+            if (logLevel < Options.LogLevel) return;
+
+            var log = new Log(logLevel, DateTime.Now, message);
+
+            Options.AddLog(log);
+            OnLog?.Invoke(log);
+        }
     }
 
     public int GetLogLevelAsInt() {

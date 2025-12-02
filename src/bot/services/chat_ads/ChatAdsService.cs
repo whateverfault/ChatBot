@@ -1,15 +1,13 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_ads.Data;
+using ChatBot.bot.services.chat_ads.data;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
 using TwitchAPI.helix.data.requests;
 
 namespace ChatBot.bot.services.chat_ads;
 
 public class ChatAdsService : Service {
-    public override string Name => ServiceName.ChatAds;
     public override ChatAdsOptions Options { get; } = new ChatAdsOptions();
 
     public event EventHandler<ChatAd>? OnChatAdAdded;

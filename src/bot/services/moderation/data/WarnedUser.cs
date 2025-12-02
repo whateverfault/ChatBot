@@ -33,6 +33,6 @@ public class WarnedUser {
 
     public void GiveWarn() {
         Warns++;
-        ServiceManager.GetService(ServiceName.Moderation).Options.Save();
+        Services.Get(ServiceId.Moderation).Options.Save();
     }
 }

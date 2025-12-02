@@ -2,8 +2,6 @@
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
-using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.commands.data;
@@ -15,7 +13,6 @@ public class ChatCommandsService : Service {
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
     private static ITwitchClient? Client => Bot.GetClient();
     
-    public override string Name => ServiceName.ChatCommands;
     public override ChatCommandsOptions Options { get; } = new ChatCommandsOptions();
 
     public event EventHandler<CustomChatCommand>? OnChatCommandAdded;
@@ -45,9 +42,9 @@ public class ChatCommandsService : Service {
             if (Options.VerboseState == State.Enabled) {
                 await Client.SendMessage($"Unknown command: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
             }
-        } catch (Exception) {
+        } catch (Exception e) {
             var msg = $"Failed to handle a command: {Options.CommandIdentifier}{parsedCommand.CommandText}.";
-            ErrorHandler.LogMessage(LogLevel.Error, msg);
+            ErrorHandler.LogMessage(LogLevel.Error, $"{msg} {e.Message}");
             
             if (Client == null) return;
             await Client.SendMessage(msg);

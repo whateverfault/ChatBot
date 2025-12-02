@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public class CliNodeCounter : CliNode {
     private readonly ActionHandler _increase;
@@ -15,7 +17,7 @@ public class CliNodeCounter : CliNode {
 
     public override int PrintValue(int index, out string end) {
         end = "\n";
-        Console.Write($"{index}. {Text} - {_getter.Invoke()}");
+        IoHandler.Write($"{index}. {Text} - {_getter.Invoke()}");
         return 0;
     }
 

@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli;
 
 public class CliRenderer {
     private CliState? _state;
@@ -17,16 +19,20 @@ public class CliRenderer {
         return Task.Run(() => {
                             while (true) {
                                 switch (_forcedToRender) {
-                                    case false when !Console.KeyAvailable:
+                                    case false when !IoHandler.KeyAvailable:
                                         Thread.Sleep(50);
                                         continue;
                                     case false:
-                                        int.TryParse(Console.ReadLine() ?? "0", out var index);
+                                        var line = IoHandler.ReadLine();
+                                        if (!int.TryParse(line, out var index)) {
+                                            index = 0;
+                                        }
+                                        
                                         _state.Cli.ActivateNode(index);
                                         break;
                                 } 
 
-                                Console.Clear();
+                                IoHandler.Clear();
                                 RenderNodes();
                                 _forcedToRender = false;
                             }  
@@ -45,7 +51,7 @@ public class CliRenderer {
         var index = 0;
         for (var i = 0; i < currentNodes.Count; i++, index++) {
             index -= currentNodes[i].PrintValue(index+1, out var end);
-            Console.Write(end);
+            IoHandler.Write(end);
         }
     }
 }

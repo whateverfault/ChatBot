@@ -42,7 +42,7 @@ public class OllamaClient : AiClient {
             var ollamaResponse = JsonConvert.DeserializeObject<OllamaResponse>(responseContent);
             return ollamaResponse?.Response ?? string.Empty;
         } catch (Exception e) {
-            callback?.Invoke(this , $"Error while getting ollama response: {e} ");
+            callback?.Invoke(this , $"Error while getting ollama response: {e.Data} ");
             return null;
         }
     }

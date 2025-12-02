@@ -25,17 +25,16 @@ public class CliNodeIndex : CliNode {
 
     public override int PrintValue(int index, out string end) {
         base.PrintValue(index, out end);
-        Console.Write($" - {_getter.Invoke()+1}");
+        IoHandler.Write($" - {_getter.Invoke()+1}");
         return 0;
     }
 
     public override void Activate(CliState state) {
         if (_permission == CliNodePermission.ReadOnly) return;
         
-        Console.WriteLine($"Value: {_getter.Invoke()+1}");
-        Console.Write("New Value: ");
+        IoHandler.WriteLine($"Value: {_getter.Invoke()+1}");
         
-        var line = Console.ReadLine();
+        var line = IoHandler.ReadLine("New Value: ");
         if (string.IsNullOrEmpty(line)) {
             return;
         }

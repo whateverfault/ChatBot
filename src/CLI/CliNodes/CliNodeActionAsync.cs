@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate Task AsyncActionHandler();
 
@@ -16,7 +18,7 @@ public class CliNodeActionAsync : CliNode{
     public override int PrintValue(int index, out string end) {
         end = "\n";
         if (Text == "Back") {
-            Console.Write($"0. {Text}");
+            IoHandler.Write($"0. {Text}");
             return 1;
         }
         base.PrintValue(index, out end);

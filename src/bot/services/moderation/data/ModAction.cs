@@ -1,5 +1,4 @@
 ﻿using ChatBot.bot.interfaces;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
@@ -10,8 +9,7 @@ using TwitchAPI.helix;
 namespace ChatBot.bot.services.moderation.data;
 
 public class ModAction {
-    private static readonly ModerationOptions _options = (ModerationOptions)ServiceManager.GetService(ServiceName.Moderation).Options;
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    private static readonly ModerationOptions _options = (ModerationOptions)Services.Get(ServiceId.Moderation).Options;
 
     [JsonProperty("name")] 
     public string Name { get; private set; } = null!;
@@ -143,8 +141,8 @@ public class ModAction {
             }
             case ModerationActionType.Timeout: {
                 await Helix.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
-                                                      _logger.Log(LogLevel.Error, message);
-                                                  });
+                                            ErrorHandler.LogMessage(LogLevel.Error, message);
+                                        });
                 break;
             }
         }
@@ -158,8 +156,8 @@ public class ModAction {
         if (Type == ModerationActionType.Warn) {
             await client.SendMessage(ModeratorComment, chatMessage.Id);
             await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
-                                                                            _logger.Log(LogLevel.Error, callback);
-                                                                        });
+                                                                            ErrorHandler.LogMessage(LogLevel.Error, callback);
+                                                                       });
             return;
         }
         
@@ -186,7 +184,7 @@ public class ModAction {
         await client.SendMessage($"@{chatMessage.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
             await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
-                                                                            _logger.Log(LogLevel.Error, callback);
+                                                                            ErrorHandler.LogMessage(LogLevel.Error, callback);
                                                                         });
             return;
         }
@@ -194,14 +192,14 @@ public class ModAction {
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
                 await Helix.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
-                                             _logger.Log(LogLevel.Error, callback);
+                                             ErrorHandler.LogMessage(LogLevel.Error, callback);
                                          });
                 _options.RemoveWarnedUser(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
                 await Helix.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
-                                                      _logger.Log(LogLevel.Error, callback);
+                                                      ErrorHandler.LogMessage(LogLevel.Error, callback);
                                                   });
                 _options.RemoveWarnedUser(userIndex);
                 break;

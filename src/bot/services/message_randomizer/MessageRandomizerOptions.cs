@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_logs;
+using ChatBot.bot.services.chat_logs.data;
+using ChatBot.bot.services.message_randomizer.data.saved;
 using ChatBot.bot.shared;
 using Range = ChatBot.api.basic.Range;
 
@@ -16,8 +17,8 @@ public class MessageRandomizerOptions : Options {
     
     private SaveData? _saveData;
 
-    protected override string Name => "message_randomizer";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "message_randomizer";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public int CounterMax => _saveData!.CounterMax;

@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.chat_ads.Data;
+using ChatBot.bot.services.chat_ads.data;
+using ChatBot.bot.services.chat_ads.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.chat_ads;
@@ -10,8 +11,8 @@ public class ChatAdsOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "chat_ads";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "chat_ads";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     private List<ChatAd> ChatAds => _saveData!.ChatAds;

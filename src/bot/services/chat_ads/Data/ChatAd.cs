@@ -2,10 +2,10 @@
 using ChatBot.bot.services.Static;
 using Newtonsoft.Json;
 
-namespace ChatBot.bot.services.chat_ads.Data;
+namespace ChatBot.bot.services.chat_ads.data;
 
 public class ChatAd {
-    private static readonly ChatAdsOptions _options = ((ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds)).Options;
+    private static readonly ChatAdsOptions _options = ((ChatAdsService)Services.Get(ServiceId.ChatAds)).Options;
     
     [JsonProperty("state")]
     private State State { get; set; }

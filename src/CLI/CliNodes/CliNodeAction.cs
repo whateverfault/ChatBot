@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public delegate void ActionHandler();
 
@@ -15,8 +17,8 @@ public class CliNodeAction : CliNode {
 
     public override int PrintValue(int index, out string end) {
         end = "\n";
-        if (Text == "Back") {
-            Console.Write($"0. {Text}");
+        if (Text.Equals("Back")) {
+            IoHandler.Write($"0. {Text}");
             return 1;
         }
         base.PrintValue(index, out end);

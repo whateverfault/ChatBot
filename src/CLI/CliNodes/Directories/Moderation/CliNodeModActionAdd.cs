@@ -21,18 +21,17 @@ public class CliNodeModActionAdd : CliNode {
         const int duration = 1;
         const int warnCount = 1;
         var modComment = string.Empty;
-
-        Console.Write("Name: ");
-        var name = Console.ReadLine();
+        
+        var name = IoHandler.ReadLine("Name: ");
         if (string.IsNullOrEmpty(name)) return;
         
         var modActionType = AskModerationActionType();
+        var line = IoHandler.ReadLine("Global Filter Index: ");
         
-        Console.Write("Global Filter Index: ");
-        var line = Console.ReadLine();
         if (string.IsNullOrEmpty(line)) return;
-        
-        var index = int.Parse(string.IsNullOrWhiteSpace(line)? "1" : line)-1;
+        if (int.TryParse(line, out var index)) return;
+
+        --index;
         
         var filters = state.Data.MessageFilter.GetFilters();
         if (index < 0 || index >= filters.Count) {
@@ -57,24 +56,22 @@ public class CliNodeModActionAdd : CliNode {
 
         var selected = (ModerationActionType)modActionIndex;
         
-        Console.Clear();
-        Console.Write($"Type (Space -> next): {selected}");
+        IoHandler.ClearWrite($"Type (Space -> next): {selected}");
         
         while (true) {
-            if (!Console.KeyAvailable) {
+            if (!IoHandler.KeyAvailable) {
                 Thread.Sleep(50);
                 continue;
             }
 
-            var pressed = Console.ReadKey(true);
+            var pressed = IoHandler.ReadKey(true);
             switch (pressed.Key) {
                 case ConsoleKey.Spacebar:
                     selected = (ModerationActionType)(++modActionIndex%Enum.GetValues(typeof(ModerationActionType)).Length);
-                    Console.Clear();
-                    Console.Write($"Type (Space -> next): {selected}");
+                    IoHandler.ClearWrite($"Type (Space -> next): {selected}");
                     break;
                 case ConsoleKey.Enter:
-                    Console.Clear();
+                    IoHandler.Clear();
                     return selected;
             }
         }

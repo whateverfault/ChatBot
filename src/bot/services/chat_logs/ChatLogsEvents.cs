@@ -17,8 +17,8 @@ public class ChatLogsEvents : ServiceEvents {
     
     public override void Init(Service service) {
         _chatLogs = (ChatLogsService)service;
-        _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
         
         base.Init(service);
     }

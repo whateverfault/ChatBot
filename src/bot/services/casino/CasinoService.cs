@@ -17,9 +17,8 @@ public struct GambleResult {
 }
 
 public class CasinoService : Service {
-    private static BankService Bank => (BankService)ServiceManager.GetService(ServiceName.Bank);
+    private static BankService Bank => (BankService)Services.Get(ServiceId.Bank);
     
-    public override string Name => ServiceName.Casino;
     public override CasinoOptions Options { get; } = new CasinoOptions();
 
 

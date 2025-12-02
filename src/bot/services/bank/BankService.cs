@@ -1,14 +1,12 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.bank.data;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.bank;
 
 public class BankService : Service {
-    public override string Name => ServiceName.Bank;
     public override BankOptions Options { get; } = new BankOptions();
 
     public long MoneySupply => Options.MoneySupply;

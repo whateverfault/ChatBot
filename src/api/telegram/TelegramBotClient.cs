@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using ChatBot.api.telegram.requests;
 using ChatBot.api.telegram.response;
 using Newtonsoft.Json;
@@ -6,15 +7,26 @@ using Newtonsoft.Json;
 namespace ChatBot.api.telegram;
 
 public class TelegramBotClient {
-    private static readonly HttpClient _httpClient = new HttpClient();
+    private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
+                                                              {
+                                                                  PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+                                                                  PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+                                                                  MaxConnectionsPerServer = 50,
+                                                                  UseCookies = false,
+                                                                  AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                                                              };
+    private readonly HttpClient _httpClient;
 
     private string _token;
     private long _chatId;
     
     
-    public TelegramBotClient(string token, long chatId) {
+    public TelegramBotClient(string token, long chatId, HttpClient? client = null) {
         _token = token;
         _chatId = chatId;
+
+        _httpClient = client ?? new HttpClient(_httpHandler);
+        _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
     public void UpdateToken(string token) {
@@ -48,8 +60,8 @@ public class TelegramBotClient {
             var deserialized = JsonConvert.DeserializeObject<SendMessageResponse>(responseContent);
             return deserialized;
         }
-        catch (Exception ex) {
-            Console.WriteLine($"Error sending message: {ex.Message}");
+        catch (Exception e) {
+            callback?.Invoke(this, $"Error sending message: {e.Message}");
         }
         return null;
     }

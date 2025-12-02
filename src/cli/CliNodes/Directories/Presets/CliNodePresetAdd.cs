@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes.Directories.Presets;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes.Directories.Presets;
 
 public delegate void AddPreset(string name);
 
@@ -14,8 +16,7 @@ public class CliNodePresetAdd : CliNode {
     }
     
     public override void Activate(CliState state) {
-        Console.Write("Name: ");
-        var name = Console.ReadLine();
+        var name = IoHandler.ReadLine("Name: ");
         if (name == null) return;
         
         _add.Invoke(name);

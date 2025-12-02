@@ -1,4 +1,5 @@
-﻿using Range = ChatBot.api.basic.Range;
+﻿using ChatBot.bot.shared.handlers;
+using Range = ChatBot.api.basic.Range;
 
 namespace ChatBot.cli.CliNodes;
 
@@ -28,7 +29,7 @@ public class CliNodeRange : CliNode {
         base.PrintValue(index, out end);
         
         var range = _getter.Invoke();
-        Console.Write($" - {range.Start}..{range.End}");
+        IoHandler.Write($" - {range.Start}..{range.End}");
         return 0;
     }
 
@@ -36,18 +37,16 @@ public class CliNodeRange : CliNode {
         if (_permission == CliNodePermission.ReadOnly) return;
 
         var range = _getter.Invoke();
-        Console.WriteLine($"Value: {range.Start}..{range.End}");
+        IoHandler.WriteLine($"Value: {range.Start}..{range.End}");
         
-        Console.Write("from: ");
-        var line = Console.ReadLine();
+        var line = IoHandler.ReadLine("from: ");
         
         var from = _getter.Invoke().Start;
         if (!string.IsNullOrEmpty(line)) {
             int.TryParse(line, out from);
         }        
         
-        Console.Write("to: ");
-        line = Console.ReadLine();
+        line = IoHandler.ReadLine("to: ");
         
         var to = _getter.Invoke().End;
         if (!string.IsNullOrEmpty(line)) {

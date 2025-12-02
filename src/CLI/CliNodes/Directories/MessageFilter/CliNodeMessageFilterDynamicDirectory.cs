@@ -1,4 +1,5 @@
 ﻿using ChatBot.bot.services.message_filter;
+using ChatBot.bot.services.message_filter.data;
 using ChatBot.bot.services.Static;
 
 namespace ChatBot.cli.CliNodes.Directories.MessageFilter;
@@ -35,7 +36,7 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
                                               []
                                               );
         
-        _messageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        _messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
 
         var filters = _state.Data.MessageFilter.GetFilters();
         foreach (var filter in filters) {

@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.stream_state_checker.Data;
+using ChatBot.bot.services.stream_state_checker.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.stream_state_checker;
@@ -10,12 +11,14 @@ public class StreamStateCheckerOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "stream_state";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "stream_state";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
+    private StreamStateMeta StreamStateMeta => _saveData!.StreamStateMeta;
+    
     public override State ServiceState => _saveData!.ServiceState;
+    
     public StreamState StreamState => _saveData!.StreamState;
-    public StreamStateMeta StreamStateMeta => _saveData!.StreamStateMeta;
     
 
     public override void Load() {

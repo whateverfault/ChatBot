@@ -2,6 +2,7 @@
 using System.Text;
 using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.Static;
+using ChatBot.bot.shared.handlers;
 using ChatBot.cli;
 
 namespace ChatBot;
@@ -12,8 +13,9 @@ internal static class Program {
         
         ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
-        Console.InputEncoding = Encoding.UTF8;
-        Console.OutputEncoding = Encoding.UTF8;
+        
+        IoHandler.InputEncoding = Encoding.UTF8;
+        IoHandler.OutputEncoding = Encoding.UTF8;
 
         foreach (var arg in args) {
             autoInit = arg switch {
@@ -21,7 +23,8 @@ internal static class Program {
                            _             => autoInit,
                        };
         }
-        ServiceManager.LoadServices();
+        
+        Services.Load();
         
         var bot = TwitchChatBot.Instance;
         var cli = new Cli(new CliData());

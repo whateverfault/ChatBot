@@ -3,11 +3,11 @@
 namespace ChatBot.api.aredl.data;
 
 public class ClanSubmissionInfo {
-    public string? id;
-    public string? submittedBy;
-    public bool? mobile;
-    public string? videoUrl;
-    public RecordLevelInfo? level;
+    public string? Id;
+    public string? SubmittedBy;
+    public bool? Mobile;
+    public readonly string? VideoUrl;
+    public readonly RecordLevelInfo? Level;
 
     
     [JsonConstructor]
@@ -17,10 +17,10 @@ public class ClanSubmissionInfo {
         [JsonProperty(PropertyName = "mobile")] bool? mobile,
         [JsonProperty(PropertyName = "video_url")] string? videoUrl, 
         [JsonProperty(PropertyName = "level")] RecordLevelInfo? level) {
-        this.submittedBy = submittedBy;
-        this.id = id;
-        this.mobile = mobile;
-        this.videoUrl = videoUrl;
-        this.level = level;
+        SubmittedBy = submittedBy;
+        Id = id;
+        Mobile = mobile;
+        VideoUrl = videoUrl;
+        Level = level;
     }
 }

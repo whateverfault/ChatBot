@@ -1,6 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
@@ -11,26 +10,34 @@ namespace ChatBot.bot.chat_bot;
 
 public delegate void NoArgs();
 
-public class TwitchChatBot : Bot {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+public sealed class TwitchChatBot : Bot {
     private static TwitchChatBot? _instance;
+    
+    private readonly TwitchClientConfig _twitchClientConfig;
     
     public static TwitchChatBot Instance => _instance ??= new TwitchChatBot();
     
     private readonly object _startLock = new object();
     private bool _starting;
     private bool _initialized;
-    private bool _canReconnect = true;
-
-
-    public override string Name => "Bot";
-    public override ChatBotOptions Options { get; } = new ChatBotOptions();
+    
+    public override ChatBotOptions Options { get; }
     
     public override event EventHandler<ChatMessage>? OnMessageReceived;
     public event NoArgs? OnInitialized;
-    
-    
-    private TwitchChatBot(){}
+
+
+    private TwitchChatBot() {
+        Options = new ChatBotOptions();
+        
+        Options.UpdateClient(new TwitchClient(_twitchClientConfig));
+        
+        var chatCommands = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
+        _twitchClientConfig = new TwitchClientConfig(
+                                                     new AutoReconnectConfig(),
+                                                     chatCommands.Options.CommandIdentifier
+                                                     );
+    }
     
     public override async Task StartAsync() {
         try {
@@ -40,7 +47,9 @@ public class TwitchChatBot : Bot {
             }
             
             await Task.Run(async () => {
-                               _logger.Log(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
+                               ErrorHandler.LogMessage(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
+                               
+                               SubscribeToEvents();
                                await InitConnectionAsync();
 
                                if (Options.Client?.Credentials == null) {
@@ -50,54 +59,63 @@ public class TwitchChatBot : Bot {
                                    ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
                                    return;
                                }
-
-                               SubscribeToEvents();
-                               ServiceManager.InitServices();
+                               
+                               Services.Init();
                                lock (_startLock) {
                                    _starting = false;
                                }
                            }
-                          );
+                           );
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while connecting to {Options.Credentials.Channel}. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while connecting to {Options.Credentials.Channel}. {e.Data}");
         }
     }
 
     public override void Start() {
         lock (_startLock) {
+            if (_starting) {
+                return;
+            }
+
             _starting = true;
         }
 
-        _logger.Log(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
+        ErrorHandler.LogMessage(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
+
+        SubscribeToEvents();
         InitConnection();
 
         if (Options.Client?.Credentials == null) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
             return;
         }
-
-        SubscribeToEvents();
-        ServiceManager.InitServices();
+        
+        Services.Init();
         lock (_startLock) {
             _starting = false;
         }
+        
+        
+    }
+
+    public override void Stop() {
+        StopInternal();
     }
     
-    public override void Stop() {
+    private bool StopInternal() {
         if (Options.Client == null || !_initialized) {
-            return;
+            return false;
         }
-        _canReconnect = false;
 
         UnsubscribeFromEvents();
-        ServiceManager.KillServices();
+        Services.Kill();
         Options.Client.Disconnect();
-
-        _canReconnect = true;
+        
         _initialized = false;
         
-        _logger.Log(LogLevel.Info, "Disconnected.");
+        ErrorHandler.LogMessage(LogLevel.Info, "Disconnected.");
+        return true;
     }
 
     public override ErrorCode TryGetClient(out ITwitchClient? client) {
@@ -139,7 +157,7 @@ public class TwitchChatBot : Bot {
             Options.UpdateCredentials();
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while updating a channel: {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while updating a channel: {e.Data}");
         }
     }
     
@@ -173,7 +191,7 @@ public class TwitchChatBot : Bot {
             Options.UpdateCredentials();
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while updating an Oauth token: {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while updating an Oauth token: {e.Data}");
         }
     }
     
@@ -207,7 +225,7 @@ public class TwitchChatBot : Bot {
             Options.UpdateCredentials();
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while updating a channel oauth token: {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while updating a channel oauth token: {e.Data}");
         }
     }
     
@@ -217,16 +235,15 @@ public class TwitchChatBot : Bot {
                 ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
                 return;
             }
+
+            if (StopInternal()) {
+                SubscribeToEvents();
+            }
             
-            Stop();
-            
-            Options.UpdateClient(new TwitchClient());
             if (Options.Client == null) return;
             
             await Options.Client.Initialize(Options.Credentials);
-
-            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
-            Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
+            
             _initialized = true;
         } catch (Exception) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
@@ -240,15 +257,14 @@ public class TwitchChatBot : Bot {
                 return;
             }
             
-            Stop();
+            if (StopInternal()) {
+                SubscribeToEvents();
+            }
             
-            Options.UpdateClient(new TwitchClient());
             if (Options.Client == null) return;
             
             _ = Options.Client.Initialize(Options.Credentials);
-
-            var chatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
-            Options.Client?.SetCommandIdentifier(chatCommands.Options.CommandIdentifier);
+            
             _initialized = true;
         } catch (Exception) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.InvalidData);
@@ -256,15 +272,8 @@ public class TwitchChatBot : Bot {
     }
     
     private void OnConnected(object? sender, EventArgs e) {
-        _logger.Log(LogLevel.Info, $"Connected to {Options.Credentials.Channel}");
+        ErrorHandler.LogMessage(LogLevel.Info, $"Connected to {Options.Credentials.Channel}");
         OnInitialized?.Invoke();
-    }
-    
-    private void Reconnect(object? sender, string message) {
-        if (!_canReconnect) return;
-        
-        _logger.Log(LogLevel.Warning, $"{message}. Attempting reconnect...");
-        Task.Delay(5000).ContinueWith(_ => Options.Client?.Reconnect());
     }
     
     private void SubscribeToEvents() {
@@ -274,7 +283,6 @@ public class TwitchChatBot : Bot {
     
         Options.Client.OnMessageReceived += OnMessageReceiveHandler;
         Options.Client.OnError += OnError;
-        Options.Client.OnDisconnected += Reconnect;
         Options.Client.OnConnected += OnConnected;
     }
 
@@ -282,7 +290,7 @@ public class TwitchChatBot : Bot {
         if (Options.Client == null) return;
     
         Options.Client.OnMessageReceived -= OnMessageReceiveHandler;
-        Options.Client.OnDisconnected -= Reconnect;
+        Options.Client.OnError -= OnError;
         Options.Client.OnConnected -= OnConnected;
     }
 
@@ -291,7 +299,7 @@ public class TwitchChatBot : Bot {
     }
     
     private void OnError(object? sender, string message) {
-        _logger.Log(LogLevel.Error, message);
+        ErrorHandler.LogMessage(LogLevel.Error, message);
     }
     
     private bool ValidateSave() {

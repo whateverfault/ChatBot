@@ -19,8 +19,8 @@ public class ChatAdsEvents : ServiceEvents {
     
     public override void Init(Service service) {
         _chatAds = (ChatAdsService)service;
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
-        _chatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
+        _chatLogs = (ChatLogsService)Services.Get(ServiceId.ChatLogs);
         
         base.Init(service);
     }

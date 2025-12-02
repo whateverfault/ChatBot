@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.casino.data;
+using ChatBot.bot.services.casino.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.casino;
@@ -10,8 +11,8 @@ public class CasinoOptions : Options{
     
     private SaveData? _saveData;
     
-    protected override string Name => "casino";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "casino";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     

@@ -33,7 +33,7 @@ public enum ErrorCode {
 }
 
 public static class ErrorHandler {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
     
     private static readonly string[] _internalErrorMessages = [
                                                                   "Invalid Input.",
@@ -118,32 +118,31 @@ public static class ErrorHandler {
         return true;
     }
 
-    public static bool LogErrorAndPrint(ErrorCode error) {
+    public static void LogErrorAndPrint(ErrorCode error) {
         var result = LogError(error);
         if (!result) {
-            return result;
+            return;
         }
 
-        Console.Clear();
-        Console.WriteLine(_internalErrorMessages[(int)error]);
-        Console.ReadLine();
-        Console.Clear();
-        return result;
+        IoHandler.Clear();
+        IoHandler.WriteLine(_internalErrorMessages[(int)error]);
+        IoHandler.ReadLine();
+        IoHandler.Clear();
     }
     
     public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
         LogError(error);
         
-        Console.Clear();
-        Console.WriteLine(message);
-        Console.ReadKey();
-        Console.Clear();
+        IoHandler.Clear();
+        IoHandler.WriteLine(message);
+        IoHandler.ReadKey();
+        IoHandler.Clear();
     }
     
     public static void PrintMessage(string message) {
-        Console.Clear();
-        Console.WriteLine(message);
-        Console.ReadKey();
-        Console.Clear();
+        IoHandler.Clear();
+        IoHandler.WriteLine(message);
+        IoHandler.ReadKey();
+        IoHandler.Clear();
     }
 }

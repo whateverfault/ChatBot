@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
-using ChatBot.bot.services.game_requests.Data;
+using ChatBot.bot.services.game_requests.data;
+using ChatBot.bot.services.game_requests.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.game_requests;
@@ -13,8 +14,8 @@ public class GameRequestsOptions : Options {
     private List<GameRequest>? _gameRequests = [];
     private string GameRequestsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}.json");
 
-    protected override string Name => "game_requests";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "game_requests";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public List<GameRequest>? GameRequests => _gameRequests;

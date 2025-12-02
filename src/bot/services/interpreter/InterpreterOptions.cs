@@ -1,8 +1,8 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interpreter.data;
+using ChatBot.bot.services.interpreter.data.saved;
 using ChatBot.bot.shared;
-using sonlanglib.interpreter.data;
 using sonlanglib.interpreter.data.vars;
 
 namespace ChatBot.bot.services.interpreter;
@@ -12,8 +12,8 @@ public class InterpreterOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "interpreter";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "interpreter";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     private Dictionary<string, StoredVariable> Variables => _saveData!.Variables;

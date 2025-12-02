@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ChatBot.bot.shared.handlers;
 
 namespace ChatBot.cli.CliNodes;
 
@@ -25,17 +26,16 @@ public class CliNodeAliases : CliNode {
     
     public override int PrintValue(int index, out string end) {
         base.PrintValue(index, out end);
-        Console.Write($" - '{AliasesToString(_getter.Invoke())}'");
+        IoHandler.Write($" - '{AliasesToString(_getter.Invoke())}'");
         return 0;
     }
     
     public override void Activate(CliState state) {
         if (_permission == CliNodePermission.ReadOnly) return;
 
-        Console.WriteLine($"Current Aliases: {AliasesToString(_getter.Invoke())}");
-        Console.Write("New Aliases: ");
-        var aliases = Console.ReadLine();
+        IoHandler.WriteLine($"Current Aliases: {AliasesToString(_getter.Invoke())}");
         
+        var aliases = IoHandler.ReadLine("New Aliases: ");
         if (string.IsNullOrEmpty(aliases)) {
             return;
         }

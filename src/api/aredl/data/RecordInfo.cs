@@ -3,9 +3,9 @@
 namespace ChatBot.api.aredl.data;
 
 public class RecordInfo {
-    public string id;
-    public string videoUrl;
-    public RecordLevelInfo level;
+    public string Id;
+    public readonly string VideoUrl;
+    public readonly RecordLevelInfo Level;
 
     
     [JsonConstructor]
@@ -13,8 +13,8 @@ public class RecordInfo {
         [JsonProperty(PropertyName = "id")] string id,
         [JsonProperty(PropertyName = "video_url")] string videoUrl,
         [JsonProperty(PropertyName = "level")] RecordLevelInfo level) {
-        this.id = id;
-        this.videoUrl = videoUrl;
-        this.level = level;
+        Id = id;
+        VideoUrl = videoUrl;
+        Level = level;
     }
 }

@@ -18,7 +18,7 @@ public class TgNotificationsEvents : ServiceEvents {
 
     public override void Init(Service service) {
         _tgNotifications = (TgNotificationsService)service;
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
         
         base.Init(service);
     }

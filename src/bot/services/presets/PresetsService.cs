@@ -1,10 +1,9 @@
 ﻿using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
+using ChatBot.bot.services.presets.data;
 
 namespace ChatBot.bot.services.presets;
 
 public class PresetsService : Service {
-    public override string Name => ServiceName.Presets;
     public override PresetsOptions Options { get; } = new PresetsOptions();
 
     public event EventHandler<Preset>? OnPresetAdded;

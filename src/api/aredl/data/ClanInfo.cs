@@ -3,13 +3,13 @@
 namespace ChatBot.api.aredl.data;
 
 public class ClanInfo {
-    public int rank;
-    public int extremesRank;
-    public ClanData clan;
-    public int levelPoints;
-    public int memberCount;
-    public HardestInfo hardest;
-    public int extremes;
+    public int Rank;
+    public int ExtremesRank;
+    public readonly ClanData Clan;
+    public int LevelPoints;
+    public int MemberCount;
+    public readonly HardestInfo Hardest;
+    public int Extremes;
 
     
     public ClanInfo(
@@ -20,12 +20,12 @@ public class ClanInfo {
         [JsonProperty(PropertyName = "members_count")] int memberCount,
         [JsonProperty(PropertyName = "hardest")] HardestInfo hardest,
         [JsonProperty(PropertyName = "extremes")] int extremes) {
-        this.rank = rank;
-        this.extremesRank = extremesRank;
-        this.clan = clan;
-        this.levelPoints = levelPoints;
-        this.memberCount = memberCount;
-        this.hardest = hardest;
-        this.extremes = extremes;
+        Rank = rank;
+        ExtremesRank = extremesRank;
+        Clan = clan;
+        LevelPoints = levelPoints;
+        MemberCount = memberCount;
+        Hardest = hardest;
+        Extremes = extremes;
     }
 }

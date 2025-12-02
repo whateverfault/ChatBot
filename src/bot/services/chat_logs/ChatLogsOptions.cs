@@ -1,5 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.chat_logs.data;
+using ChatBot.bot.services.chat_logs.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.chat_logs;
@@ -9,8 +11,8 @@ public class ChatLogsOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "chat_logs";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "chat_logs";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     private List<Message> Logs => _saveData!.Logs;

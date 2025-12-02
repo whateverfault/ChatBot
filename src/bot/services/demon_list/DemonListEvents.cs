@@ -14,7 +14,7 @@ public class DemonListEvents : ServiceEvents {
 
 
     public override void Init(Service service) {
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
         _demonList = (DemonListService)service;
         
         base.Init(service);

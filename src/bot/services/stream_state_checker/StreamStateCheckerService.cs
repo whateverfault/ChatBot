@@ -1,8 +1,7 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker.Data;
+using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.helix;
 using TwitchAPI.helix.data.requests;
@@ -10,9 +9,6 @@ using TwitchAPI.helix.data.requests;
 namespace ChatBot.bot.services.stream_state_checker;
 
 public class StreamStateCheckerService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-    
-    public override string Name => ServiceName.StreamStateChecker;
     public override StreamStateCheckerOptions Options { get; } = new StreamStateCheckerOptions();
 
     public delegate void StreamStateHandler(StreamState streamState, StreamData? streamData);
@@ -34,7 +30,7 @@ public class StreamStateCheckerService : Service {
             var lastCheckedWasOnline = Options.StreamState.WasOnline;
             
             var streamResponse = await Helix.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
-                                                               _logger.Log(LogLevel.Error, message);
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
                                                            });
             if (streamResponse == null) {
                 if (lastCheckedWasOnline) {
@@ -59,7 +55,7 @@ public class StreamStateCheckerService : Service {
             OnStreamStateUpdate?.Invoke(Options.StreamState, streamData);
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while checking stream state. {e.Data}");
         }
     }
 }

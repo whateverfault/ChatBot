@@ -23,48 +23,24 @@ using ChatBot.bot.services.translator;
 namespace ChatBot.cli;
 
 public class CliData {
-    public TwitchChatBot Bot { get; }
-    public MessageRandomizerService MessageRandomizer { get; }
-    public ChatCommandsService ChatCommands { get; }
-    public MessageFilterService MessageFilter { get; }
-    public ModerationService Moderation { get; }
-    public LoggerService Logger { get; }
-    public ChatLogsService ChatLogs { get; }
-    public TextGeneratorService TextGenerator { get; }
-    public LevelRequestsService LevelRequests { get; }
-    public PresetsService Presets { get; }
-    public DemonListService DemonList { get; }
-    public AiService Ai { get; }
-    public TranslatorService Translator { get; }
-    public GameRequestsService GameRequests { get; }
-    public StreamStateCheckerService StreamStateChecker { get; }
-    public TgNotificationsService TgNotifications { get; }
-    public ChatAdsService ChatAds { get; }
-    public CasinoService Casino { get; }
-    public BankService Bank { get; }
-    public ShopService Shop { get; }
-
-
-    public CliData() {
-        Bot = TwitchChatBot.Instance;
-        MessageRandomizer = (MessageRandomizerService)ServiceManager.GetService(ServiceName.MessageRandomizer);
-        ChatCommands = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
-        MessageFilter = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
-        Moderation = (ModerationService)ServiceManager.GetService(ServiceName.Moderation);
-        Logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
-        ChatLogs = (ChatLogsService)ServiceManager.GetService(ServiceName.ChatLogs);
-        TextGenerator = (TextGeneratorService)ServiceManager.GetService(ServiceName.TextGenerator);
-        LevelRequests = (LevelRequestsService)ServiceManager.GetService(ServiceName.LevelRequests);
-        Presets = (PresetsService)ServiceManager.GetService(ServiceName.Presets);
-        DemonList = (DemonListService)ServiceManager.GetService(ServiceName.DemonList);
-        Ai = (AiService)ServiceManager.GetService(ServiceName.Ai);
-        Translator = (TranslatorService)ServiceManager.GetService(ServiceName.Translator);
-        GameRequests = (GameRequestsService)ServiceManager.GetService(ServiceName.GameRequests);
-        StreamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
-        TgNotifications = (TgNotificationsService)ServiceManager.GetService(ServiceName.TgNotifications);
-        ChatAds = (ChatAdsService)ServiceManager.GetService(ServiceName.ChatAds);
-        Casino = (CasinoService)ServiceManager.GetService(ServiceName.Casino);
-        Bank = (BankService)ServiceManager.GetService(ServiceName.Bank);
-        Shop = (ShopService)ServiceManager.GetService(ServiceName.Shop);
-    }
+    public TwitchChatBot Bot { get; } = TwitchChatBot.Instance;
+    public MessageRandomizerService MessageRandomizer { get; } = (MessageRandomizerService)Services.Get(ServiceId.MessageRandomizer);
+    public ChatCommandsService ChatCommands { get; } = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
+    public MessageFilterService MessageFilter { get; } = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
+    public ModerationService Moderation { get; } = (ModerationService)Services.Get(ServiceId.Moderation);
+    public LoggerService Logger { get; } = (LoggerService)Services.Get(ServiceId.Logger);
+    public ChatLogsService ChatLogs { get; } = (ChatLogsService)Services.Get(ServiceId.ChatLogs);
+    public TextGeneratorService TextGenerator { get; } = (TextGeneratorService)Services.Get(ServiceId.TextGenerator);
+    public LevelRequestsService LevelRequests { get; } = (LevelRequestsService)Services.Get(ServiceId.LevelRequests);
+    public PresetsService Presets { get; } = (PresetsService)Services.Get(ServiceId.Presets);
+    public DemonListService DemonList { get; } = (DemonListService)Services.Get(ServiceId.DemonList);
+    public AiService Ai { get; } = (AiService)Services.Get(ServiceId.Ai);
+    public TranslatorService Translator { get; } = (TranslatorService)Services.Get(ServiceId.Translator);
+    public GameRequestsService GameRequests { get; } = (GameRequestsService)Services.Get(ServiceId.GameRequests);
+    public StreamStateCheckerService StreamStateChecker { get; } = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
+    public TgNotificationsService TgNotifications { get; } = (TgNotificationsService)Services.Get(ServiceId.TgNotifications);
+    public ChatAdsService ChatAds { get; } = (ChatAdsService)Services.Get(ServiceId.ChatAds);
+    public CasinoService Casino { get; } = (CasinoService)Services.Get(ServiceId.Casino);
+    public BankService Bank { get; } = (BankService)Services.Get(ServiceId.Bank);
+    public ShopService Shop { get; } = (ShopService)Services.Get(ServiceId.Shop);
 }

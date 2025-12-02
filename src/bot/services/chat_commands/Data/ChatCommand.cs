@@ -8,7 +8,7 @@ namespace ChatBot.bot.services.chat_commands.data;
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
 
 public abstract class ChatCommand {
-    protected static readonly ChatCommandsService ChatCommandsService = (ChatCommandsService)ServiceManager.GetService(ServiceName.ChatCommands);
+    protected static readonly ChatCommandsService ChatCommandsService = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
     
     [JsonProperty("id")]
     public int Id { get; protected set; }

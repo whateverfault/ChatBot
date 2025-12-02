@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.moderation.data;
+using ChatBot.bot.services.moderation.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.moderation;
@@ -10,8 +11,8 @@ public class ModerationOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "moderation";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "moderation";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     public List<ModAction> ModerationActions => _saveData!.ModerationActions;

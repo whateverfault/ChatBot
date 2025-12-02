@@ -1,5 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.demon_list.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.demon_list;
@@ -9,8 +10,8 @@ public class DemonListOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "demon_list";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "demon_list";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     

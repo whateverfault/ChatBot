@@ -1,10 +1,8 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.moderation.data;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -24,10 +22,8 @@ public enum ModerationActionType {
 }
 
 public class ModerationService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private static Bot Bot => TwitchChatBot.Instance;
     
-    public override string Name => ServiceName.Moderation;
     public override ModerationOptions Options { get; } = new ModerationOptions();
 
     public event EventHandler<ModAction>? OnModActionAdded;
@@ -53,7 +49,7 @@ public class ModerationService : Service {
             }
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"An exception occured while moderating a message. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"An exception occured while moderating a message. {e.Data}");
         }
     }
 
@@ -61,7 +57,7 @@ public class ModerationService : Service {
         if (Options.ServiceState == State.Disabled) return;
 
         if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) {
-            _logger.Log(LogLevel.Error, $"Couldn't Warn User {message.Username}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Couldn't Warn User {message.Username}");
             return;
         }
 

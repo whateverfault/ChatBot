@@ -1,5 +1,6 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.telegram_notifications.data.saved;
 using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.telegram_notifications;
@@ -9,8 +10,8 @@ public class TgNotificationsOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "tg_notifications";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "tg_notifications";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
     

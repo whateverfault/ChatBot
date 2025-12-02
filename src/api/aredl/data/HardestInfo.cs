@@ -3,15 +3,15 @@
 namespace ChatBot.api.aredl.data;
 
 public class HardestInfo {
-    public string id;
-    public string name;
+    public string Id;
+    public string Name;
 
 
     [JsonConstructor]
     public HardestInfo(
         [JsonProperty(PropertyName = "id")] string id,
         [JsonProperty(PropertyName = "name")] string name) {
-        this.id = id;
-        this.name = name;
+        Id = id;
+        Name = name;
     }
 }

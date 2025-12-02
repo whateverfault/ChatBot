@@ -1,4 +1,5 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.chat_bot.data.saved;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.shared;
 using TwitchAPI.client;
@@ -11,8 +12,8 @@ public class ChatBotOptions : Options {
     
     private SaveData? _saveData;
 
-    protected override string Name => "chat_bot";
-    protected override string OptionsPath => Path.Combine($"{Directories.DataDirectory}/{Name}", $"{Name}_opt.json");
+    private static string Name => "chat_bot";
+    private static string OptionsPath => Path.Combine($"{Directories.DataDirectory}/{Name}", $"{Name}_opt.json");
 
     public ITwitchClient? Client { get; private set; }
     

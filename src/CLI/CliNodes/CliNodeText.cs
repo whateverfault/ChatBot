@@ -1,4 +1,6 @@
-﻿namespace ChatBot.cli.CliNodes;
+﻿using ChatBot.bot.shared.handlers;
+
+namespace ChatBot.cli.CliNodes;
 
 public class CliNodeText : CliNode {
     private readonly bool _hasIndex;
@@ -18,7 +20,7 @@ public class CliNodeText : CliNode {
 
     public override int PrintValue(int index, out string end) {
         end = "\n";
-        Console.Write($"{(_hasIndex? $"{index}. " : "")}{Text}");
+        IoHandler.Write($"{(_hasIndex? $"{index}. " : "")}{Text}");
         return _decrease;
     }
 

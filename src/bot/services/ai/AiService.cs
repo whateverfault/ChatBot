@@ -21,10 +21,8 @@ public enum AiKind {
 }
 
 public class AiService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private readonly List<AiClient> _aiClients = [];
     
-    public override string Name => ServiceName.Ai;
     public override AiOptions Options { get; } = new AiOptions();
 
     
@@ -42,7 +40,7 @@ public class AiService : Service {
         
         var response = 
             await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
-                                                         _logger.Log(LogLevel.Error, message);
+                                                         ErrorHandler.LogMessage(LogLevel.Error, message);
                                                      });
         if (response != null || aiData.Fallback.FallbackState != State.Enabled) {
             if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);
@@ -55,7 +53,7 @@ public class AiService : Service {
         aiData = Options.AiData[aiIndex];
         
         response = await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
-                                                                _logger.Log(LogLevel.Error, message);
+                                                                ErrorHandler.LogMessage(LogLevel.Error, message);
                                                             });
         
         if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);

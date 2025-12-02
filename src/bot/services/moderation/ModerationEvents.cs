@@ -17,8 +17,8 @@ public class ModerationEvents : ServiceEvents {
 
     public override void Init(Service service) {
         _moderationService = (ModerationService)service;
-        _streamStateChecker = (StreamStateCheckerService)ServiceManager.GetService(ServiceName.StreamStateChecker);
-        _messageFilterService = (MessageFilterService)ServiceManager.GetService(ServiceName.MessageFilter);
+        _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
+        _messageFilterService = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
         base.Init(service);
     }
 

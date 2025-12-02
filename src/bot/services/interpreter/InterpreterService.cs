@@ -1,15 +1,12 @@
 ﻿using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using sonlanglib.interpreter;
-using sonlanglib.interpreter.data;
 using sonlanglib.interpreter.data.vars;
 using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.interpreter;
 
 public class InterpreterService : Service {
-    public override string Name => ServiceName.Interpreter;
     public override InterpreterOptions Options { get; } = new InterpreterOptions();
     
     public Interpreter Interpreter { get; } = new Interpreter();

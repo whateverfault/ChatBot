@@ -7,7 +7,7 @@ using TwitchAPI.client;
 namespace ChatBot.bot.services.stream_state_checker;
 
 public class StreamStateCheckerEvents : ServiceEvents {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
+    private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
 
     private StreamStateCheckerService _checkerService = null!;
     private readonly object _killLock = new object();
@@ -72,7 +72,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
             }
         }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while checking stream state. {e}");
+            _logger.Log(LogLevel.Error, $"Exception while checking stream state: {e.Data}");
         }
     }
 }

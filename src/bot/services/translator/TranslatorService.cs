@@ -1,9 +1,8 @@
 ﻿using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
-using ChatBot.bot.services.Static;
-using ChatBot.bot.services.translator.Google;
-using ChatBot.bot.services.translator.Google.Data;
-using ChatBot.bot.services.translator.VK;
+using ChatBot.bot.services.translator.data.clients.Google;
+using ChatBot.bot.services.translator.data.clients.google.data;
+using ChatBot.bot.services.translator.data.clients.vk;
+using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 
 namespace ChatBot.bot.services.translator;
@@ -14,11 +13,9 @@ public enum TranslationService {
 }
 
 public class TranslatorService : Service {
-    private static readonly LoggerService _logger = (LoggerService)ServiceManager.GetService(ServiceName.Logger);
     private GoogleTranslateClient _gTranslateClient = null!;
     private VkTranslateClient _vkTranslateClient = null!;
     
-    public override string Name => ServiceName.Translator;
     public override TranslatorOptions Options { get; } = new TranslatorOptions();
 
 
@@ -33,7 +30,7 @@ public class TranslatorService : Service {
                    };
 
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Error while translating. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Error while translating. {e.Data}");
             return null;
         }
     }
@@ -41,14 +38,14 @@ public class TranslatorService : Service {
     private async Task<string?> GTranslate(string text, string targetLang) {
         try {
             var response = await _gTranslateClient.Translate([text,], targetLang, callback: (_, message) => {
-                                                                 _logger.Log(LogLevel.Error, message);
+                                                                 ErrorHandler.LogMessage(LogLevel.Error, message);
                                                              });
             
             if (response is { Translations.Count: > 0, }) {
                 return response.Translations[0].TranslatedText;
             }
             
-            _logger.Log(LogLevel.Error, $"Failed to translate '{text}' to {targetLang}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Failed to translate '{text}' to {targetLang}");
             return null;
         } catch (Exception) {
             return null;
@@ -60,11 +57,11 @@ public class TranslatorService : Service {
             string[]? response;
             if (!string.IsNullOrEmpty(sourceLang)) {
                 response = await _vkTranslateClient.Translate(text, targetLang, sourceLang, callback: (_, message) => {
-                                                                  _logger.Log(LogLevel.Error, message);
+                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                               });
             } else {
                 response = await _vkTranslateClient.Translate(text, targetLang, callback: (_, message) => {
-                                                                  _logger.Log(LogLevel.Error, message);
+                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                               });
             }
             
@@ -72,7 +69,7 @@ public class TranslatorService : Service {
                 return response[0];
             }
             
-            _logger.Log(LogLevel.Error, $"Failed to translate '{text}' to {targetLang}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Failed to translate '{text}' to {targetLang}");
             return null;
         } catch (Exception) {
             return null;
@@ -82,17 +79,17 @@ public class TranslatorService : Service {
     public async Task<DetectedLanguage?> DetectLanguage(string text) {
         try {
             var response = await _gTranslateClient.DetectLanguage(text, callback: (_, message) => {
-                                                                      _logger.Log(LogLevel.Error, message);
+                                                                      ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                   });
             
             if (response is { Languages.Count: > 0, }) {
                 return response.Languages[0];
             }
             
-            _logger.Log(LogLevel.Error, $"Failed to detect language of '{text}'");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Failed to detect language of '{text}'");
             return null;
         } catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Error while detecting a language. {e}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Error while detecting a language. {e.Data}");
             return null;
         }
     }

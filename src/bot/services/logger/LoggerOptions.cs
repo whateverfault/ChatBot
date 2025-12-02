@@ -1,5 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.logger.data;
+using ChatBot.bot.services.logger.data.saved;
 using ChatBot.bot.shared;
 using TwitchAPI.client;
 
@@ -10,8 +12,8 @@ public class LoggerOptions : Options {
     
     private SaveData? _saveData;
     
-    protected override string Name => "logger";
-    protected override string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
+    private static string Name => "logger";
+    private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
     
     public override State ServiceState => _saveData!.ServiceState;
     

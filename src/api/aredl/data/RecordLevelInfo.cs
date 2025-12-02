@@ -3,10 +3,10 @@
 namespace ChatBot.api.aredl.data;
 
 public class RecordLevelInfo {
-    public string id;
-    public string name;
-    public int position;
-    public bool legacy;
+    public readonly string Id;
+    public readonly string Name;
+    public readonly int Position;
+    public readonly bool Legacy;
 
 
     [JsonConstructor]
@@ -15,9 +15,9 @@ public class RecordLevelInfo {
         string name,
         int position, 
         bool legacy) {
-        this.id = id;
-        this.name = name;
-        this.position = position;
-        this.legacy = legacy;
+        Id = id;
+        Name = name;
+        Position = position;
+        Legacy = legacy;
     }
 }
