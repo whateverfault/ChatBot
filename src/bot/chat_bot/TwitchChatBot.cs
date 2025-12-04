@@ -49,6 +49,8 @@ public sealed class TwitchChatBot : Bot {
             await Task.Run(async () => {
                                ErrorHandler.LogMessage(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
                                
+                               Services.Init();
+                               
                                SubscribeToEvents();
                                await InitConnectionAsync();
 
@@ -60,7 +62,6 @@ public sealed class TwitchChatBot : Bot {
                                    return;
                                }
                                
-                               Services.Init();
                                lock (_startLock) {
                                    _starting = false;
                                }
@@ -83,6 +84,8 @@ public sealed class TwitchChatBot : Bot {
 
         ErrorHandler.LogMessage(LogLevel.Info, $"Connecting to {Options.Credentials.Channel}...");
 
+        Services.Init();
+        
         SubscribeToEvents();
         InitConnection();
 
@@ -91,7 +94,6 @@ public sealed class TwitchChatBot : Bot {
             return;
         }
         
-        Services.Init();
         lock (_startLock) {
             _starting = false;
         }
@@ -108,8 +110,9 @@ public sealed class TwitchChatBot : Bot {
             return false;
         }
 
-        UnsubscribeFromEvents();
         Services.Kill();
+        
+        UnsubscribeFromEvents();
         Options.Client.Disconnect();
         
         _initialized = false;

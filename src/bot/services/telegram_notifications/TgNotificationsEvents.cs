@@ -44,39 +44,44 @@ public class TgNotificationsEvents : ServiceEvents {
     }
     
     private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
-        if (streamState.WasOnline) {
-            return;
+        lock (_lock) {
+            if (streamState.WasOnline 
+             || _tgNotifications.GetIsSent()) return;
+            
+            _tgNotifications.Options.SetIsSent(true);
+            
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
+             || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
         }
+        
+        var messageId = await _tgNotifications.SendNotification(data);
 
         lock (_lock) {
-            if (_tgNotifications.GetIsSent()) return;
-            _tgNotifications.Options.SetIsSent(true);
+            _tgNotifications.Options.SetLastSentTime();
+            _tgNotifications.Options.SetLastMessageId(messageId ?? -1);
         }
-        
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
-         || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
-            
-        var messageId = await _tgNotifications.SendNotification(data); 
-        
-        _tgNotifications.Options.SetLastSentTime();
-        _tgNotifications.Options.SetLastMessageId(messageId ?? -1);
     }
 
     private async Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
+        long lastMessageId;
+        
         lock (_lock) {
             if (streamState.WasOnline
              || streamState.OfflineTime < _tgNotifications.GetCooldown()
              || !_tgNotifications.GetIsSent()) return;
             
             _tgNotifications.Options.SetIsSent(false);
+            
+            lastMessageId = _tgNotifications.Options.LastMessageId;
+            if (lastMessageId < 0) return;
         }
-
-        var lastMessageId = _tgNotifications.Options.LastMessageId;
-        if (lastMessageId < 0) return;
         
         var result = await _tgNotifications.DeleteNotification(lastMessageId);
-        if (result) _tgNotifications.Options.SetLastMessageId(-1);
+
+        lock (_lock) {
+            if (result) _tgNotifications.Options.SetLastMessageId(-1);
+        }
     }
 #pragma warning restore InconsistentlySynchronizedField
 }

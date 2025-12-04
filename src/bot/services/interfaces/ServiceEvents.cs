@@ -7,16 +7,24 @@ public abstract class ServiceEvents {
 
 
     public virtual void Init(Service service) {
+        Kill();
+        
         Subscribe();
         Initialized = true;
     }
 
     public virtual void Kill() {
+        if (!Initialized) {
+            return;
+        }
+        
         UnSubscribe();
         Initialized = false;
     }
 
     protected virtual void Subscribe() {
+        UnSubscribe();
+        
         Subscribed = true;
     }
 

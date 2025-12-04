@@ -1,36 +1,26 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
-using ChatBot.bot.services.Static;
+using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 
 namespace ChatBot.bot.services.stream_state_checker;
 
 public class StreamStateCheckerEvents : ServiceEvents {
-    private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
-
     private StreamStateCheckerService _checkerService = null!;
-    private readonly object _killLock = new object();
-    private bool _killSignal;
+    private CancellationTokenSource _cts = null!;
     
     public override bool Initialized { get; protected set; }
     
 
     public override void Init(Service service) {
-        lock (_killLock) {
-            _killSignal = false;
+        if (Initialized) {
+            return;
         }
-
-        _checkerService = (StreamStateCheckerService)service;
-        base.Init(service);
-    }
-
-    public override void Kill() {
-        base.Kill();
         
-        lock (_killLock) {
-            _killSignal = true;
-        }
+        _cts = new CancellationTokenSource();
+        _checkerService = (StreamStateCheckerService)service;
+        
+        base.Init(service);
     }
     
     protected override void Subscribe() {
@@ -39,7 +29,9 @@ public class StreamStateCheckerEvents : ServiceEvents {
         }
         base.Subscribe();
         
-        TwitchChatBot.Instance.OnInitialized += CheckStreamStateRoutine;
+        TwitchChatBot.Instance.OnInitialized += () => {
+                                                    CheckStreamStateRoutine(_cts.Token);
+                                                };
     }
 
     protected override void UnSubscribe() {
@@ -47,32 +39,39 @@ public class StreamStateCheckerEvents : ServiceEvents {
             return;
         }
         base.UnSubscribe();
-        
-        TwitchChatBot.Instance.OnInitialized -= CheckStreamStateRoutine;
+
+        _cts.Cancel();
+        _cts = new CancellationTokenSource();
     }
     
-    private async void CheckStreamStateRoutine() {
+    private async void CheckStreamStateRoutine(CancellationToken cancellationToken = default) {
         try {
             while (true) {
-                lock (_killLock) {
-                    if (_killSignal) return;
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
                 }
-                
+
                 var cooldown = _checkerService.Options.GetCheckCooldown();
                 var lastChecked = _checkerService.Options.GetLastCheckTime();
                 var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
                 if (now - lastChecked < cooldown) {
                     var sleep = cooldown - now + lastChecked;
-                    Thread.Sleep(TimeSpan.FromSeconds(sleep));
+                    if (sleep < 0) {
+                        sleep = 0;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(30, sleep)), cancellationToken);
+                    continue;
                 }
 
                 await _checkerService.CheckState();
                 _checkerService.Options.SetLastCheckedTime();
             }
         }
+        catch (TaskCanceledException) { }
         catch (Exception e) {
-            _logger.Log(LogLevel.Error, $"Exception while checking stream state: {e.Data}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while checking stream state: {e.Data}");
         }
     }
 }

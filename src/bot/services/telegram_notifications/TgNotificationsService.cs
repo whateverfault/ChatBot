@@ -18,7 +18,9 @@ public class TgNotificationsService : Service {
 
     public async Task<long?> SendNotification(StreamData? data) {
         try {
-            if (_botClient == null) return -1;
+            if (_botClient == null) {
+                return -1;
+            }
             
             var processed = ProcessPrompt(Options.NotificationPrompt, data);
             var response = await _botClient.SendMessageAsync(processed, (_, message) => {
@@ -26,6 +28,7 @@ public class TgNotificationsService : Service {
                                                                      });
 
             if (response is not { Ok: true, }) {
+                ErrorHandler.LogMessage(LogLevel.Error, $"Failed to send telegram notification.");
                 return null;
             }
 
@@ -40,7 +43,9 @@ public class TgNotificationsService : Service {
 
     public async Task<bool> DeleteNotification(long messageId) {
         try {
-            if (_botClient == null) return false;
+            if (_botClient == null) {
+                return false;
+            }
             
             ErrorHandler.LogMessage(LogLevel.Info, $"Previous telegram notification message has been deleted. (id: {messageId})");
             return await _botClient.DeleteMessageAsync(messageId, (_, message) => {
