@@ -1,10 +1,10 @@
-﻿using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
-using TwitchAPI.helix;
 
 namespace ChatBot.bot.services.moderation.data;
 
@@ -136,13 +136,13 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.Ban: {
-                await Helix.BanUser(chatMessage.Username, ModeratorComment, client.Credentials);
+                await TwitchChatBot.Instance.Api.BanUser(chatMessage.Username, ModeratorComment, client.Credentials);
                 break;
             }
             case ModerationActionType.Timeout: {
-                await Helix.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
-                                            ErrorHandler.LogMessage(LogLevel.Error, message);
-                                        });
+                await TwitchChatBot.Instance.Api.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, message) => {
+                                                                      ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                                  });
                 break;
             }
         }
@@ -155,9 +155,9 @@ public class ModAction {
         
         if (Type == ModerationActionType.Warn) {
             await client.SendMessage(ModeratorComment, chatMessage.Id);
-            await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
-                                                                            ErrorHandler.LogMessage(LogLevel.Error, callback);
-                                                                       });
+            await TwitchChatBot.Instance.Api.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
+                                                                    ErrorHandler.LogMessage(LogLevel.Error, callback);
+                                                                });
             return;
         }
         
@@ -183,24 +183,24 @@ public class ModAction {
         user.GiveWarn();
         await client.SendMessage($"@{chatMessage.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
-            await Helix.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
-                                                                            ErrorHandler.LogMessage(LogLevel.Error, callback);
-                                                                        });
+            await TwitchChatBot.Instance.Api.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
+                                                                    ErrorHandler.LogMessage(LogLevel.Error, callback);
+                                                                });
             return;
         }
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                await Helix.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
-                                             ErrorHandler.LogMessage(LogLevel.Error, callback);
-                                         });
+                await TwitchChatBot.Instance.Api.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
+                                                                  ErrorHandler.LogMessage(LogLevel.Error, callback);
+                                                              });
                 _options.RemoveWarnedUser(userIndex);
                 break;
             }
             case ModerationActionType.WarnWithTimeout: {
-                await Helix.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
-                                                      ErrorHandler.LogMessage(LogLevel.Error, callback);
-                                                  });
+                await TwitchChatBot.Instance.Api.TimeoutUser(chatMessage.UserId, ModeratorComment, TimeSpan.FromSeconds(Duration), client.Credentials, (_, callback) => {
+                                                                      ErrorHandler.LogMessage(LogLevel.Error, callback);
+                                                                  });
                 _options.RemoveWarnedUser(userIndex);
                 break;
             }

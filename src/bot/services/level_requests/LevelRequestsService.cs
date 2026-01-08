@@ -30,7 +30,7 @@ public class LevelRequestsService : Service {
                     return;
             }
             
-            await LevelRequestsOptions.ModerationService.WarnUser(chatMessage, Options.PatternIndex, $"Req {GetReqStateStr(Options.ReqState)}");
+            await LevelRequestsOptions.ModerationService.WarnUser(chatMessage, Options.PatternIndex, $"Req {GetReqStateStr(Options.ReqState, eng: true)}");
         } catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, $"Error while handling a potential level request: {e.Data}");
         }

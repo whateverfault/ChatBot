@@ -11,10 +11,10 @@ public class RecordLevelInfo {
 
     [JsonConstructor]
     public RecordLevelInfo(
-        string id,
-        string name,
-        int position, 
-        bool legacy) {
+        [JsonProperty("id")] string id,
+        [JsonProperty("name")] string name,
+        [JsonProperty("position")] int position, 
+        [JsonProperty("legacy")] bool legacy) {
         Id = id;
         Name = name;
         Position = position;

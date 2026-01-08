@@ -16,7 +16,7 @@ internal static class Program {
         
         IoHandler.InputEncoding = Encoding.UTF8;
         IoHandler.OutputEncoding = Encoding.UTF8;
-
+        
         foreach (var arg in args) {
             autoInit = arg switch {
                            "--auto-init" => true,
@@ -29,7 +29,7 @@ internal static class Program {
         var bot = TwitchChatBot.Instance;
         var cli = new Cli(new CliData());
         
-        if (autoInit) _ = bot.StartAsync();
+        if (autoInit) _ = bot.Start();
         
         await cli.StartRenderer();
     }

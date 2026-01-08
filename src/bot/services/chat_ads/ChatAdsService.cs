@@ -3,7 +3,7 @@ using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_ads.data;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.stream_state_checker.Data;
-using TwitchAPI.helix.data.requests;
+using TwitchAPI.api.data.requests;
 
 namespace ChatBot.bot.services.chat_ads;
 

@@ -1,6 +1,7 @@
 ﻿using ChatBot.api.json;
 using ChatBot.bot.chat_bot.data.saved;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.scopes;
 using ChatBot.bot.shared;
 using TwitchAPI.client;
 using TwitchAPI.client.credentials;
@@ -20,6 +21,9 @@ public class ChatBotOptions : Options {
     public override State ServiceState => State.Enabled;
 
     public ConnectionCredentials Credentials => _saveData!.Credentials;
+
+    public ScopesPreset CurAuthLevel => _saveData!.CurAuthLevel;
+    public bool HasBroadcasterAuth => _saveData!.HasBroadcasterAuth;
     
 
     public override void Load() {
@@ -61,6 +65,16 @@ public class ChatBotOptions : Options {
     
     public void SetCredentials(FullCredentials credentials) {
         _saveData!.Credentials = ConnectionCredentials.FromFullCredentials(credentials);
+        Save();
+    }
+
+    public void SetCurAuthLevel(ScopesPreset value) {
+        _saveData!.CurAuthLevel = value;
+        Save();
+    }
+    
+    public void SetHasBroadcasterAuth(bool value) {
+        _saveData!.HasBroadcasterAuth = value;
         Save();
     }
 }

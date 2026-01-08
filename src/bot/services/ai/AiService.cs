@@ -5,8 +5,6 @@ using ChatBot.bot.services.ai.data.clients.HuggingFace;
 using ChatBot.bot.services.ai.data.clients.interfaces;
 using ChatBot.bot.services.ai.data.clients.Ollama;
 using ChatBot.bot.services.interfaces;
-using ChatBot.bot.services.logger;
-using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.shared;

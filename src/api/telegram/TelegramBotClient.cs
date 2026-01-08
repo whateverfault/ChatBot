@@ -26,7 +26,6 @@ public class TelegramBotClient {
         _chatId = chatId;
 
         _httpClient = client ?? new HttpClient(_httpHandler);
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
     public void UpdateToken(string token) {

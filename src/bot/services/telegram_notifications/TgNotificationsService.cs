@@ -4,7 +4,7 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
-using TwitchAPI.helix.data.requests;
+using TwitchAPI.api.data.requests;
 
 namespace ChatBot.bot.services.telegram_notifications;
 
@@ -124,6 +124,6 @@ public class TgNotificationsService : Service {
     public override void Init() {
         base.Init();
         
-        _botClient = new TelegramBotClient(Options.BotToken, Options.ChatId);
+        _botClient = new TelegramBotClient(Options.BotToken, Options.ChatId, Network.HttpClient);
     }
 }

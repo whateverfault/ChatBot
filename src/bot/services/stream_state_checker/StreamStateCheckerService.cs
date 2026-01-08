@@ -3,8 +3,7 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.stream_state_checker.Data;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
-using TwitchAPI.helix;
-using TwitchAPI.helix.data.requests;
+using TwitchAPI.api.data.requests;
 
 namespace ChatBot.bot.services.stream_state_checker;
 
@@ -29,7 +28,7 @@ public class StreamStateCheckerService : Service {
             
             var lastCheckedWasOnline = Options.StreamState.WasOnline;
             
-            var streamResponse = await Helix.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
+            var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
                                                             ErrorHandler.LogMessage(LogLevel.Error, message);
                                                            });
             if (streamResponse == null) {

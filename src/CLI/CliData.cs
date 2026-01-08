@@ -13,6 +13,7 @@ using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.presets;
+using ChatBot.bot.services.scopes;
 using ChatBot.bot.services.shop;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
@@ -43,4 +44,5 @@ public class CliData {
     public CasinoService Casino { get; } = (CasinoService)Services.Get(ServiceId.Casino);
     public BankService Bank { get; } = (BankService)Services.Get(ServiceId.Bank);
     public ShopService Shop { get; } = (ShopService)Services.Get(ServiceId.Shop);
+    public ScopesService Scopes { get; } = (ScopesService)Services.Get(ServiceId.Scopes);
 }

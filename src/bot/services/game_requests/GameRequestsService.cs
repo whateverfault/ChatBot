@@ -6,7 +6,6 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
-using TwitchAPI.helix;
 
 namespace ChatBot.bot.services.game_requests;
 
@@ -58,10 +57,10 @@ public class GameRequestsService : Service {
                 
                 index = args.IndexOf("--user");
                 if (index >= 0 && index < args.Count - 1) {
-                    var userId = await Helix.GetUserId(args[index + 1], Client.Credentials,
-                                                       (_, message) => {
-                                                           ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                       });
+                    var userId = await TwitchChatBot.Instance.Api.GetUserId(args[index + 1], Client.Credentials,
+                                                               (_, message) => {
+                                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                               });
                     if (userId == null) {
                         await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, Client);
                         return;
