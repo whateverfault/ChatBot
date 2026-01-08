@@ -10,10 +10,10 @@ public class ClanData {
 
     
     public ClanData(
-        [JsonProperty(PropertyName = "id")] string id,
-        [JsonProperty(PropertyName = "tag")] string tag,
-        [JsonProperty(PropertyName = "global_name")] string globalName,
-        [JsonProperty(PropertyName = "description")] string description) {
+        [JsonProperty("id")] string id,
+        [JsonProperty("tag")] string tag,
+        [JsonProperty("global_name")] string globalName,
+        [JsonProperty("description")] string description) {
         Id = id;
         Tag = tag;
         GlobalName = globalName;

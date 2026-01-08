@@ -1,4 +1,5 @@
 ﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.scopes;
 
 namespace ChatBot.bot.services.interfaces;
 

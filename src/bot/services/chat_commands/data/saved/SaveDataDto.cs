@@ -12,7 +12,8 @@ internal class SaveDataDto {
 
     public readonly SafeField<string> BaseTitle = new SafeField<string>(string.Empty);
 
-    public readonly SafeField<State> SendWhisperIfPossible = new SafeField<State>(State.Disabled);
+    public readonly SafeField<bool> SendWhisperIfPossible = new SafeField<bool>(false);
+    public readonly SafeField<bool> Use7Tv = new SafeField<bool>(false);
 
 
     public SaveDataDto() { }
@@ -22,11 +23,13 @@ internal class SaveDataDto {
         char commandIdentifier,
         State verboseState,
         string baseTitle,
-        State sendWhisperIfPossible) {
+        bool sendWhisperIfPossible,
+        bool use7Tv) {
         ServiceState.Value = serviceState;
         CommandIdentifier.Value = commandIdentifier;
         VerboseState.Value = verboseState;
         BaseTitle.Value = baseTitle;
         SendWhisperIfPossible.Value = sendWhisperIfPossible;
+        Use7Tv.Value = use7Tv;
     }
 }

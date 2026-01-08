@@ -1,16 +1,16 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.level_requests;
-using ChatBot.bot.services.Static;
+using ChatBot.bot.services.scopes;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared.handlers;
-using ChatBot.cli.CliNodes;
-using ChatBot.cli.CliNodes.Directories;
-using ChatBot.cli.CliNodes.Directories.ChatAds;
-using ChatBot.cli.CliNodes.Directories.ChatCommands;
-using ChatBot.cli.CliNodes.Directories.MessageFilter;
-using ChatBot.cli.CliNodes.Directories.Moderation;
-using ChatBot.cli.CliNodes.Directories.Presets;
+using ChatBot.cli.data.CliNodes;
+using ChatBot.cli.data.CliNodes.Directories;
+using ChatBot.cli.data.CliNodes.Directories.ChatAds;
+using ChatBot.cli.data.CliNodes.Directories.ChatCommands;
+using ChatBot.cli.data.CliNodes.Directories.MessageFilter;
+using ChatBot.cli.data.CliNodes.Directories.Moderation;
+using ChatBot.cli.data.CliNodes.Directories.Presets;
 using TwitchAPI.client;
 
 namespace ChatBot.cli;
@@ -19,15 +19,14 @@ public class CliNodeSystem {
     private readonly CliState _state;
     private readonly List<CliNodeDirectory> _directories;
     private int _dirPointer;
-
-
+    
+    public CliNodeDirectory Current => _directories[_dirPointer];
+    
+    
     public CliNodeSystem(CliState state) {
         _directories = [];
         _state = state;
     }
-
-    public CliNodeDirectory Current => _directories[_dirPointer];
-    
     
     public void DirectoryEnter(CliNodeDirectory dir) {
         _directories.Add(dir);
@@ -41,6 +40,10 @@ public class CliNodeSystem {
     }
 
     public void InitNodes() {
+        if (_state.Renderer == null) {
+            return;
+        }
+        
         var chatLogsDir = new CliNodeStaticDirectory(
                                                      "Chat Logs",
                                                      _state,
@@ -269,12 +272,17 @@ public class CliNodeSystem {
                                                                                              CliNodePermission.Default,
                                                                                              _state.Data.ChatCommands.SetBaseTitle
                                                                                              ),
-                                                                                        new CliNodeEnum(
+                                                                                        new CliNodeBool(
                                                                                              "Send Whisper If Possible",
-                                                                                             _state.Data.ChatCommands.GetSendWhisperIfPossibleStateAsInt,
-                                                                                             typeof(State),
+                                                                                             _state.Data.ChatCommands.GetSendWhisperIfPossible,
                                                                                              CliNodePermission.Default,
-                                                                                             _state.Data.ChatCommands.SendWhisperIfPossibleStateNext
+                                                                                             _state.Data.ChatCommands.SetSendWhisperIfPossibleState
+                                                                                            ),
+                                                                                        new CliNodeBool(
+                                                                                             "Use 7tv",
+                                                                                             _state.Data.ChatCommands.GetUse7Tv,
+                                                                                             CliNodePermission.Default,
+                                                                                             _state.Data.ChatCommands.SetUse7Tv
                                                                                             ),
                                                                                      ]
                                                                                      ),
@@ -344,7 +352,6 @@ public class CliNodeSystem {
                                                    [
                                                        new CliNodeLogDirectory(
                                                                                "Logs",
-                                                                               true,
                                                                                _state,
                                                                                _state.Data.Logger
                                                                                ),
@@ -913,13 +920,32 @@ public class CliNodeSystem {
                                                     ]
                                                     );
 
+        var rendererDir = new CliNodeStaticDirectory(
+                                                     "Renderer",
+                                                     _state,
+                                                     true,
+                                                     [
+                                                         new CliNodeAction(
+                                                                           "Change Renderer",
+                                                                           _state.Renderer.RendererNext
+                                                                           ),
+                                                         new CliNodeEnum(
+                                                                           "Current Renderer",
+                                                                           _state.Renderer.GetRendererAsInt,
+                                                                           typeof(Renderer),
+                                                                           CliNodePermission.ReadOnly
+                                                                          ),
+                                                     ]
+                                                     );
+        
         var debugDir = new CliNodeStaticDirectory(
                                                   "Debug",
                                                   _state,
                                                   true,
                                                   [
-                                                      streamStateCheckerDir,
                                                       loggerDir,
+                                                      streamStateCheckerDir,
+                                                      rendererDir,
                                                   ]
                                                   );
 
@@ -980,31 +1006,45 @@ public class CliNodeSystem {
                                                                         "Channel",
                                                                         _state.Data.Bot.GetChannel,
                                                                         CliNodePermission.Default,
-                                                                        _state.Data.Bot.SetChannel
-                                                                       ),
+                                                                        value => {
+                                                                            _ = _state.Data.Bot.SetChannel(value);
+                                                                        }),
                                                       new CliNodeStaticDirectory(
-                                                                                 "Secret",
-                                                                                 _state,
-                                                                                 true,
-                                                                                 [
-                                                                                     new CliNodeString(
-                                                                                          "OAuth",
-                                                                                          _state.Data.Bot.GetOauth,
-                                                                                          CliNodePermission.Default,
-                                                                                          _state.Data.Bot.SetOauth
-                                                                                         ),
-                                                                                     new CliNodeString(
-                                                                                          "Broadcaster OAuth",
-                                                                                          _state.Data.Bot.GetChannelOauth,
-                                                                                          CliNodePermission.Default,
-                                                                                          _state.Data.Bot.SetChannelOauth
-                                                                                         ),
-                                                                                 ]
-                                                                                 ),
-                                                      new CliNodeAction(
-                                                                        "Save",
-                                                                        _state.Data.Bot.Options.Save
-                                                                       ),
+                                                           "Authorization", 
+                                                           _state,
+                                                           true,
+                                                           [
+                                                               new CliNodeEnum(
+                                                                            "Authorization Level",
+                                                                            _state.Data.Scopes.GetScopesPresetAsInt,
+                                                                            typeof(ScopesPreset),
+                                                                            CliNodePermission.Default,
+                                                                            _state.Data.Scopes.ScopesPresetNext
+                                                                           ), 
+                                                               new CliNodeAction(
+                                                                    "Authorize", 
+                                                                    () => _ = _state.Data.Bot.GetAuthorization() 
+                                                                    ),
+                                                               new CliNodeStaticDirectory(
+                                                                    "Info",
+                                                                    _state,
+                                                                    true, 
+                                                                    [
+                                                                        new CliNodeEnum(
+                                                                             "Current Authorization Level", 
+                                                                             _state.Data.Bot.CurAuthLevelAsInt, 
+                                                                             typeof(ScopesPreset), 
+                                                                             CliNodePermission.ReadOnly
+                                                                             ),
+                                                                        new CliNodeBool(
+                                                                             "Has Broadcaster Authorization", 
+                                                                             _state.Data.Bot.HasBroadcasterAuth, 
+                                                                             CliNodePermission.ReadOnly
+                                                                             ),
+                                                                    ]
+                                                               ),
+                                                           ]
+                                                      ),
                                                   ]
                                                  );
 
@@ -1014,14 +1054,15 @@ public class CliNodeSystem {
                                                 true,
                                                 [
                                                     loginDir,
-                                                    new CliNodeActionAsync(
+                                                    new CliNodeAction(
                                                                       "Initialize",
-                                                                      _state.Data.Bot.StartAsync
+                                                                      () => _ = _state.Data.Bot.Start()
                                                                      ),
                                                     new CliNodeAction(
                                                                       "Stop",
-                                                                      _state.Data.Bot.Stop
-                                                                     ),
+                                                                      () => {
+                                                                          _ = _state.Data.Bot.Stop();
+                                                                      }),
                                                 ]
                                                 );
         

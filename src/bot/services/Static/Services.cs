@@ -14,6 +14,8 @@ using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.moderation;
 using ChatBot.bot.services.presets;
+using ChatBot.bot.services.scopes;
+using ChatBot.bot.services.scopes.data;
 using ChatBot.bot.services.shop;
 using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.telegram_notifications;
@@ -43,6 +45,7 @@ public enum ServiceId {
     Bank,
     Shop,
     Interpreter, 
+    Scopes,
 }
 
 public static class Services {
@@ -190,6 +193,13 @@ public static class Services {
                                                                                     (
                                                                                         new InterpreterService(),
                                                                                         new InterpreterEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
+                                                                                    ServiceId.Scopes,
+                                                                                    (
+                                                                                        new ScopesService(),
+                                                                                        new ScopesEvents()
                                                                                     )
                                                                                 },
                                                                             };

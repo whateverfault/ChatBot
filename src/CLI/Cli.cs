@@ -3,19 +3,21 @@
 public class Cli {
     private readonly CliNodeActivationHandler _nodeActivationHandler;
     private readonly CliRenderer _renderer;
+    
+    public CliNodeSystem NodeSystem { get; }
 
 
     public Cli(CliData data) {
         var state = new CliState(this, data);
-        var nodeSystem = new CliNodeSystem(state);
+        NodeSystem = new CliNodeSystem(state);
         _renderer = new CliRenderer();
         
-        state.Bind(nodeSystem, _renderer);
+        state.Bind(NodeSystem, _renderer);
         _renderer.Bind(state);
         
         _nodeActivationHandler = new CliNodeActivationHandler(state);
         
-        nodeSystem.InitNodes();
+        NodeSystem.InitNodes();
     }
 
     public Task StartRenderer() {

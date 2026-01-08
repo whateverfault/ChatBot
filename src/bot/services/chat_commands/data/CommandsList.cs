@@ -21,7 +21,6 @@ using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
-using TwitchAPI.helix;
 using TwitchAPI.shared;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
@@ -39,6 +38,14 @@ public static class CommandsList {
 
     static CommandsList() {
         DefaultsCommands = [
+                               new DefaultChatCommand(
+                                                      75,
+                                                      "ping",
+                                                      string.Empty,
+                                                      "пинг.",
+                                                      Ping,
+                                                      Restriction.DevBroad
+                                                     ),
                                new DefaultChatCommand(
                                                    1,
                                                    "help",
@@ -139,7 +146,7 @@ public static class CommandsList {
                                                       10,
                                                       "when",
                                                       "[text]",
-                                                      "Waiting",
+                                                      Get7TvEmote(Emote.Wait),
                                                       When,
                                                       Restriction.Everyone
                                                      ),
@@ -147,7 +154,7 @@ public static class CommandsList {
                                                       11,
                                                       "ban",
                                                       "[text]",
-                                                      "SillyJail",
+                                                      Get7TvEmote(Emote.Jail),
                                                       Ban,
                                                       Restriction.Everyone
                                                      ),
@@ -215,14 +222,6 @@ public static class CommandsList {
                                                       "установить награду для реквестов.",
                                                       SetReqReward,
                                                       Restriction.DevBroad
-                                                     ),
-                               new DefaultChatCommand(
-                                                      17,
-                                                      "verbose",
-                                                      "[on/off]",
-                                                      "включить/выключить/узнать включены ли дополнительные логи",
-                                                      Verbose,
-                                                      Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -299,7 +298,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       28,
                                                       "hardest",
-                                                      "[username]",
+                                                      "[username] [--top <number>]",
                                                       "хардест пользователя по AREDL.",
                                                       Hardest,
                                                       Restriction.Everyone
@@ -307,7 +306,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       29,
                                                       "easiest",
-                                                      "[username]",
+                                                      "[username] [--top <number>]",
                                                       "легчайший экстрим пользователя по AREDL.",
                                                       Easiest,
                                                       Restriction.Everyone,
@@ -332,7 +331,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       27,
                                                       "roulette",
-                                                      "<from to>",
+                                                      "<number> <number>",
                                                       "зарандомить экстрим.",
                                                       Roulette,
                                                       Restriction.Everyone,
@@ -349,7 +348,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       59,
                                                       "phardest",
-                                                      "[username]",
+                                                      "[username] [--top <number>]",
                                                       "хардест пользователя по Pemon List.",
                                                       PHardest,
                                                       Restriction.Everyone
@@ -357,7 +356,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       60,
                                                       "peasiest",
-                                                      "[username]",
+                                                      "[username] [--top <number>]",
                                                       "легчайший экстрим пользователя по Pemon List.",
                                                       PEasiest,
                                                       Restriction.Everyone,
@@ -374,7 +373,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       32,
                                                       "pplace",
-                                                      "<level> [--page number]",
+                                                      "<level> [--page <number>]",
                                                       "позиция уровня по Pemon List.",
                                                       Pplace,
                                                       Restriction.Everyone
@@ -385,6 +384,14 @@ public static class CommandsList {
                                                       string.Empty,
                                                       string.Empty,
                                                       PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      76,
+                                                      "profile",
+                                                      "<username>",
+                                                      "Информация о пользователе.",
+                                                      Profile,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -423,7 +430,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       36,
                                                       "games",
-                                                      "[--page number]",
+                                                      "[--page <number>]",
                                                       "список заказов игр.",
                                                       Games,
                                                       Restriction.Everyone
@@ -431,7 +438,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       37,
                                                       "add-game",
-                                                      "<game_name> [--position number] [--user username]",
+                                                      "<game_name> [--position <number>] [--user <username>]",
                                                       "добавить игру в очередь.",
                                                       AddGame,
                                                       Restriction.Broadcaster
@@ -821,6 +828,17 @@ public static class CommandsList {
         _chatCmds.Options.SetDefaultCmds(DefaultsCommands);
     }
 
+    private static async Task Ping(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) {
+            return;
+        }
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+
+        await client.SendMessage("Pong!", chatMessage.Id);
+    }
+    
     private static async Task Cmds(ChatCmdArgs cmdArgs) {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var cmdId = cmdArgs.Parsed.CommandIdentifier;
@@ -857,7 +875,7 @@ public static class CommandsList {
         }
         
         
-        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
     
     private static async Task More(ChatCmdArgs cmdArgs) {
@@ -900,7 +918,7 @@ public static class CommandsList {
             index++;
         }
         
-        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
     
     private static async Task Help(ChatCmdArgs cmdArgs) {
@@ -915,14 +933,12 @@ public static class CommandsList {
             case <= 0: {
                 var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[1].Name} для списка комманд";
                 switch (_chatCmds.Options.SendWhisperIfPossible) {
-                    case State.Disabled: {
+                    case false: {
                         await client.SendMessage(usage, chatMessage.Id); break;
                     }
-                    case State.Enabled: {
+                    case true: {
                         await client.SendWhisper(usage, chatMessage.UserId); break;
                     }
-                    default:
-                        throw new ArgumentOutOfRangeException(); 
                 }
                 break;
             }
@@ -985,7 +1001,7 @@ public static class CommandsList {
         }
     }
 
-        private static async Task When(ChatCmdArgs cmdArgs) {
+    private static async Task When(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -1006,11 +1022,11 @@ public static class CommandsList {
         var random = Random.Shared.Next(0, 6);
         var randomizedMessage = random switch {
                                     0 => $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew",
-                                    1 => $"{argSb} на этой неделе! waga waga waga",
-                                    2 => $"{argSb} в следующем месяце! LIKE LIKE LIKE",
-                                    3 => $"{argSb} через год Waiting Waiting Waiting",
-                                    4 => $"{argSb} через 69 лет Sadge Sadge Sadge",
-                                    5 => $"{argSb} никогда GAGAGA GAGAGA GAGAGA",
+                                    1 => $"{argSb} на этой неделе! {Get7TvEmote(Emote.Aga)} {Get7TvEmote(Emote.Aga)} {Get7TvEmote(Emote.Aga)}",
+                                    2 => $"{argSb} в следующем месяце! {Get7TvEmote(Emote.Like)} {Get7TvEmote(Emote.Like)} {Get7TvEmote(Emote.Like)}",
+                                    3 => $"{argSb} через год {Get7TvEmote(Emote.Wait)} {Get7TvEmote(Emote.Wait)} {Get7TvEmote(Emote.Wait)}",
+                                    4 => $"{argSb} через 69 лет {Get7TvEmote(Emote.Sad)} {Get7TvEmote(Emote.Sad)} {Get7TvEmote(Emote.Sad)}",
+                                    5 => $"{argSb} никогда {Get7TvEmote(Emote.Laugh)} {Get7TvEmote(Emote.Laugh)} {Get7TvEmote(Emote.Laugh)}",
                                     _ => string.Empty,
                                 };
         
@@ -1051,7 +1067,7 @@ public static class CommandsList {
         }
 
         var username = args[0];
-        var userId = await Helix.GetUserId(username, client.Credentials, (_, message) => {
+        var userId = await _bot.Api.GetUserId(username, client.Credentials, (_, message) => {
                                                                              _logger.Log(LogLevel.Error, message);
                                                                          });
         if (userId == null) {
@@ -1162,50 +1178,6 @@ public static class CommandsList {
         }
     }
 
-    private static async Task Verbose(ChatCmdArgs cmdArgs) {
-        var client = _bot.GetClient();
-        if (client == null) return;
-        
-        var chatCommands = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
-        var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var args = cmdArgs.Parsed.ArgumentsAsList;
-        
-        var verboseStateStr = 
-            chatCommands.Options.VerboseState == State.Enabled?
-                "включены" :
-                "отключены";
-        var comment =
-            chatCommands.Options.VerboseState == State.Enabled ?
-                "Shiza":
-                "ZACHTO";
-        
-        switch (args.Count) {
-            case < 1:
-                await client.SendMessage($"Дополнительные логи {verboseStateStr} {comment}", chatMessage.Id);
-                return;
-            case > 0: {
-                if (args[0] == "on") {
-                    chatCommands.Options.SetVerboseState(State.Enabled);
-                }
-                if (args[0] == "off") {
-                    chatCommands.Options.SetVerboseState(State.Disabled);
-                }
-
-                break;
-            }
-        }
-
-        verboseStateStr = 
-            chatCommands.Options.VerboseState == State.Enabled?
-                "включены" :
-                "отключены";
-        comment =
-            chatCommands.Options.VerboseState == State.Enabled ?
-                "Shiza":
-                "ZACHTO";
-        await client.SendMessage($"Дополнительные логи теперь {verboseStateStr} {comment}", chatMessage.Id);
-    }
-
     private static async Task ReqEveryone(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
@@ -1214,7 +1186,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         var reqState = levelRequests.GetReqState();
-        await client.SendMessage($"Requests {levelRequests.GetReqStateStr(reqState, eng: true)}", chatMessage.Id); 
+        await client.SendMessage($"Req {levelRequests.GetReqStateStr(reqState, eng: true)}", chatMessage.Id); 
     }
     
     private static async Task Req(ChatCmdArgs cmdArgs) {
@@ -1236,7 +1208,7 @@ public static class CommandsList {
                 switch (args[0]) {
                     case "off": {
                         reqState = ReqState.Off;
-                        await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials, 
+                        await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials, 
                                                           (_, message) => { 
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
@@ -1244,7 +1216,7 @@ public static class CommandsList {
                     }
                     case "points": {
                         reqState = ReqState.Points;
-                        var result = await Helix.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
+                        var result = await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
                                                                             (_, message) => {
                                                                                 _logger.Log(LogLevel.Error, message);
                                                                             });
@@ -1256,7 +1228,7 @@ public static class CommandsList {
                     }
                     case "on": {
                         reqState = ReqState.On;
-                        await Helix.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
+                        await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                           (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
@@ -1317,7 +1289,7 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var clipId = await Helix.CreateClip(client.Credentials, (_, message) => {
+        var clipId = await _bot.Api.CreateClip(client.Credentials, (_, message) => {
                                                                          _logger.Log(LogLevel.Error, message);
                                                                      });
 
@@ -1333,7 +1305,7 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
-        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         
@@ -1353,7 +1325,7 @@ public static class CommandsList {
             return;
         }
 
-        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1364,7 +1336,7 @@ public static class CommandsList {
             titleSb.Append($"{arg} ");
         }
 
-        var result = await Helix.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
+        var result = await _bot.Api.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
@@ -1387,20 +1359,20 @@ public static class CommandsList {
             username = args[0];
         }
 
-        var followage = await Helix.GetFollowage(username, client.Credentials, (_, message) => {
+        var followage = await _bot.Api.GetFollowage(username, client.Credentials, (_, message) => {
                                                                _logger.Log(LogLevel.Error, message);
                                                            });
         if (followage == null) {
             if (args.Count > 0) {
                 result = 
                     username == chatMessage.Channel ?
-                             $"{username} это владелец канала RIZZ" :
-                             $"{username} не фолловнут на {chatMessage.Channel} Sadding";
+                             $"{username} это владелец канала {Get7TvEmote(Emote.Rizz)}" :
+                             $"{username} не фолловнут на {chatMessage.Channel} {Get7TvEmote(Emote.Sad)}";
             } else {
                 result = 
                     username == chatMessage.Channel ?
-                        "Вы владелец канала RIZZ" :
-                        $"Вы не фолловнуты на {chatMessage.Channel} Sadding";
+                        $"Вы владелец канала {Get7TvEmote(Emote.Rizz)}" :
+                        $"Вы не фолловнуты на {chatMessage.Channel} {Get7TvEmote(Emote.Sad)}";
             }
 
             await client.SendMessage(result, chatMessage.Id);
@@ -1429,7 +1401,7 @@ public static class CommandsList {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
-        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         var chatMessage = cmdArgs.Parsed.ChatMessage;
@@ -1449,7 +1421,7 @@ public static class CommandsList {
             return;
         }
         
-        var channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
+        var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
                                                                                   _logger.Log(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
@@ -1463,19 +1435,19 @@ public static class CommandsList {
             gameSb.Append($"{args[i]} ");
         }
 
-        var gameId = await Helix.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
+        var gameId = await _bot.Api.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
         if (gameId == null) return;
         
-        var result = await Helix.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
+        var result = await _bot.Api.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
             await client.SendMessage("Не удалось изменить категорию", chatMessage.Id);
             return;
         }
-        channelInfo = await Helix.GetChannelInfo(client.Credentials, (_, message) => {
+        channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
                                                                               _logger.Log(LogLevel.Error, message);
                                                                           });
         await client.SendMessage($"Категория изменена на {channelInfo!.GameName}", chatMessage.Id);
@@ -1505,7 +1477,7 @@ public static class CommandsList {
             return;
         }
 
-        var userId = await Helix.GetUserId(args[0], client.Credentials, (_, msg) => {
+        var userId = await _bot.Api.GetUserId(args[0], client.Credentials, (_, msg) => {
                                                _logger.Log(LogLevel.Error, msg);
                                            });
         if (userId == null) return;
@@ -1531,7 +1503,7 @@ public static class CommandsList {
             return;
         }
 
-        var username = await Helix.GetUsername(message.UserId, client.Credentials, true, (_, msg) => {
+        var username = await _bot.Api.GetUsername(message.UserId, client.Credentials, true, (_, msg) => {
                                                    _logger.Log(LogLevel.Error, msg);
                                                });
         await client.SendMessage($"Это было сообщение от '{username}'", chatMessage.Id);
@@ -1692,7 +1664,7 @@ public static class CommandsList {
             return;
         }
         
-        var levelInfo =  await demonList.GetLevelByPlacement(index);
+        var levelInfo = await demonList.GetLevelByPlacement(index);
         if (levelInfo == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -1832,38 +1804,75 @@ public static class CommandsList {
             return;
         }
 
-        string formatedOutput;
-        
-        if (args.Count < 1) {
-            var level = await demonList.GetHardest();
-            if (level == null) {
-                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                return;
-            }
-
-            formatedOutput = await demonList.FormatLevelInfo(level);
-            await client.SendMessage(formatedOutput, chatMessage.Id);
-            return;
+        if (!GetIntArg(cmdArgs, "--top", out var top)) {
+            top = 1;
         }
 
-        var username = cmdArgs.Parsed.CommandMessage;
+        if (top <= 0) top = 1;
+        if (top > 10) top = 10;
         
-        var profile = await demonList.GetProfile(username);
+        var username = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            username.Append($"{arg}");
+            if (i < args.Count - 1) {
+                username.Append(' ');
+            }
+        }
+
+        var formatedOutput = new StringBuilder();
+        
+        if (username.Length <= 0) {
+            for (var i = 1; i <= top; ++i) {
+                var levelInfo = await demonList.GetLevelByPlacement(i);
+                if (levelInfo == null) {
+                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                    return;
+                }
+
+                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+
+                if (i < top - 1) {
+                    formatedOutput.Append(" / ");
+                }
+            }
+            
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+            return;
+        }
+        
+        var profile = await demonList.GetProfile(username.ToString());
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
         }
-        var hardest = await demonList.GetHardest(profile);
-        if (hardest == null) {
+        
+        var hardests = await demonList.GetHardests(profile, top);
+        if (hardests is not { Count: > 0, }) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
 
-        formatedOutput = demonList.FormatRecordInfo(hardest);
-        await client.SendMessage(formatedOutput, chatMessage.Id);
+        top = Math.Min(top, hardests.Count);
+        
+        for (var i = 0; i < top; ++i) {
+            var record = hardests[i];
+            
+            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+
+            if (i < top - 1) {
+                formatedOutput.Append(" / ");
+            }
+        }
+        
+        await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
     }
 
-        private static async Task PHardest(ChatCmdArgs cmdArgs) {
+    private static async Task PHardest(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -1876,36 +1885,72 @@ public static class CommandsList {
             return;
         }
 
-        string formatedOutput;
-        if (args.Count < 1) {
-            var levelInfo = await demonList.GetPlatformerHardest();
-            if (levelInfo == null) {
-                await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
-                return;
+        if (!GetIntArg(cmdArgs, "--top", out var top)) {
+            top = 1;
+        }
+
+        if (top <= 0) top = 1;
+        if (top > 10) top = 10;
+        
+        var username = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            username.Append($"{arg}");
+            if (i < args.Count - 1) {
+                username.Append(' ');
+            }
+        }
+
+        var formatedOutput = new StringBuilder();
+        
+        if (username.Length <= 0) {
+            for (var i = 1; i <= top; ++i) {
+                var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
+                if (levelInfo == null) {
+                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                    return;
+                }
+
+                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+
+                if (i < top - 1) {
+                    formatedOutput.Append(" / ");
+                }
             }
             
-            formatedOutput = await demonList.FormatLevelInfo(levelInfo);
-            await client.SendMessage(formatedOutput, chatMessage.Id);
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
             return;
         }
         
-        var username = cmdArgs.Parsed.CommandMessage;
-        
-        var profile = await demonList.GetProfile(username);
+        var profile = await demonList.GetProfile(username.ToString());
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
         }
         
-        var hardest = await demonList.GetPlatformerHardest(profile);
-        if (hardest == null 
-         || profile.Hardest == null) {
+        var hardests = await demonList.GetPlatformerHardests(profile, top);
+        if (hardests is not { Count: > 0, }) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
+
+        top = Math.Min(top, hardests.Count);
         
-        formatedOutput = demonList.FormatRecordInfo(hardest);
-        await client.SendMessage(formatedOutput, chatMessage.Id);
+        for (var i = 0; i < top; ++i) {
+            var record = hardests[i];
+            
+            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+
+            if (i < top - 1) {
+                formatedOutput.Append(" / ");
+            }
+        }
+        
+        await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
     }
     
     private static async Task Easiest(ChatCmdArgs cmdArgs) {
@@ -1921,36 +1966,72 @@ public static class CommandsList {
             return;
         }
 
-        string formatedOutput;
+        if (!GetIntArg(cmdArgs, "--top", out var top)) {
+            top = 1;
+        }
+
+        if (top <= 0) top = 1;
+        if (top > 10) top = 10;
         
-        if (args.Count < 1) {
-            var levelInfo = await demonList.GetEasiest();
-            if (levelInfo == null) {
-                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                return;
+        var username = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            username.Append($"{arg}");
+            if (i < args.Count - 1) {
+                username.Append(' ');
+            }
+        }
+        
+        var formatedOutput = new StringBuilder();
+        
+        if (username.Length <= 0) {
+            for (var i = demonList.LevelsCount; i <= demonList.LevelsCount - top; --i) {
+                var levelInfo = await demonList.GetLevelByPlacement(i);
+                if (levelInfo == null) {
+                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                    return;
+                }
+
+                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+
+                if (i < top - 1) {
+                    formatedOutput.Append(" / ");
+                }
             }
             
-            formatedOutput = await demonList.FormatLevelInfo(levelInfo);
-            await client.SendMessage(formatedOutput, chatMessage.Id);
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
             return;
         }
 
-        var username = cmdArgs.Parsed.CommandMessage;
-
-        var profile = await demonList.GetProfile(username);
+        var profile = await demonList.GetProfile(username.ToString());
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
         }
         
-        var easiest = await demonList.GetEasiest(profile);
-        if (easiest == null) {
+        var easiests = await demonList.GetEasiests(profile, top);
+        if (easiests is not { Count: > 0, }) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
 
-        formatedOutput = demonList.FormatRecordInfo(easiest);
-        await client.SendMessage(formatedOutput, chatMessage.Id);
+        top = Math.Min(top, easiests.Count);
+        
+        for (var i = 0; i < top; ++i) {
+            var record = easiests[i];
+            
+            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+
+            if (i < top - 1) {
+                formatedOutput.Append(" / ");
+            }
+        }
+        
+        await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
     }
 
     private static async Task PEasiest(ChatCmdArgs cmdArgs) {
@@ -1966,37 +2047,98 @@ public static class CommandsList {
             return;
         }
 
-        string formatedOutput;
+        if (!GetIntArg(cmdArgs, "--top", out var top)) {
+            top = 1;
+        }
+
+        if (top <= 0) top = 1;
+        if (top > 10) top = 10;
         
-        if (args.Count < 1) {
-            var level = await demonList.GetPlatformerEasiest();
-            if (level == null) {
-                await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                return;
+        var username = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
             }
 
-            formatedOutput = await demonList.FormatLevelInfo(level);
-            await client.SendMessage(formatedOutput, chatMessage.Id);
+            username.Append($"{arg}");
+            if (i < args.Count - 1) {
+                username.Append(' ');
+            }
+        }
+        
+        var formatedOutput = new StringBuilder();
+        
+        if (username.Length <= 0) {
+            for (var i = demonList.LevelsCount; i <= demonList.LevelsCount - top; --i) {
+                var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
+                if (levelInfo == null) {
+                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+                    return;
+                }
+
+                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+
+                if (i < top - 1) {
+                    formatedOutput.Append(" / ");
+                }
+            }
+            
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+            return;
+        }
+
+        var profile = await demonList.GetPlatformerProfile(username.ToString());
+        if (profile == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
+            return;
+        }
+        
+        var easiests = await demonList.GetPlatformerEasiests(profile, top);
+        if (easiests is not { Count: > 0, }) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+
+        top = Math.Min(top, easiests.Count);
+        
+        for (var i = 0; i < top; ++i) {
+            var record = easiests[i];
+            
+            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+
+            if (i < top - 1) {
+                formatedOutput.Append(" / ");
+            }
+        }
+        
+        await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+    }
+
+    private static async Task Profile(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+
+        if (args.Count <= 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
 
         var username = cmdArgs.Parsed.CommandMessage;
-
+        
         var profile = await demonList.GetProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
         }
-        var easiest = await demonList.GetPlatformerEasiest(profile);
-        if (easiest == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
-            return;
-        }
 
-        formatedOutput = demonList.FormatRecordInfo(easiest);
+        var formatedOutput = demonList.FormatUserProfileInfo(profile);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
-
     
     private static async Task Roulette(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
@@ -2158,7 +2300,7 @@ public static class CommandsList {
                 separator = string.Empty;
             }
 
-            var username = await Helix.GetUsername(gameRequest.UserId, client.Credentials, true, (_, message) => {
+            var username = await _bot.Api.GetUsername(gameRequest.UserId, client.Credentials, true, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
             reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
@@ -2273,7 +2415,7 @@ public static class CommandsList {
             }
         }
 
-        var rewardId = await Helix.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
+        var rewardId = await _bot.Api.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
@@ -2297,7 +2439,7 @@ public static class CommandsList {
         }
 
         var rewardId = args[0];
-        var result = await Helix.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
+        var result = await _bot.Api.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
                                                               _logger.Log(LogLevel.Error, message);
                                                           });
         if (!result) {
@@ -2372,7 +2514,7 @@ public static class CommandsList {
         }
         
         tgNotifications.SetNotificationPrompt(prompt.ToString().Trim());
-        await client.SendMessage($"Текст уведомлений успешно изменен.", chatMessage.Id);
+        await client.SendMessage("Текст уведомлений успешно изменен.", chatMessage.Id);
     }
 
     private static async Task ListCustomCmds(ChatCmdArgs cmdArgs) {
@@ -2388,7 +2530,7 @@ public static class CommandsList {
         }
         
         var list = cmds.Select((cmd, i) => $"{i + 1}. {cmd.Name} (id: {cmd.Id}) ").ToList();
-        await SendPagedReply(list, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(list, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
     
     private static async Task AddCmd(ChatCmdArgs cmdArgs) {
@@ -2736,7 +2878,7 @@ public static class CommandsList {
             return;
         }
 
-        var userId = await Helix.GetUserId(args[1], client.Credentials, (_, message) => {
+        var userId = await _bot.Api.GetUserId(args[1], client.Credentials, (_, message) => {
                                                                             _logger.Log(LogLevel.Error, message);
                                                                         });
         if (userId == null) {
@@ -2763,7 +2905,7 @@ public static class CommandsList {
 
         var userId = string.Empty;
         if (args.Count > 0) {
-            userId = await Helix.GetUserId(args[0], client.Credentials,
+            userId = await _bot.Api.GetUserId(args[0], client.Credentials,
                                                (_, message) => { _logger.Log(LogLevel.Error, message); });
             if (userId == null) {
                 await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
@@ -2781,7 +2923,7 @@ public static class CommandsList {
         }
 
         var duelResult = result.Value.Value;
-        var winnerUsername = await Helix.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
+        var winnerUsername = await _bot.Api.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
                                                (_, message) => {
                                                    _logger.Log(LogLevel.Error, message);
                                                });
@@ -2793,7 +2935,7 @@ public static class CommandsList {
         var looserId = duelResult.UserId.Equals(chatMessage.UserId)?
                            userId :
                            chatMessage.UserId;
-        var looserUsername = await Helix.GetUsername(looserId, client.Credentials, displayName: true, 
+        var looserUsername = await _bot.Api.GetUsername(looserId, client.Credentials, displayName: true, 
                                                      (_, message) => {
                                                          _logger.Log(LogLevel.Error, message);
                                                      });
@@ -2829,7 +2971,7 @@ public static class CommandsList {
         
         var userId = string.Empty;
         if (args.Count > 0) {
-            userId = await Helix.GetUserId(args[1], client.Credentials,
+            userId = await _bot.Api.GetUserId(args[1], client.Credentials,
                                            (_, message) => { _logger.Log(LogLevel.Error, message); });
             if (userId == null) {
                 await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
@@ -2883,7 +3025,7 @@ public static class CommandsList {
         
         for (var i = 0; i < duels.Count; ++i) { 
             var duel = duels[i];
-            var username = await Helix.GetUsername(duel.Subject, client.Credentials, displayName: true, 
+            var username = await _bot.Api.GetUsername(duel.Subject, client.Credentials, displayName: true, 
                                                    (_, message) => {
                                                        _logger.Log(LogLevel.Error, message);
                                                    });
@@ -2895,7 +3037,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {username} - {duel.Quantity} {(i >= duels.Count - 1? string.Empty : "\\")} ");
         }
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
     
     private static async Task Balance(ChatCmdArgs cmdArgs) {
@@ -2928,7 +3070,7 @@ public static class CommandsList {
                                             $" {(i >= lots.Count - 1 ? string.Empty : "/")}")
                         .ToList();
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
 
     private static async Task ShopAdd(ChatCmdArgs cmdArgs) {
@@ -3088,7 +3230,7 @@ public static class CommandsList {
         }
         var username = parsed[1];
 
-        var userId = await Helix.GetUserId(username, client.Credentials, async void (_, message) => {
+        var userId = await _bot.Api.GetUserId(username, client.Credentials, async void (_, message) => {
                                                                              try {
                                                                                  await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
                                                                                  _logger.Log(LogLevel.Error, message);
@@ -3190,7 +3332,7 @@ public static class CommandsList {
         var sb = new StringBuilder();
         for (var i = 0; i < map.Count; ++i) {
             var (receiver, points) = map.ElementAt(i);
-            var username = await Helix.GetUsername(receiver, client.Credentials, true, (_, msg) => {
+            var username = await _bot.Api.GetUsername(receiver, client.Credentials, true, (_, msg) => {
                                                                                      ErrorHandler.LogMessage(LogLevel.Error, msg);
                                                  });
             if (username == null) continue;
@@ -3215,7 +3357,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {id} - {quantity} {(i >= rewards.Count - 1? string.Empty : "\\")} ");
         }
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible == State.Enabled);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
     }
     
     private static async Task BankCreateReward(ChatCmdArgs cmdArgs) {
@@ -3231,7 +3373,7 @@ public static class CommandsList {
             return;
         }
 
-        var rewardId = await Helix.CreateChannelReward(
+        var rewardId = await _bot.Api.CreateChannelReward(
                                                        title: $"+{quantity}",
                                                        cost: quantity,
                                                        credentials: client.Credentials,
@@ -3272,7 +3414,7 @@ public static class CommandsList {
 
         var (rewardId, _) = bank.Options.GetReward(index-1);
         
-        var result = await Helix.DeleteChannelReward(
+        var result = await _bot.Api.DeleteChannelReward(
                                                      rewardId,
                                                        client.Credentials,
                                                        (_, message) => { 
@@ -3366,6 +3508,23 @@ public static class CommandsList {
         }
     }
 
+    private static bool GetIntArg(ChatCmdArgs cmdArgs, string name, out int value) {
+        value = 0;
+        
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        var index = args.IndexOf(name);
+        if (index < 0 || index >= args.Count) {
+            return false;
+        }
+        
+        if (index - 1 < args.Count) {
+            value = int.Parse(args[index + 1]);
+        }
+
+        return true;
+    }
+    
     private static ErrorCode ParseIntArg(ChatCmdArgs cmdArgs, out int value, int index = 0) {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         value = -1;
@@ -3384,16 +3543,13 @@ public static class CommandsList {
 
     private static int ParsePage(int high, ChatCmdArgs cmdArgs) {
         var args = cmdArgs.Parsed.ArgumentsAsList;
-        
-        var index = args.IndexOf("--page");
-        var page = 0;
-        
-        if (index >= 0 && index - 1 < args.Count) {
-            page = int.Parse(args[index + 1]) - 1;
-        }
 
+        var found = GetIntArg(cmdArgs, "--page", out var page);
+
+        --page;
+        
         if (args.Count > 0 
-         && index < 0 
+         && !found
          && int.TryParse(args[0], out var tempPage)) {
             page = tempPage;
         }
@@ -3419,5 +3575,35 @@ public static class CommandsList {
         
         parsed = sb.ToString().Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return ErrorCode.None;
+    }
+
+    // TODO: Move to a separate service
+    
+    private enum Emote {
+        Sad,
+        Wait,
+        Rizz,
+        Jail,
+        Laugh,
+        Aga,
+        Like,
+    }
+    
+    private static string Get7TvEmote(Emote emote) {
+        if (!_chatCmds.Options.Use7Tv) {
+            return string.Empty;
+        }
+
+        return emote switch {
+            Emote.Sad   => "Sadding",
+            Emote.Wait  => "Wait",
+            Emote.Rizz  => "RIZZ",
+            Emote.Jail  => "SillyJail",
+            Emote.Laugh => "GAGAGA",
+            Emote.Aga   => "waga",
+            Emote.Like  => "LIKE",
+            
+            _ => string.Empty,
+        };
     }
 }

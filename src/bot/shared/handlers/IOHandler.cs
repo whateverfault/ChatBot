@@ -5,7 +5,33 @@ namespace ChatBot.bot.shared.handlers;
 public static class IoHandler {
     private const string CONSOLE_CLEAR_SEQUENCE = "\x1b[2J\x1b[3J\x1b[H";
     
-    private static readonly object _lock = new object(); 
+    private static readonly object _lock = new object();
+
+    public static ConsoleColor ForegroundColor {
+        get {
+            lock (_lock) {
+                return Console.ForegroundColor;
+            }
+        }
+        set {
+            lock (_lock) {
+                Console.ForegroundColor = value;
+            }
+        }
+    }
+    
+    public static ConsoleColor BackgroundColor {
+        get {
+            lock (_lock) {
+                return Console.BackgroundColor;
+            }
+        }
+        set {
+            lock (_lock) {
+                Console.BackgroundColor = value;
+            }
+        }
+    }
     
     public static Encoding InputEncoding {
         get {

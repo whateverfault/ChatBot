@@ -17,7 +17,7 @@ public class ChatLogsService : Service {
     public void HandleMessage(ChatMessage chatMessage, FilterStatus status, int patternIndex) {
         if (Options.ServiceState == State.Disabled) return;
         if (status == FilterStatus.Match) return;
-        if (Constants.ExcludeUsersIds.Contains(chatMessage.UserId)) return;
+        if (Constants.ExcludeUserIds.Contains(chatMessage.UserId)) return;
         
         var msg = new Message(chatMessage.Text, chatMessage.UserId);
         Options.AddLog(msg);

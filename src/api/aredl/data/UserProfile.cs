@@ -3,34 +3,34 @@
 namespace ChatBot.api.aredl.data;
 
 public class UserProfile {
-    public int? Rank;
-    public int? ExtremesRank;
-    public int? RawRank;
-    public int? CountryRank;
-    public int? CountryExtremesRank;
-    public int? CountryRawRank;
-    public UserInfo? User;
-    public int? Country;
-    public int? TotalPoints;
-    public int? PackPoints;
-    public HardestInfo? Hardest;
-    public int? Extremes;
+    public readonly int? Rank;
+    public readonly int? ExtremesRank;
+    public readonly int? RawRank;
+    public readonly int? CountryRank;
+    public readonly int? CountryExtremesRank;
+    public readonly int? CountryRawRank;
+    public readonly UserInfo? User;
+    public readonly int? Country;
+    public readonly int? TotalPoints;
+    public readonly int? PackPoints;
+    public readonly HardestInfo? Hardest;
+    public readonly int? Extremes;
 
     
     [JsonConstructor]
     public UserProfile(
-        [JsonProperty(PropertyName = "extremes")] int? extremes,
-        [JsonProperty(PropertyName = "hardest")] HardestInfo? hardest,
-        [JsonProperty(PropertyName = "pack_points")] int? packPoints,
-        [JsonProperty(PropertyName = "total_points")] int? totalPoints,
-        [JsonProperty(PropertyName = "country")] int? country,
-        [JsonProperty(PropertyName = "user")] UserInfo? user,
-        [JsonProperty(PropertyName = "country_raw_rank")] int? countryRawRank,
-        [JsonProperty(PropertyName = "country_extremes_rank")] int? countryExtremesRank,
-        [JsonProperty(PropertyName = "country_rank")] int? countryRank,
-        [JsonProperty(PropertyName = "raw_rank")] int? rawRank,
-        [JsonProperty(PropertyName = "extremes_rank")] int? extremesRank,
-        [JsonProperty(PropertyName = "rank")] int? rank) {
+        [JsonProperty("extremes")] int? extremes,
+        [JsonProperty("hardest")] HardestInfo? hardest,
+        [JsonProperty("pack_points")] int? packPoints,
+        [JsonProperty("total_points")] int? totalPoints,
+        [JsonProperty("country")] int? country,
+        [JsonProperty("user")] UserInfo? user,
+        [JsonProperty("country_raw_rank")] int? countryRawRank,
+        [JsonProperty("country_extremes_rank")] int? countryExtremesRank,
+        [JsonProperty("country_rank")] int? countryRank,
+        [JsonProperty("raw_rank")] int? rawRank,
+        [JsonProperty("extremes_rank")] int? extremesRank,
+        [JsonProperty("rank")] int? rank) {
         Extremes = extremes;
         Hardest = hardest;
         PackPoints = packPoints;

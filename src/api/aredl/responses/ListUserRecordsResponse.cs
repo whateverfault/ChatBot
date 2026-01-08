@@ -4,14 +4,14 @@ using Newtonsoft.Json;
 namespace ChatBot.api.aredl.responses;
 
 public class ListUserRecordsResponse {
-    public List<RecordInfo> records;
-    public List<RecordInfo> verified;
+    public readonly List<RecordInfo> Records;
+    public readonly List<RecordInfo> Verified;
 
 
     public ListUserRecordsResponse(
-        [JsonProperty(PropertyName = "records")] List<RecordInfo> records,
-        [JsonProperty(PropertyName = "verified")] List<RecordInfo> verified) {
-        this.records = records;
-        this.verified = verified;
+        [JsonProperty("records")] List<RecordInfo> records,
+        [JsonProperty("verified")] List<RecordInfo> verified) {
+        Records = records;
+        Verified = verified;
     }
 }

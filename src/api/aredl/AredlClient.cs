@@ -15,36 +15,66 @@ public class AredlClient {
                                                                   UseCookies = false,
                                                                   AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                                                               };
-    private static readonly HttpClient _httpClient = new HttpClient(_httpHandler);
+    private readonly HttpClient _httpClient;
     private readonly AredlCache? _cache;
+
+    public int LevelsCount => _cache?.Levels?.Data.Count ?? 0; 
     
 
-    public AredlClient(bool caching) {
+    public AredlClient(bool caching, HttpClient? client = null) {
+        _httpClient = client ?? new HttpClient(_httpHandler);
+        
         if (caching) {
             _cache = new AredlCache();
         }
-        
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
     public void ResetCache() {
         _cache?.ResetCache();
     }
     
-    public async Task<ListLevelsResponse?> ListLevels(EventHandler<string>? callback = null) {
+    public async Task<ListProfilesResponse?> ListProfiles(string? nameFilter = null, EventHandler<string>? errorCallback = null) {
+        try {
+            var formatedNameFilter = string.IsNullOrEmpty(nameFilter)? 
+                                            string.Empty :
+                                            $"?name_filter={nameFilter}" ;
+            
+            using var requestMessage = 
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/leaderboard{formatedNameFilter}");
+            
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode) {
+                errorCallback?.Invoke(null,
+                                 $"Error while fetching user profiles. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+
+            var deserialized = JsonConvert.DeserializeObject<ListProfilesResponse>(content);
+
+            return deserialized;
+        }
+        catch (Exception e) {
+            errorCallback?.Invoke(null, $"Error while fetching user profiles: {e.Message}");
+            return null;
+        }
+    }
+    
+    public async Task<ListLevelsResponse?> ListLevels(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { Levels: not null, }) {
                 return _cache.Levels;
             }
             
             using var requestMessage = 
-                new HttpRequestMessage(HttpMethod.Get, "https://api.aredl.net/v2/api/aredl/levels");
+                new HttpRequestMessage(HttpMethod.Get, "https://api.aredl.net/v2/api/aredl/levels?exclude_legacy=true");
             
             var response = await _httpClient.SendAsync(requestMessage);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching list levels data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -57,14 +87,14 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
             return null;
         }
     }
 
-    public async Task<List<LevelInfo>?> GetLevelsByName(string name, EventHandler<string>? callback = null) {
+    public async Task<List<LevelInfo>?> GetLevelsByName(string name, EventHandler<string>? errorCallback = null) {
         try {
-            var levels = await ListLevels(callback);
+            var levels = await ListLevels(errorCallback);
             var result = levels?.Data.AsParallel()
                                 .Where(levelInfo =>
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
@@ -74,26 +104,26 @@ public class AredlClient {
                 return result.ToList();
             }
 
-            callback?.Invoke(null, "Such level does not exist.");
+            errorCallback?.Invoke(null, "Such level does not exist.");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
 
     public async Task<LevelInfo?> GetLevelByName(string name, string? creator = null,
-                                                        EventHandler<string>? callback = null) {
+                                                        EventHandler<string>? errorCallback = null) {
         try {
-            var levels = await ListLevels(callback);
+            var levels = await ListLevels(errorCallback);
 
             var result = levels?.Data.AsParallel()
                                 .Where(levelInfo =>
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
                                               .Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
-                callback?.Invoke(null, "Such level does not exist");
+                errorCallback?.Invoke(null, "Such level does not exist");
                 return null;
             }
 
@@ -103,7 +133,7 @@ public class AredlClient {
             }
 
             if (creator == null) {
-                callback?.Invoke(null, "Such level does not exist");
+                errorCallback?.Invoke(null, "Such level does not exist");
                 return null;
             }
 
@@ -116,39 +146,39 @@ public class AredlClient {
                 }
             }
 
-            callback?.Invoke(null, "Such level does not exist");
+            errorCallback?.Invoke(null, "Such level does not exist");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
 
-    public async Task<LevelInfo?> GetLevelByPlacement(int placement, EventHandler<string>? callback = null) {
+    public async Task<LevelInfo?> GetLevelByPlacement(int placement, EventHandler<string>? errorCallback = null) {
         try {
             if (placement < 1) {
-                callback?.Invoke(null, "Given an invalid placement");
+                errorCallback?.Invoke(null, "Given an invalid placement");
                 return null;
             }
 
-            var levels = await ListLevels(callback);
+            var levels = await ListLevels(errorCallback);
 
             if (placement < levels?.Data.Count) {
                 return levels.Data[placement - 1];
             }
 
-            callback?.Invoke(null, "Given an invalid placement");
+            errorCallback?.Invoke(null, "Given an invalid placement");
             return null;
 
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
             return null;
         }
     }
 
-    public async Task<ListLevelsResponse?> ListPlatformerLevels(EventHandler<string>? callback = null) {
+    public async Task<ListLevelsResponse?> ListPlatformerLevels(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { PlatformerLevels: not null, }) {
                 return _cache.PlatformerLevels;
@@ -161,7 +191,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching list levels data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -174,15 +204,15 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching list levels data: {e.Message}");
             return null;
         }
     }
 
     public async Task<List<LevelInfo>?> GetPlatformerLevelsByName(
-        string name, EventHandler<string>? callback = null) {
+        string name, EventHandler<string>? errorCallback = null) {
         try {
-            var levels = await ListPlatformerLevels(callback);
+            var levels = await ListPlatformerLevels(errorCallback);
 
             var result = levels?.Data.AsParallel()
                                 .Where(levelInfo =>
@@ -193,26 +223,26 @@ public class AredlClient {
                 return result.ToList();
             }
 
-            callback?.Invoke(null, "Such level does not exist");
+            errorCallback?.Invoke(null, "Such level does not exist");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
 
     public async Task<LevelInfo?> GetPlatformerLevelByName(string name, string? creator = null,
-                                                                  EventHandler<string>? callback = null) {
+                                                                  EventHandler<string>? errorCallback = null) {
         try {
-            var levels = await ListPlatformerLevels(callback);
+            var levels = await ListPlatformerLevels(errorCallback);
 
             var result = levels?.Data.AsParallel()
                                 .Where(levelInfo =>
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
                                               .Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
-                callback?.Invoke(null, "Such level does not exist");
+                errorCallback?.Invoke(null, "Such level does not exist");
                 return null;
             }
 
@@ -222,7 +252,7 @@ public class AredlClient {
             }
 
             if (creator == null) {
-                callback?.Invoke(null, "Such level does not exist");
+                errorCallback?.Invoke(null, "Such level does not exist");
                 return null;
             }
 
@@ -235,82 +265,53 @@ public class AredlClient {
                 }
             }
 
-            callback?.Invoke(null, "Such level does not exist");
+            errorCallback?.Invoke(null, "Such level does not exist");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by name. {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by name. {e.Message}");
             return null;
         }
     }
 
     public async Task<LevelInfo?> GetPlatformerLevelByPlacement(int placement,
-                                                                       EventHandler<string>? callback = null) {
+                                                                       EventHandler<string>? errorCallback = null) {
         try {
             if (placement < 1) {
-                callback?.Invoke(null, "Given an invalid placement");
+                errorCallback?.Invoke(null, "Given an invalid placement");
                 return null;
             }
 
-            var levels = await ListPlatformerLevels(callback);
+            var levels = await ListPlatformerLevels(errorCallback);
 
             if (placement < levels?.Data.Count) {
                 return levels.Data[placement - 1];
             }
 
-            callback?.Invoke(null, "Given an invalid placement");
+            errorCallback?.Invoke(null, "Given an invalid placement");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
-            return null;
-        }
-    }
-
-    public async Task<UserProfile?> FindProfile(string username, EventHandler<string>? callback = null) {
-        try {
-            using var requestMessage = 
-                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/leaderboard?name_filter={username}");
-
-            var response = await _httpClient.SendAsync(requestMessage);
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
-                                 $"Error while fetching user profile data. Status: {response.StatusCode}. Response: {content}");
-                return null;
-            }
-
-            var result = JsonConvert.DeserializeObject<LeaderboardResponse>(content);
-            if (result?.data?.Count > 0) {
-                return result.data[0];
-            }
-
-            callback?.Invoke(null,
-                             $"Error while fetching user profile data. Status: {response.StatusCode}. Response: {content}");
-            return null;
-        }
-        catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user profile data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while searching level by placement. {e.Message}");
             return null;
         }
     }
 
     public async Task<RecordInfo?> GetRecord(string levelId, string userId,
-                                                    EventHandler<string>? callback = null) {
+                                                    EventHandler<string>? errorCallback = null) {
         try {
-            var levelRecords = await ListUserRecords(userId, callback);
-            if (levelRecords?.records.Count + levelRecords?.verified.Count < 1) {
-                callback?.Invoke(null, "Error while fetching user record data.");
+            var levelRecords = await ListUserRecords(userId, errorCallback);
+            if (levelRecords?.Records.Count + levelRecords?.Verified.Count < 1) {
+                errorCallback?.Invoke(null, "Error while fetching user record data.");
                 return null;
             }
 
-            foreach (var record in levelRecords?.verified!) {
+            foreach (var record in levelRecords?.Verified!) {
                 if (record.Level.Id != levelId) continue;
                 return record;
             }
 
-            foreach (var record in levelRecords.records) {
+            foreach (var record in levelRecords.Records) {
                 if (record.Level.Id != levelId) continue;
                 return record;
             }
@@ -318,12 +319,12 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
             return null;
         }
     }
 
-    public async Task<UserProfile?> FindPlatformerProfile(string username, EventHandler<string>? callback = null) {
+    public async Task<ListProfilesResponse?> ListPlatformerProfiles(string username, EventHandler<string>? errorCallback = null) {
         try {
             using var requestMessage = 
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/leaderboard?name_filter={username}");
@@ -332,43 +333,38 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching platformer profile data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
 
-            var result = JsonConvert.DeserializeObject<LeaderboardResponse?>(content);
-            if (result?.data?.Count > 0) {
-                return result.data[0];
-            }
-
-            callback?.Invoke(null,
-                             $"Error while fetching platformer profile data. Status: {response.StatusCode}. Response: {content}");
-            return null;
+            var deserialized = JsonConvert.DeserializeObject<ListProfilesResponse?>(content);
+            
+            return deserialized;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching platformer profile data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching platformer profile data: {e.Message}");
             return null;
         }
     }
     
     public async Task<RecordInfo?> GetPlatformerRecord(string levelId, string userId,
-                                                       EventHandler<string>? callback = null) {
+                                                       EventHandler<string>? errorCallback = null) {
         try {
-            var levelRecords = await ListUserPlatformerRecords(userId, callback);
+            var levelRecords = await ListUserPlatformerRecords(userId, errorCallback);
             if (levelRecords == null) return null;
             
-            if (levelRecords.records.Count + levelRecords.verified.Count < 1) {
-                callback?.Invoke(null, "Error while fetching user record data.");
+            if (levelRecords.Records.Count + levelRecords.Verified.Count < 1) {
+                errorCallback?.Invoke(null, "Error while fetching user record data.");
                 return null;
             }
 
-            foreach (var record in levelRecords.verified) {
+            foreach (var record in levelRecords.Verified) {
                 if (record.Level.Id != levelId) continue;
                 return record;
             }
 
-            foreach (var record in levelRecords.records) {
+            foreach (var record in levelRecords.Records) {
                 if (record.Level.Id != levelId) continue;
                 return record;
             }
@@ -376,13 +372,13 @@ public class AredlClient {
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching user record data: {e.Message}");
             return null;
         }
     }
 
     public async Task<ListUserRecordsResponse?> ListUserRecords(string userId,
-                                                                EventHandler<string>? callback = null) {
+                                                                EventHandler<string>? errorCallback = null) {
         try {
             var requestMessage = 
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/profile/{userId}");
@@ -391,7 +387,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -400,13 +396,13 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
     public async Task<ListUserRecordsResponse?> ListUserPlatformerRecords(
-        string userId, EventHandler<string>? callback = null) {
+        string userId, EventHandler<string>? errorCallback = null) {
         try {
             using var requestMessage = 
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/profile/{userId}");
@@ -415,7 +411,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -424,12 +420,12 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
-    public async Task<LevelDetails?> GetLevelDetails(string id, EventHandler<string>? callback = null) {
+    public async Task<LevelDetails?> GetLevelDetails(string id, EventHandler<string>? errorCallback = null) {
         try {
             using var requestMessage = 
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/levels/{id}");
@@ -438,7 +434,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -447,12 +443,12 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
-    public async Task<LevelDetails?> GetPlatformerLevelDetails(string id, EventHandler<string>? callback = null) {
+    public async Task<LevelDetails?> GetPlatformerLevelDetails(string id, EventHandler<string>? errorCallback = null) {
         try {
             using var requestMessage =
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/arepl/levels/{id}");
@@ -461,7 +457,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while fetching level records data. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -470,12 +466,12 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching level records data: {e.Message}");
             return null;
         }
     }
 
-    public async Task<ListClansResponse?> ListClans(EventHandler<string>? callback = null) {
+    public async Task<ListClansResponse?> ListClans(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { Clans: not null, }) {
                 return _cache.Clans;
@@ -488,7 +484,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -501,22 +497,22 @@ public class AredlClient {
                 return deserialized;
             }
 
-            callback?.Invoke(null,
+            errorCallback?.Invoke(null,
                              $"Error while fetching clan info. Status: {response.StatusCode}. Response: {content}");
             return null;
 
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while listing clans info: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while listing clans info: {e.Message}");
             return null;
         }
     }
 
-    public async Task<ClanInfo?> GetClan(string tag, EventHandler<string>? callback = null) {
+    public async Task<ClanInfo?> GetClan(string tag, EventHandler<string>? errorCallback = null) {
         try {
-            var clans = await ListClans(callback);
+            var clans = await ListClans(errorCallback);
             if (clans == null) {
-                callback?.Invoke(null, "Error while fetching clan info");
+                errorCallback?.Invoke(null, "Error while fetching clan info");
                 return null;
             }
 
@@ -529,16 +525,16 @@ public class AredlClient {
                 return filteredList[0];
             }
 
-            callback?.Invoke(null, "Such clan does not exist");
+            errorCallback?.Invoke(null, "Such clan does not exist");
             return null;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
             return null;
         }
     }
 
-    public async Task<ClanRecordsResponse?> GetClanRecords(string id, EventHandler<string>? callback = null) {
+    public async Task<ClanRecordsResponse?> GetClanRecords(string id, EventHandler<string>? errorCallback = null) {
         try {
             using var requestMessage =
                 new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/clan/{id}");
@@ -547,7 +543,7 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(null,
+                errorCallback?.Invoke(null,
                                  $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
@@ -556,7 +552,7 @@ public class AredlClient {
             return result;
         }
         catch (Exception e) {
-            callback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
+            errorCallback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
             return null;
         }
     }

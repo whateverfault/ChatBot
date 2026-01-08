@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
-using TwitchAPI.helix;
 
 namespace ChatBot.bot.services.moderation;
 
@@ -64,7 +63,7 @@ public class ModerationService : Service {
         var client = Bot.GetClient();
         if (client?.Credentials == null) return;
 
-        var userId = await Helix.GetUserId(message.Username, client.Credentials);
+        var userId = await Bot.Api.GetUserId(message.Username, client.Credentials);
         if (userId == null) return;    
         
         var modAction = Options.ModerationActions[patternIndex];

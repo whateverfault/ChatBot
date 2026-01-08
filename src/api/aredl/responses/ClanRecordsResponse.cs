@@ -4,15 +4,15 @@ using Newtonsoft.Json;
 namespace ChatBot.api.aredl.responses;
 
 public class ClanRecordsResponse {
-    public List<ClanSubmissionInfo?> records;
-    public List<ClanSubmissionInfo?> verified;
+    public readonly List<ClanSubmissionInfo?> Records;
+    public readonly List<ClanSubmissionInfo?> Verified;
 
     
     [JsonConstructor]
     public ClanRecordsResponse(
-        [JsonProperty(PropertyName = "records")] List<ClanSubmissionInfo?> records,
-        [JsonProperty(PropertyName = "verified")] List<ClanSubmissionInfo?> verified) {
-        this.records = records;
-        this.verified = verified;
+        [JsonProperty("records")] List<ClanSubmissionInfo?> records,
+        [JsonProperty("verified")] List<ClanSubmissionInfo?> verified) {
+        Records = records;
+        Verified = verified;
     }
 }

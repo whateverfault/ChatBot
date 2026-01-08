@@ -31,7 +31,7 @@ public class Preset {
 
         var bot = TwitchChatBot.Instance;
         bot.Options.SetDefaults();
-        bot.Stop();
+        _ = bot.Stop();
     }
 
     public void Load() {
@@ -40,7 +40,7 @@ public class Preset {
         
         var bot = TwitchChatBot.Instance;
         bot.Options.Load();
-        bot.Stop();
+        _ = bot.Stop();
     }
 
     public string GetName() {

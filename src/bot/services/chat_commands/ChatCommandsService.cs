@@ -93,12 +93,20 @@ public class ChatCommandsService : Service {
         Options.SetVerboseState((State)(((int)Options.VerboseState+1)%Enum.GetValues(typeof(State)).Length));
     }
 
-    public int GetSendWhisperIfPossibleStateAsInt() {
-        return (int)Options.SendWhisperIfPossible;
+    public bool GetSendWhisperIfPossible() {
+        return Options.SendWhisperIfPossible;
     }
 
-    public void SendWhisperIfPossibleStateNext() {
-        Options.SetSendWhisperIfPossibleState((State)(((int)Options.SendWhisperIfPossible+1)%Enum.GetValues(typeof(State)).Length));
+    public void SetSendWhisperIfPossibleState(bool value) {
+        Options.SetSendWhisperIfPossibleState(value);
+    }
+    
+    public bool GetUse7Tv() {
+        return Options.Use7Tv;
+    }
+
+    public void SetUse7Tv(bool value) {
+        Options.SetUse7Tv(value);
     }
     
     public string GetBaseTitle() {

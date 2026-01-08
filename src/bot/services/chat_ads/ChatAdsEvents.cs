@@ -5,7 +5,7 @@ using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.stream_state_checker.Data;
 using TwitchAPI.client.data;
-using TwitchAPI.helix.data.requests;
+using TwitchAPI.api.data.requests;
 
 namespace ChatBot.bot.services.chat_ads;
 

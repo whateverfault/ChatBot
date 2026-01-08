@@ -6,7 +6,6 @@ using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
-using TwitchAPI.helix;
 using TwitchAPI.shared;
 
 namespace ChatBot.bot.services.shop.data;
@@ -66,7 +65,7 @@ public static class DefaultLots {
 
         result = _shop.Use(objectId, antiMuteLot?.Name ?? string.Empty);
         if (!result.Ok || antiMuteLot == null) {
-            var timeoutResult = await Helix.TimeoutUser(objectId, "For points", TimeSpan.FromMinutes(5), client.Credentials, 
+            var timeoutResult = await TwitchChatBot.Instance.Api.TimeoutUser(objectId, "For points", TimeSpan.FromMinutes(5), client.Credentials, 
                                                         (_, message) => { 
                                                             _logger.Log(LogLevel.Error, message); 
                                                         });

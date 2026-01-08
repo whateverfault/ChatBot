@@ -1,41 +1,77 @@
 ﻿using ChatBot.bot.shared.handlers;
+using ChatBot.cli.data.rendering;
 
 namespace ChatBot.cli;
 
+public enum Renderer{
+    Old,
+    New,
+}
+
 public class CliRenderer {
+    private readonly object _lock = new object();
+    
+    private ICliRenderer? _renderer;
     private CliState? _state;
 
     private bool _forcedToRender;
+
+    private CliRendererOptions Options { get; } = new CliRendererOptions();
     
 
     public void Bind(CliState state) {
-        _state = state;
+        lock (_lock) {
+            _state = state;
+
+            Options.Load();
+            SetRenderer(Options.CurrentRenderer);
+        }
     }
 
+    public int GetRendererAsInt() {
+        lock (_lock) {
+            return (int)Options.CurrentRenderer;
+        }
+    }
+    
+    public void RendererNext() {
+        lock (_lock) {
+            if (Options.CurrentRenderer == Renderer.Old) {
+                Options.SetRenderer(Renderer.New);
+                SetRenderer(Options.CurrentRenderer);
+                return;
+            }
+            
+            Options.SetRenderer(Renderer.Old);
+            SetRenderer(Options.CurrentRenderer);
+        }
+    }
+
+    private void SetRenderer(Renderer renderer) {
+        if (renderer == Renderer.New) {
+            _renderer = new CliNewRenderer();
+            return;
+        }
+        
+        _renderer = new CliOldRenderer();
+    }
+    
     public Task Start() {
         if (_state == null) return Task.CompletedTask;
         RenderNodes();
 
         return Task.Run(() => {
-                            while (true) {
-                                switch (_forcedToRender) {
-                                    case false when !IoHandler.KeyAvailable:
-                                        Thread.Sleep(50);
-                                        continue;
-                                    case false:
-                                        var line = IoHandler.ReadLine();
-                                        if (!int.TryParse(line, out var index)) {
-                                            index = 0;
-                                        }
-                                        
-                                        _state.Cli.ActivateNode(index);
-                                        break;
-                                } 
+                            lock (_lock) {
+                                while (true) {
+                                    if (!_forcedToRender) {
+                                        _renderer?.HandleInput(_state);
+                                    }
 
-                                IoHandler.Clear();
-                                RenderNodes();
-                                _forcedToRender = false;
-                            }  
+                                    IoHandler.Clear();
+                                    RenderNodes();
+                                    _forcedToRender = false;
+                                }
+                            }
                         });
     }
 
@@ -44,14 +80,8 @@ public class CliRenderer {
     }
     
     private void RenderNodes() {
-        if (_state?.NodeSystem == null) return;
+        if (_state == null) return;
         
-        var currentNodes = _state.NodeSystem.Current.Nodes;
-
-        var index = 0;
-        for (var i = 0; i < currentNodes.Count; i++, index++) {
-            index -= currentNodes[i].PrintValue(index+1, out var end);
-            IoHandler.Write(end);
-        }
+        _renderer?.Render(_state);
     }
 }
