@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.interfaces;
+﻿using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
 using ChatBot.bot.services.level_requests;
 using ChatBot.bot.services.scopes;
@@ -418,13 +419,25 @@ public class CliNodeSystem {
                                                       _state,
                                                       true,
                                                       [
-                                                      new CliNodeEnum(
-                                                                      "Service State",
-                                                                      _state.Data.DemonList.GetServiceStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      _state.Data.DemonList.ServiceStateNext
-                                                                      ),
+                                                          new CliNodeString(
+                                                                          "Default Profile",
+                                                                          _state.Data.DemonList.Options.GetDefaultUserName,
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.DemonList.Options.SetDefaultUserName
+                                                                         ),
+                                                          new CliNodeBool(
+                                                                          "Use Default Profile",
+                                                                          _state.Data.DemonList.Options.GetUseDefaultUserName,
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.DemonList.Options.SetUseDefaultUserName
+                                                                         ), 
+                                                          new CliNodeEnum(
+                                                                          "Service State", 
+                                                                          _state.Data.DemonList.GetServiceStateAsInt,
+                                                                          typeof(State),
+                                                                          CliNodePermission.Default,
+                                                                          _state.Data.DemonList.ServiceStateNext
+                                                                          ),
                                                       ]
                                                       );
 
@@ -1014,31 +1027,31 @@ public class CliNodeSystem {
                                                            _state,
                                                            true,
                                                            [
-                                                               new CliNodeEnum(
-                                                                            "Authorization Level",
-                                                                            _state.Data.Scopes.GetScopesPresetAsInt,
-                                                                            typeof(ScopesPreset),
-                                                                            CliNodePermission.Default,
-                                                                            _state.Data.Scopes.ScopesPresetNext
-                                                                           ), 
                                                                new CliNodeAction(
                                                                     "Authorize", 
                                                                     () => _ = _state.Data.Bot.GetAuthorization() 
                                                                     ),
+                                                               new CliNodeEnum(
+                                                                               "Authorize As",
+                                                                               _state.Data.Scopes.GetScopesPresetAsInt,
+                                                                               typeof(ScopesPreset),
+                                                                               CliNodePermission.Default,
+                                                                               _state.Data.Scopes.ScopesPresetNext
+                                                                              ),
                                                                new CliNodeStaticDirectory(
-                                                                    "Info",
+                                                                    "Other",
                                                                     _state,
                                                                     true, 
                                                                     [
                                                                         new CliNodeEnum(
-                                                                             "Current Authorization Level", 
-                                                                             _state.Data.Bot.CurAuthLevelAsInt, 
-                                                                             typeof(ScopesPreset), 
+                                                                             "Authorization Level", 
+                                                                             _state.Data.Bot.GetAuthLevelAsInt, 
+                                                                             typeof(AuthLevel), 
                                                                              CliNodePermission.ReadOnly
-                                                                             ),
-                                                                        new CliNodeBool(
-                                                                             "Has Broadcaster Authorization", 
-                                                                             _state.Data.Bot.HasBroadcasterAuth, 
+                                                                            ),
+                                                                        new CliNodeString(
+                                                                             "Authorized Broadcaster", 
+                                                                             _state.Data.Bot.GetAuthorizedBroadcasterDisplayName, 
                                                                              CliNodePermission.ReadOnly
                                                                              ),
                                                                     ]

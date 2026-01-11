@@ -1,5 +1,4 @@
-﻿using ChatBot.bot.services.scopes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using TwitchAPI.client.credentials;
 
 namespace ChatBot.bot.chat_bot.data.saved;
@@ -9,10 +8,10 @@ internal sealed class SaveData {
     public ConnectionCredentials Credentials { get; set; } = null!;
 
     [JsonProperty("auth_lvl")]
-    public ScopesPreset CurAuthLevel { get; set; }
+    public AuthLevel AuthLevel { get; set; }
     
-    [JsonProperty("has_broad_auth")]
-    public bool HasBroadcasterAuth { get; set; }
+    [JsonProperty("authed_creds")]
+    public FullCredentials? AuthorizedCredentials { get; set; }
     
 
     public SaveData() {
@@ -22,19 +21,19 @@ internal sealed class SaveData {
     [JsonConstructor]
     public SaveData(
         [JsonProperty("credentials")] ConnectionCredentials credentials,
-        [JsonProperty("auth_lvl")] ScopesPreset authLevel,
-        [JsonProperty("has_broad_auth")] bool hasBroadAuth) {
+        [JsonProperty("auth_lvl")] AuthLevel authLevel,
+        [JsonProperty("authed_creds")] FullCredentials? authedCreds) {
         var dto = new SaveDataDto(
                                   credentials,
                                   authLevel,
-                                  hasBroadAuth
+                                  authedCreds
                                   );
         FromDto(dto);
     }
 
     private void FromDto(SaveDataDto dto) {
         Credentials = dto.Credentials.Value;
-        CurAuthLevel = dto.CurAuthLevel.Value;
-        HasBroadcasterAuth = dto.HasBroadcasterAuth.Value;
+        AuthLevel = dto.AuthenticationLevel.Value;
+        AuthorizedCredentials = dto.AuthorizedCredentials.Value;
     }
 }

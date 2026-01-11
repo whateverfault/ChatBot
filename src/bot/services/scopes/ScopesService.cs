@@ -23,8 +23,7 @@ public enum Scope {
 
 public enum ScopesPreset {
     None = 0,
-    Chatter,
-    Moderator,
+    Bot,
     Broadcaster,
 }
 
@@ -33,17 +32,12 @@ public class ScopesService : Service {
                                                                [],
                                                                [
                                                                    Scope.ChatRead, Scope.ChatEdit, Scope.UserBot, 
-                                                                   Scope.ChannelBot, Scope.ChannelReadRedemptions, Scope.ClipsEdit, 
-                                                                   Scope.UserReadChat, Scope.UserWriteChat,
+                                                                   Scope.ChannelBot, Scope.ClipsEdit, Scope.UserReadChat,
+                                                                   Scope.UserWriteChat, Scope.ChannelModerate, Scope.ModeratorManageBannedUsers,
+                                                                   Scope.ModeratorManageChatMessages, Scope.ModeratorReadFollowers, 
                                                                ],
                                                                [
-                                                                   Scope.ChatRead, Scope.ChatEdit, Scope.UserBot, 
-                                                                   Scope.ChannelBot, Scope.ChannelReadRedemptions, Scope.ClipsEdit, 
-                                                                   Scope.UserReadChat, Scope.UserWriteChat, Scope.ChannelModerate, 
-                                                                   Scope.ModeratorManageBannedUsers, Scope.ModeratorManageChatMessages, Scope.ModeratorReadFollowers, 
-                                                               ],
-                                                               [
-                                                                   Scope.ChannelManageBroadcast, Scope.ChannelManageRedemptions,
+                                                                   Scope.ChannelManageBroadcast, Scope.ChannelManageRedemptions, Scope.ChannelReadRedemptions,
                                                                ],
                                                            ]; 
     
@@ -59,11 +53,20 @@ public class ScopesService : Service {
     }
     
     public void ScopesPresetNext() {
-        Options.SetPreset((ScopesPreset)(((int)Options.Preset+1)%Enum.GetValues(typeof(ScopesPreset)).Length));
+        var preset = (ScopesPreset)(((int)Options.Preset + 1) % Enum.GetValues(typeof(ScopesPreset)).Length);
+        if (preset == ScopesPreset.None) {
+            preset = ScopesPreset.Bot;
+        }
+        
+        Options.SetPreset(preset);
     }
 
     public int GetScopesPresetAsInt() {
         return (int)Options.Preset;
+    }
+    
+    public ScopesPreset GetScopesPreset() {
+        return Options.Preset;
     }
     
     private string GetScopesString(List<Scope> scopes) {
@@ -104,12 +107,8 @@ public class ScopesService : Service {
     public ScopesPreset GetScopesPreset(string scopesRaw) {
         var scopes = ParseScopes(scopesRaw);
 
-        if (scopes.Count == _scopesPresets[(int)ScopesPreset.Chatter].Count) {
-            return ScopesPreset.Chatter;
-        }
-
-        if (scopes.Count == _scopesPresets[(int)ScopesPreset.Moderator].Count) {
-            return ScopesPreset.Moderator;
+        if (scopes.Count == _scopesPresets[(int)ScopesPreset.Bot].Count) {
+            return ScopesPreset.Bot;
         }
 
         return ScopesPreset.Broadcaster;

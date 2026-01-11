@@ -56,14 +56,14 @@ public class ModerationService : Service {
         if (Options.ServiceState == State.Disabled) return;
 
         if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) {
-            ErrorHandler.LogMessage(LogLevel.Error, $"Couldn't Warn User {message.Username}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Couldn't Warn User {message.UserName}");
             return;
         }
 
         var client = Bot.GetClient();
         if (client?.Credentials == null) return;
 
-        var userId = await Bot.Api.GetUserId(message.Username, client.Credentials);
+        var userId = await Bot.Api.GetUserId(message.UserName, client.Credentials);
         if (userId == null) return;    
         
         var modAction = Options.ModerationActions[patternIndex];

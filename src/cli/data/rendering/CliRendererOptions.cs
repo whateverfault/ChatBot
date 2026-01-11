@@ -4,12 +4,12 @@ using ChatBot.cli.data.rendering.saved;
 namespace ChatBot.cli.data.rendering;
 
 public class CliRendererOptions {
-    private const string NAME = "cli";
+    private const string NAME = "renderer";
     
     private readonly object _fileLock = new object();
     
     private static string ConfigDirectory => Path.Combine(GetProcessDirectory(), "presets");
-    private static string OptionsPath => Path.Combine(Path.Combine(ConfigDirectory, NAME), $"{NAME}.json");
+    private static string OptionsPath => Path.Combine(ConfigDirectory, $"{NAME}.json");
 
     private SaveData? _saveData;
 
@@ -24,7 +24,7 @@ public class CliRendererOptions {
 
     private void Save() {
         lock (_fileLock) {
-            Json.WriteSafe(OptionsPath, Path.Combine(ConfigDirectory, NAME), _saveData);
+            Json.WriteSafe(OptionsPath, ConfigDirectory, _saveData);
         }
     }
 

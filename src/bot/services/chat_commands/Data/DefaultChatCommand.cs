@@ -22,7 +22,7 @@ public sealed class DefaultChatCommand : ChatCommand {
                                           hasIdentifier,
                                           aliases ?? [],
                                           cooldown,
-                                          true,
+                                          false,
                                           [],
                                           0,
                                           action,

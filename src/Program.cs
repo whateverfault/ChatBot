@@ -27,6 +27,8 @@ internal static class Program {
         Services.Load();
         
         var bot = TwitchChatBot.Instance;
+        await bot.Initialize();
+        
         var cli = new Cli(new CliData());
         
         if (autoInit) _ = bot.Start();

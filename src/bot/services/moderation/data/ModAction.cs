@@ -136,7 +136,7 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.Ban: {
-                await TwitchChatBot.Instance.Api.BanUser(chatMessage.Username, ModeratorComment, client.Credentials);
+                await TwitchChatBot.Instance.Api.BanUser(chatMessage.UserName, ModeratorComment, client.Credentials);
                 break;
             }
             case ModerationActionType.Timeout: {
@@ -181,7 +181,7 @@ public class ModAction {
         }
         
         user.GiveWarn();
-        await client.SendMessage($"@{chatMessage.Username} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
+        await client.SendMessage($"@{chatMessage.UserName} -> {ModeratorComment} ({user.Warns}/{MaxWarnCount})");
         if (user.Warns < user.ModAction.MaxWarnCount) {
             await TwitchChatBot.Instance.Api.DeleteMessage(chatMessage, client.Credentials, (_, callback) => {
                                                                     ErrorHandler.LogMessage(LogLevel.Error, callback);
@@ -191,7 +191,7 @@ public class ModAction {
         
         switch (Type) {
             case ModerationActionType.WarnWithBan: {
-                await TwitchChatBot.Instance.Api.BanUser(chatMessage.Username, ModeratorComment, client.Credentials, (_, callback) => {
+                await TwitchChatBot.Instance.Api.BanUser(chatMessage.UserName, ModeratorComment, client.Credentials, (_, callback) => {
                                                                   ErrorHandler.LogMessage(LogLevel.Error, callback);
                                                               });
                 _options.RemoveWarnedUser(userIndex);

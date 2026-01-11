@@ -68,7 +68,7 @@ public class TgNotificationsService : Service {
                                                               },
                                                               {
                                                                   "{link}",
-                                                                  $"{Constants.BaseTwitchUrl}{client?.Credentials?.Channel ?? string.Empty}?v={random.Next(int.MinValue, int.MaxValue)}"
+                                                                  $"{Constants.BaseTwitchUrl}{client?.Credentials?.Broadcaster.Login ?? string.Empty}?v={random.Next(int.MinValue, int.MaxValue)}"
                                                               },
                                                               {
                                                                   "\\n",

@@ -17,8 +17,6 @@ public class AredlClient {
                                                               };
     private readonly HttpClient _httpClient;
     private readonly AredlCache? _cache;
-
-    public int LevelsCount => _cache?.Levels?.Data.Count ?? 0; 
     
 
     public AredlClient(bool caching, HttpClient? client = null) {
@@ -29,6 +27,26 @@ public class AredlClient {
         }
     }
 
+    public async Task<int> GetLevelsCount() {
+        try {
+            await ListLevels();
+            return _cache?.Levels?.Data.Count ?? 0;
+        }
+        catch {
+            return 0;
+        }
+    }
+    
+    public async Task<int> GetPlatformerLevelsCount() {
+        try {
+            await ListPlatformerLevels();
+            return _cache?.PlatformerLevels?.Data.Count ?? 0;
+        }
+        catch {
+            return 0;
+        }
+    }
+    
     public void ResetCache() {
         _cache?.ResetCache();
     }
@@ -164,7 +182,7 @@ public class AredlClient {
 
             var levels = await ListLevels(errorCallback);
 
-            if (placement < levels?.Data.Count) {
+            if (placement <= levels?.Data.Count) {
                 return levels.Data[placement - 1];
             }
 
