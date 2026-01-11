@@ -28,7 +28,7 @@ public class StreamStateCheckerService : Service {
             
             var lastCheckedWasOnline = Options.StreamState.WasOnline;
             
-            var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Channel, client.Credentials, (_, message) => {
+            var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Broadcaster.Login, client.Credentials, (_, message) => {
                                                             ErrorHandler.LogMessage(LogLevel.Error, message);
                                                            });
             if (streamResponse == null) {

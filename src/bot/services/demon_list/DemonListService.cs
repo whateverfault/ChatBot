@@ -12,9 +12,15 @@ public class DemonListService : Service {
     
     public override DemonListOptions Options { get; } = new DemonListOptions();
 
-    public int LevelsCount => _aredlClient.LevelsCount;
-    
 
+    public async Task<int> GetLevelsCount() {
+        return await _aredlClient.GetLevelsCount();
+    }
+    
+    public async Task<int> GetPlatformerLevelsCount() {
+        return await _aredlClient.GetPlatformerLevelsCount();
+    }
+    
     public void ResetCache() {
         _aredlClient.ResetCache();
     }
@@ -404,6 +410,11 @@ public class DemonListService : Service {
 
         return levelsInfo.FirstOrDefault();
     }
+
+    public bool GetDefaultUserName(out string userName) {
+        userName = Options.GetDefaultUserName();
+        return Options.GetUseDefaultUserName();
+    }
     
     public async Task<string> FormatLevelInfo(LevelInfo levelInfo, bool withLink = true) {
         var verificationLink = string.Empty;
@@ -436,16 +447,7 @@ public class DemonListService : Service {
     }
     
     public string FormatClanInfo(ClanInfo clanInfo) {
-        var formated = $"#{clanInfo.Rank} [{clanInfo.Clan.Tag}] {clanInfo.Clan.GlobalName} | https://aredl.net/clans/{clanInfo.Clan.Id}";
-        return formated;
-    }
-    
-    public string FormatClanSubmissionInfo(ClanSubmissionInfo clanSubmissionInfo) {
-        if (clanSubmissionInfo.Level == null) {
-            return string.Empty;
-        }
-        
-        var formated = $"#{clanSubmissionInfo.Level.Position} {clanSubmissionInfo.Level.Name} | {clanSubmissionInfo.VideoUrl}";
+        var formated = $"#{clanInfo.Rank} [{clanInfo.Clan.Tag}] {clanInfo.Clan.GlobalName} | https://aredl.net/profile/clan/{clanInfo.Clan.Id}";
         return formated;
     }
 
@@ -454,7 +456,7 @@ public class DemonListService : Service {
             return string.Empty;
         }
         
-        var formated = $"#{profile.Rank} {profile.User.GlobalName} | https://aredl.net/profile/user/{profile.User.Username}";
+        var formated = $"#{profile.Rank} {profile.User.GlobalName} | https://aredl.net/profile/user/{profile.User.UserName}";
         return formated;
     }
     

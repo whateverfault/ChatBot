@@ -15,6 +15,9 @@ public class DemonListOptions : Options {
 
     public override State ServiceState => _saveData!.ServiceState;
     
+    public string DefaultUserName => _saveData!.DefaultUserName;
+    public bool UseDefaultUserName => _saveData!.UseDefaultUserName;
+    
 
     public override void Load() {
         if (!Json.TryRead(OptionsPath, out _saveData!)) {
@@ -35,6 +38,26 @@ public class DemonListOptions : Options {
 
     public override void SetState(State state) {
         _saveData!.ServiceState = state;
+        Save();
+    }
+
+    public string GetDefaultUserName() {
+        return string.IsNullOrEmpty(DefaultUserName)?
+                   "Empty" :
+                   DefaultUserName;
+    }
+
+    public bool GetUseDefaultUserName() {
+        return UseDefaultUserName;
+    }
+
+    public void SetDefaultUserName(string value) {
+        _saveData!.DefaultUserName = value;
+        Save();
+    }
+    
+    public void SetUseDefaultUserName(bool value) {
+        _saveData!.UseDefaultUserName = value;
         Save();
     }
 }

@@ -21,6 +21,7 @@ using ChatBot.bot.services.translator;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
+using TwitchAPI.client.data;
 using TwitchAPI.shared;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
@@ -56,11 +57,11 @@ public static class CommandsList {
                                                   ),
                                new DefaultChatCommand(
                                                       0,
-                                                   "cmds",
-                                                   "[page]",
-                                                   "список комманд.",
-                                                   Cmds,
-                                                   Restriction.Everyone
+                                                      "cmds",
+                                                      "[page]",
+                                                      "список комманд.",
+                                                      Cmds,
+                                                      Restriction.Everyone
                                                   ),
                                new DefaultChatCommand(
                                                       47,
@@ -1250,7 +1251,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendMessage("Используйте эту комманду внутри награды.", chatMessage.Id);
+            await client.SendMessage("Используйте эту команду внутри награды.", chatMessage.Id);
             return;
         }
         
@@ -1297,7 +1298,7 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Клип создан - https://www.twitch.tv/{client.Credentials.Channel}/clip/{clipId}", chatMessage.Id);
+        await client.SendMessage($"Клип создан - https://www.twitch.tv/{client.Credentials.Broadcaster.Login}/clip/{clipId}", chatMessage.Id);
     }
 
     private static async Task TitleEveryone(ChatCmdArgs cmdArgs) {
@@ -1313,6 +1314,10 @@ public static class CommandsList {
     }
     
     private static async Task Title(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -1340,7 +1345,7 @@ public static class CommandsList {
                                                             _logger.Log(LogLevel.Error, message);
                                                         });
         if (!result) {
-            await client.SendMessage($"Не удалось изменить название", chatMessage.Id);
+            await client.SendMessage("Не удалось изменить название", chatMessage.Id);
             return;
         }
         await client.SendMessage($"Название стрима изменено на {titleSb}", chatMessage.Id);
@@ -1354,7 +1359,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         string result;
-        var username = chatMessage.Username;
+        var username = chatMessage.UserName;
         if (args.Count > 0) {
             username = args[0];
         }
@@ -1410,6 +1415,10 @@ public static class CommandsList {
     }
     
     private static async Task Game(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -1503,7 +1512,7 @@ public static class CommandsList {
             return;
         }
 
-        var username = await _bot.Api.GetUsername(message.UserId, client.Credentials, true, (_, msg) => {
+        var username = await _bot.Api.GetUserName(message.UserId, client.Credentials, true, (_, msg) => {
                                                    _logger.Log(LogLevel.Error, msg);
                                                });
         await client.SendMessage($"Это было сообщение от '{username}'", chatMessage.Id);
@@ -1811,22 +1820,30 @@ public static class CommandsList {
         if (top <= 0) top = 1;
         if (top > 10) top = 10;
         
-        var username = new StringBuilder();
+        var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
             var arg = args[i];
             if (arg.Length > 1 && arg[0..2] is "--") {
                 break;
             }
 
-            username.Append($"{arg}");
+            usernameSb.Append($"{arg}");
             if (i < args.Count - 1) {
-                username.Append(' ');
+                usernameSb.Append(' ');
             }
         }
 
         var formatedOutput = new StringBuilder();
         
-        if (username.Length <= 0) {
+        var username = usernameSb.ToString();
+        
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        if (string.IsNullOrEmpty(username)) {
             for (var i = 1; i <= top; ++i) {
                 var levelInfo = await demonList.GetLevelByPlacement(i);
                 if (levelInfo == null) {
@@ -1834,7 +1851,7 @@ public static class CommandsList {
                     return;
                 }
 
-                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
 
                 if (i < top - 1) {
                     formatedOutput.Append(" / ");
@@ -1845,7 +1862,7 @@ public static class CommandsList {
             return;
         }
         
-        var profile = await demonList.GetProfile(username.ToString());
+        var profile = await demonList.GetProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -1892,22 +1909,30 @@ public static class CommandsList {
         if (top <= 0) top = 1;
         if (top > 10) top = 10;
         
-        var username = new StringBuilder();
+        var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
             var arg = args[i];
             if (arg.Length > 1 && arg[0..2] is "--") {
                 break;
             }
 
-            username.Append($"{arg}");
+            usernameSb.Append($"{arg}");
             if (i < args.Count - 1) {
-                username.Append(' ');
+                usernameSb.Append(' ');
             }
         }
 
         var formatedOutput = new StringBuilder();
         
-        if (username.Length <= 0) {
+        var username = usernameSb.ToString();
+
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        if (string.IsNullOrEmpty(username)) {
             for (var i = 1; i <= top; ++i) {
                 var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
                 if (levelInfo == null) {
@@ -1915,7 +1940,7 @@ public static class CommandsList {
                     return;
                 }
 
-                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
 
                 if (i < top - 1) {
                     formatedOutput.Append(" / ");
@@ -1926,7 +1951,7 @@ public static class CommandsList {
             return;
         }
         
-        var profile = await demonList.GetProfile(username.ToString());
+        var profile = await demonList.GetProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -1973,30 +1998,40 @@ public static class CommandsList {
         if (top <= 0) top = 1;
         if (top > 10) top = 10;
         
-        var username = new StringBuilder();
+        var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
             var arg = args[i];
             if (arg.Length > 1 && arg[0..2] is "--") {
                 break;
             }
 
-            username.Append($"{arg}");
+            usernameSb.Append($"{arg}");
             if (i < args.Count - 1) {
-                username.Append(' ');
+                usernameSb.Append(' ');
             }
         }
         
         var formatedOutput = new StringBuilder();
         
-        if (username.Length <= 0) {
-            for (var i = demonList.LevelsCount; i <= demonList.LevelsCount - top; --i) {
+        var username = usernameSb.ToString();
+
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        if (string.IsNullOrEmpty(username)) {
+            var levelsCount = await demonList.GetLevelsCount();
+            
+            for (var i = levelsCount; i > levelsCount - top; --i) {
                 var levelInfo = await demonList.GetLevelByPlacement(i);
                 if (levelInfo == null) {
                     await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                     return;
                 }
 
-                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
 
                 if (i < top - 1) {
                     formatedOutput.Append(" / ");
@@ -2007,7 +2042,7 @@ public static class CommandsList {
             return;
         }
 
-        var profile = await demonList.GetProfile(username.ToString());
+        var profile = await demonList.GetProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -2054,30 +2089,40 @@ public static class CommandsList {
         if (top <= 0) top = 1;
         if (top > 10) top = 10;
         
-        var username = new StringBuilder();
+        var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
             var arg = args[i];
             if (arg.Length > 1 && arg[0..2] is "--") {
                 break;
             }
 
-            username.Append($"{arg}");
+            usernameSb.Append($"{arg}");
             if (i < args.Count - 1) {
-                username.Append(' ');
+                usernameSb.Append(' ');
             }
         }
         
         var formatedOutput = new StringBuilder();
         
-        if (username.Length <= 0) {
-            for (var i = demonList.LevelsCount; i <= demonList.LevelsCount - top; --i) {
+        var username = usernameSb.ToString();
+
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        if (string.IsNullOrEmpty(username)) {
+            var levelsCount = await demonList.GetPlatformerLevelsCount();
+            
+            for (var i = levelsCount; i > levelsCount - top; --i) {
                 var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
                 if (levelInfo == null) {
                     await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
                     return;
                 }
 
-                formatedOutput.Append($"{(top > 1 ? $"({i})." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
+                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
 
                 if (i < top - 1) {
                     formatedOutput.Append(" / ");
@@ -2088,7 +2133,7 @@ public static class CommandsList {
             return;
         }
 
-        var profile = await demonList.GetPlatformerProfile(username.ToString());
+        var profile = await demonList.GetPlatformerProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -2123,12 +2168,13 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
-        if (args.Count <= 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
-            return;
-        }
-
         var username = cmdArgs.Parsed.CommandMessage;
+        
+        if (string.IsNullOrEmpty(username) || args.Count <= 0) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
         
         var profile = await demonList.GetProfile(username);
         if (profile == null) {
@@ -2300,7 +2346,7 @@ public static class CommandsList {
                 separator = string.Empty;
             }
 
-            var username = await _bot.Api.GetUsername(gameRequest.UserId, client.Credentials, true, (_, message) => {
+            var username = await _bot.Api.GetUserName(gameRequest.UserId, client.Credentials, true, (_, message) => {
                                                      _logger.Log(LogLevel.Error, message);
                                                  });
             reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
@@ -2317,7 +2363,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendMessage($"Используйте эту комманду внутри награды.", chatMessage.Id);
+            await client.SendMessage("Используйте эту комманду внутри награды.", chatMessage.Id);
             return;
         }
         
@@ -2415,7 +2461,11 @@ public static class CommandsList {
             }
         }
 
-        var rewardId = await _bot.Api.CreateChannelReward(title, cost, client.Credentials, userInputRequired: requireInput, callback: (_, message) => { 
+        var rewardId = await _bot.Api.CreateChannelReward(title, 
+                                                          cost, 
+                                                          client.Credentials, 
+                                                          userInputRequired: requireInput, 
+                                                          callback: (_, message) => { 
                                                                 _logger.Log(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
@@ -2427,6 +2477,10 @@ public static class CommandsList {
     }
     
     private static async Task DeleteReward(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -2818,6 +2872,10 @@ public static class CommandsList {
     }
     
     private static async Task Gamble(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -2858,6 +2916,10 @@ public static class CommandsList {
     }
     
     private static async Task Duel(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -2896,6 +2958,10 @@ public static class CommandsList {
     }
     
     private static async Task AcceptDuel(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -2923,7 +2989,7 @@ public static class CommandsList {
         }
 
         var duelResult = result.Value.Value;
-        var winnerUsername = await _bot.Api.GetUsername(duelResult.UserId, client.Credentials, displayName: true,
+        var winnerUsername = await _bot.Api.GetUserName(duelResult.UserId, client.Credentials, displayName: true,
                                                (_, message) => {
                                                    _logger.Log(LogLevel.Error, message);
                                                });
@@ -2935,7 +3001,7 @@ public static class CommandsList {
         var looserId = duelResult.UserId.Equals(chatMessage.UserId)?
                            userId :
                            chatMessage.UserId;
-        var looserUsername = await _bot.Api.GetUsername(looserId, client.Credentials, displayName: true, 
+        var looserUsername = await _bot.Api.GetUserName(looserId, client.Credentials, displayName: true, 
                                                      (_, message) => {
                                                          _logger.Log(LogLevel.Error, message);
                                                      });
@@ -2962,6 +3028,10 @@ public static class CommandsList {
     }
     
     private static async Task DeclineDuel(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -2989,6 +3059,10 @@ public static class CommandsList {
     }
     
     private static async Task RemoveDuels(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3005,6 +3079,10 @@ public static class CommandsList {
     }
     
     private static async Task ListDuels(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3025,7 +3103,7 @@ public static class CommandsList {
         
         for (var i = 0; i < duels.Count; ++i) { 
             var duel = duels[i];
-            var username = await _bot.Api.GetUsername(duel.Subject, client.Credentials, displayName: true, 
+            var username = await _bot.Api.GetUserName(duel.Subject, client.Credentials, displayName: true, 
                                                    (_, message) => {
                                                        _logger.Log(LogLevel.Error, message);
                                                    });
@@ -3041,6 +3119,10 @@ public static class CommandsList {
     }
     
     private static async Task Balance(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -3074,6 +3156,10 @@ public static class CommandsList {
     }
 
     private static async Task ShopAdd(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
 
@@ -3107,6 +3193,10 @@ public static class CommandsList {
     }
     
     private static async Task ShopRemove(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
 
@@ -3129,6 +3219,10 @@ public static class CommandsList {
     }
     
     private static async Task Buy(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
 
@@ -3163,6 +3257,10 @@ public static class CommandsList {
     }
     
     private static async Task Use(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -3207,6 +3305,10 @@ public static class CommandsList {
     }
     
     private static async Task Give(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3250,6 +3352,10 @@ public static class CommandsList {
     }
     
     private static async Task Giveaway(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3332,7 +3438,7 @@ public static class CommandsList {
         var sb = new StringBuilder();
         for (var i = 0; i < map.Count; ++i) {
             var (receiver, points) = map.ElementAt(i);
-            var username = await _bot.Api.GetUsername(receiver, client.Credentials, true, (_, msg) => {
+            var username = await _bot.Api.GetUserName(receiver, client.Credentials, true, (_, msg) => {
                                                                                      ErrorHandler.LogMessage(LogLevel.Error, msg);
                                                  });
             if (username == null) continue;
@@ -3344,6 +3450,10 @@ public static class CommandsList {
     }
     
     private static async Task BankListRewards(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3361,6 +3471,10 @@ public static class CommandsList {
     }
     
     private static async Task BankCreateReward(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3377,10 +3491,10 @@ public static class CommandsList {
                                                        title: $"+{quantity}",
                                                        cost: quantity,
                                                        credentials: client.Credentials,
-                                                       prompt: "Обмен баллов на фантики.",
+                                                       prompt: $"Дает {quantity} фантиков.",
                                                        isEnabled: true,
-                                                       userInputRequired: true,
-                                                       skipQueue: true,
+                                                       userInputRequired: false,
+                                                       skipQueue: false,
                                                        callback: (_, message) => {
                                                                      _logger.Log(LogLevel.Error, message);
                                                                  }
@@ -3395,6 +3509,10 @@ public static class CommandsList {
     }
     
     private static async Task BankDeleteReward(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
         
@@ -3415,11 +3533,11 @@ public static class CommandsList {
         var (rewardId, _) = bank.Options.GetReward(index-1);
         
         var result = await _bot.Api.DeleteChannelReward(
-                                                     rewardId,
-                                                       client.Credentials,
-                                                       (_, message) => { 
-                                                           _logger.Log(LogLevel.Error, message);
-                                                       }
+                                                        rewardId,
+                                                        client.Credentials,
+                                                        (_, message) => { 
+                                                            _logger.Log(LogLevel.Error, message);
+                                                        }
                                                       );
         if (!result) {
             await client.SendMessage("Не удалось удалить награду.", chatMessage.Id);
@@ -3427,7 +3545,7 @@ public static class CommandsList {
         }
         
         bank.Options.RemoveReward(rewardId);
-        await client.SendMessage("Нагарада удалена успешно.", chatMessage.Id);
+        await client.SendMessage("Награда удалена успешно.", chatMessage.Id);
     }
     
     private static async Task Evaluate(ChatCmdArgs cmdArgs) {
@@ -3605,5 +3723,34 @@ public static class CommandsList {
             
             _ => string.Empty,
         };
+    }
+
+    private static async Task<bool> ErrorIfNotFullyAuthorized(ChatMessage? message = null) {
+        var client = _bot.GetClient();
+        if (client == null) {
+            return true;
+        }
+
+        var authLevel = _bot.GetAuthLevel();
+
+        if (authLevel == AuthLevel.Full) {
+            return false;
+        }
+
+        switch (message) {
+                
+            case not null: {
+                await ErrorHandler.ReplyWithError(ErrorCode.NotFullyAuthorized, message, client);
+                break;
+            }
+                
+            case null: {
+                await ErrorHandler.SendError(ErrorCode.NotFullyAuthorized, client);
+                break;
+            }
+            
+        }
+        
+        return true;
     }
 }

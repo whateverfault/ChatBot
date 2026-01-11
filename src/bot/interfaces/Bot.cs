@@ -10,6 +10,8 @@ public abstract class Bot : Service {
     public abstract TwitchApi Api { get; }
     
     public abstract override Options Options { get; }
+    
+    public abstract event EventHandler<RewardRedemption>? OnRewardRedeemed;
     public abstract event EventHandler<ChatMessage>? OnMessageReceived;
 
 

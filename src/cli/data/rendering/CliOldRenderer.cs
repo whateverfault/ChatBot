@@ -12,7 +12,24 @@ public class CliOldRenderer : ICliRenderer {
         if (!int.TryParse(line, out var index)) {
             index = 0;
         }
-                                        
+
+        if (state.NodeSystem == null) {
+            return;
+        }
+        
+        var nodes = state.NodeSystem.Current.Nodes;
+        var indexIncrease = 0;
+
+        if (index < 0 || index >= nodes.Count) 
+            return;
+        
+        for (var i = 0; i <= index; i++) {
+            if (nodes[i].ShouldSkip) {
+                indexIncrease++;
+            }
+        }
+        index += indexIncrease;
+        
         state.Cli.ActivateNode(index);
     }
     

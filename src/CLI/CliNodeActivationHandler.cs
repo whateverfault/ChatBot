@@ -19,14 +19,6 @@ public class CliNodeActivationHandler {
             return;
         }
 
-        var indexIncrease = 0;
-        for (var i = 0; i <= index; i++) {
-            if (currentNodes[i].ShouldSkip) {
-                indexIncrease++;
-            }
-        }
-        index += indexIncrease;
-
         IoHandler.Clear();
         if (index >= currentNodes.Count) return;
         currentNodes[index].Activate(_state);

@@ -17,7 +17,7 @@ public class BankService : Service {
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
         
         if (distUserId.Equals(srcUserId)
-         || distUserId.Equals(client.Credentials.ChannelId)) return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
+         || distUserId.Equals(client.Credentials.Broadcaster.UserId)) return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
         
         
         var takeResult = TakeOut(srcUserId, quantity, gain: false);
@@ -33,7 +33,7 @@ public class BankService : Service {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
         
-        if (userId.Equals(client.Credentials.ChannelId)) return new Result<bool, ErrorCode?>(true,null);
+        if (userId.Equals(client.Credentials.Broadcaster.UserId)) return new Result<bool, ErrorCode?>(true,null);
         
         var result = Options.TakeOut(userId, quantity, gain);
         return result? 
@@ -45,7 +45,7 @@ public class BankService : Service {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
         
-        if (userId.Equals(client.Credentials.ChannelId)) return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
+        if (userId.Equals(client.Credentials.Broadcaster.UserId)) return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
         return new Result<bool, ErrorCode?>(Options.Deposit(userId, quantity, gain), null);
     }
 
@@ -55,7 +55,7 @@ public class BankService : Service {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return false;
         
-        return userId.Equals(client.Credentials.ChannelId) || Options.GetBalance(userId, out balance);
+        return userId.Equals(client.Credentials.Broadcaster.UserId) || Options.GetBalance(userId, out balance);
     }
 
     public bool GetAccount(string userId, out Account? account) => Options.GetAccount(userId, out account);

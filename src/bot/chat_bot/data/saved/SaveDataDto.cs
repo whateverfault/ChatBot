@@ -6,17 +6,17 @@ namespace ChatBot.bot.chat_bot.data.saved;
 
 internal sealed class SaveDataDto {
     public readonly SafeField<ConnectionCredentials> Credentials = new SafeField<ConnectionCredentials>(new ConnectionCredentials());
-    public readonly SafeField<ScopesPreset> CurAuthLevel = new SafeField<ScopesPreset>(ScopesPreset.None);
-    public readonly SafeField<bool> HasBroadcasterAuth = new SafeField<bool>(false);
+    public readonly SafeField<AuthLevel> AuthenticationLevel = new SafeField<AuthLevel>(AuthLevel.None);
+    public readonly SafeField<FullCredentials?> AuthorizedCredentials = new SafeField<FullCredentials?>(null);
 
     
     public SaveDataDto() { }
     
     public SaveDataDto(ConnectionCredentials credentials,
-                       ScopesPreset scopesPreset,
-                       bool hasBroadAuth) {
+                       AuthLevel authLevel,
+                       FullCredentials? authedCreds) {
         Credentials.Value = credentials;
-        CurAuthLevel.Value = scopesPreset;
-        HasBroadcasterAuth.Value = hasBroadAuth;
+        AuthenticationLevel.Value = authLevel;
+        AuthorizedCredentials.Value = authedCreds;
     }
 }

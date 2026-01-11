@@ -29,6 +29,7 @@ public enum ErrorCode {
     NotEnough,
     PermissionDenied,
     AntiMute,
+    NotFullyAuthorized,
     None,
 }
 
@@ -59,6 +60,7 @@ public static class ErrorHandler {
                                                                   "Not Enough.",
                                                                   "Permission denied.",
                                                                   "AntiMute Activated.",
+                                                                  "This Function Requires Full Authorization.",
                                                               ];
 
 
@@ -86,13 +88,15 @@ public static class ErrorHandler {
                                                                 "Недостаточно.",
                                                                 "Недостаточно прав.",
                                                                 "Сработала защита от мута.",
+                                                                "Эта функция требует полной авторизации.",
                                                             ];
 
 
     public static string? GetErrorString(ErrorCode? error, bool eng = false) {
         if (error == null) return null;
-        
-        if (eng) return _internalErrorMessages[(int)error];
+
+        if (eng) 
+            return _internalErrorMessages[(int)error];
         return _twitchErrorMessages[(int)error];
     }
     
@@ -105,6 +109,19 @@ public static class ErrorHandler {
         return true;
     }
 
+    public static async Task<bool> SendError(ErrorCode? error, ITwitchClient? client, string? mention = null) {
+        if (client == null || error == null || error == ErrorCode.None) {
+            return false;
+        }
+
+        mention = string.IsNullOrEmpty(mention)?
+                      string.Empty :
+                      $"@{mention} ";
+        
+        await client.SendMessage($"{mention}Ошибка: {_twitchErrorMessages[(int)error]}");
+        return true;
+    }
+    
     public static void LogMessage(LogLevel logLevel, string message) {
         _logger.Log(logLevel, message);
     }
@@ -133,13 +150,6 @@ public static class ErrorHandler {
     public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
         LogError(error);
         
-        IoHandler.Clear();
-        IoHandler.WriteLine(message);
-        IoHandler.ReadKey();
-        IoHandler.Clear();
-    }
-    
-    public static void PrintMessage(string message) {
         IoHandler.Clear();
         IoHandler.WriteLine(message);
         IoHandler.ReadKey();

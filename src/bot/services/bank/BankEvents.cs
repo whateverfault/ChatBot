@@ -27,7 +27,7 @@ public class BankEvents : ServiceEvents {
         var client = TwitchChatBot.Instance.GetClient();
         if (client == null) return;
         
-        client.OnMessageReceived += DepositWrapper;
+        client.OnRewardRedeemed += DepositWrapper;
     }
 
     protected override void UnSubscribe() {
@@ -39,30 +39,30 @@ public class BankEvents : ServiceEvents {
         var client = TwitchChatBot.Instance.GetClient();
         if (client == null) return;
         
-        client.OnMessageReceived -= DepositWrapper;
+        client.OnRewardRedeemed -= DepositWrapper;
     }
     
-    private async void DepositWrapper(object? sender, ChatMessage chatMessage) {
+    private async void DepositWrapper(object? sender, RewardRedemption redemption) {
         try {
             var client = TwitchChatBot.Instance.GetClient();
             if (client == null) return;
         
-            var rewardId = chatMessage.RewardId;
+            var rewardId = redemption.Reward.Id;
             if (_bank == null || string.IsNullOrEmpty(rewardId)) return;
 
-            if (!_bank.GetBalance(chatMessage.UserId, out var oldBalance)) {
+            if (!_bank.GetBalance(redemption.UserId, out var oldBalance)) {
                 oldBalance = 0;
             }
         
             if (!_bank.Options.GetReward(rewardId, out var quantity)) return;
 
-            var result = _bank.Deposit(chatMessage.UserId, quantity, gain: false);
+            var result = _bank.Deposit(redemption.UserId, quantity, gain: false);
             if (!result.Ok) {
-                await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+                await ErrorHandler.SendError(result.Error, client, redemption.UserName);
                 return;
             }
         
-            await client.SendMessage($"+{quantity} | {oldBalance} -> {oldBalance+quantity}", chatMessage.Id);
+            await client.SendMessage($"+{quantity} | {oldBalance} -> {oldBalance+quantity} @{redemption.UserName} ");
         }
         catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, e.Message);
