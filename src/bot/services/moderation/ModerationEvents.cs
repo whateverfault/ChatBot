@@ -43,7 +43,7 @@ public class ModerationEvents : ServiceEvents {
     }
     
     private void ClearWarnsWrapper(StreamState streamState, StreamData? data) {
-        if (!streamState.WasOnline) return;
+        if (!streamState.Online) return;
 
         var modActions = _moderationService.Options.ModerationActions;
         var warnedUsers = _moderationService.Options.WarnedUsers;

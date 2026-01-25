@@ -9,9 +9,9 @@ public class ListUserRecordsResponse {
 
 
     public ListUserRecordsResponse(
-        [JsonProperty("records")] List<RecordInfo> records,
-        [JsonProperty("verified")] List<RecordInfo> verified) {
-        Records = records;
-        Verified = verified;
+        [JsonProperty("records")] List<RecordInfo>? records,
+        [JsonProperty("verified")] List<RecordInfo>? verified) {
+        Records = records ?? [];
+        Verified = verified ?? [];
     }
 }

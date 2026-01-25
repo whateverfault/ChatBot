@@ -14,6 +14,8 @@ public class TelegramBotClient {
                                                                   MaxConnectionsPerServer = 50,
                                                                   UseCookies = false,
                                                                   AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                                                                  UseProxy = true,
+                                                                  Proxy = WebRequest.DefaultWebProxy,
                                                               };
     private readonly HttpClient _httpClient;
 

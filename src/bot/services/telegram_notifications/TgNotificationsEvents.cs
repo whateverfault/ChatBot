@@ -45,8 +45,9 @@ public class TgNotificationsEvents : ServiceEvents {
     
     private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
         lock (_lock) {
-            if (streamState.WasOnline 
-             || _tgNotifications.GetIsSent()) return;
+            if (streamState.Online 
+             || _tgNotifications.GetIsSent()) 
+                return;
             
             _tgNotifications.Options.SetIsSent(true);
             
@@ -67,9 +68,10 @@ public class TgNotificationsEvents : ServiceEvents {
         long lastMessageId;
         
         lock (_lock) {
-            if (streamState.WasOnline
+            if (streamState.Online
              || streamState.OfflineTime < _tgNotifications.GetCooldown()
-             || !_tgNotifications.GetIsSent()) return;
+             || !_tgNotifications.GetIsSent()) 
+                return;
             
             _tgNotifications.Options.SetIsSent(false);
             

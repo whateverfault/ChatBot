@@ -47,7 +47,7 @@ public sealed class CustomChatCommand : ChatCommand {
         [JsonProperty("aliases")] List<string> aliases,
         [JsonProperty("cooldown")] int cooldown,
         [JsonProperty("cooldown_per_user")] bool cooldownPerUser,
-        [JsonProperty("cooldown_users")] List<CooldownUser> cooldownUsers,
+        [JsonProperty("cooldown_users")] Dictionary<string, CooldownUser> cooldownUsers,
         [JsonProperty("last_used")] long lastUsed,
         [JsonProperty("output")] string output,
         [JsonProperty("restriction")] Restriction restriction,

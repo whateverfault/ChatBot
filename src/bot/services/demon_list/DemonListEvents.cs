@@ -41,7 +41,7 @@ public class DemonListEvents : ServiceEvents {
     }
     
     private void ResetCacheWrapper(StreamState streamState, StreamData? streamData) {
-        if (streamState.WasOnline) return;
+        if (streamState.Online) return;
         
         _demonList?.ResetCache();
     }

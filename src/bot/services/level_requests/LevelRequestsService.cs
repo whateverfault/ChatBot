@@ -21,7 +21,7 @@ public class LevelRequestsService : Service {
         try {
             if (Options.ServiceState == State.Disabled) return;
             if (Options.PatternIndex != patternIndex) return;
-            if (status == FilterStatus.NotMatch) return;
+            if (status == FilterStatus.Ok) return;
             if (chatMessage.Fits(Options.Restriction)) return;
             
             switch (Options.ReqState) {
@@ -74,7 +74,7 @@ public class LevelRequestsService : Service {
     public void SetRewardId(string rewardId) {
         Options.SetRewardId(rewardId);
     }
-    
+
     public string GetReqStateStr(ReqState reqState, bool eng = false) {
         if (eng) {
             return reqState switch { 

@@ -24,10 +24,7 @@ public class BankEvents : ServiceEvents {
         }
         base.Subscribe();
 
-        var client = TwitchChatBot.Instance.GetClient();
-        if (client == null) return;
-        
-        client.OnRewardRedeemed += DepositWrapper;
+        TwitchChatBot.Instance.OnRewardRedeemed += DepositWrapper;
     }
 
     protected override void UnSubscribe() {
@@ -35,11 +32,8 @@ public class BankEvents : ServiceEvents {
             return;
         }
         base.UnSubscribe();
-
-        var client = TwitchChatBot.Instance.GetClient();
-        if (client == null) return;
         
-        client.OnRewardRedeemed -= DepositWrapper;
+        TwitchChatBot.Instance.OnRewardRedeemed -= DepositWrapper;
     }
     
     private async void DepositWrapper(object? sender, RewardRedemption redemption) {

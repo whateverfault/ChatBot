@@ -24,11 +24,11 @@ public class CliNodeChatAdAdd : CliNode {
         if (string.IsNullOrEmpty(output)) return;
         
         var cooldownStr = IoHandler.ReadLine("Ad Cooldown: ");
-        if (!long.TryParse(cooldownStr, out var cooldown)) {
-            return;
+        if (!TimeSpan.TryParse(cooldownStr, out var cooldown)) {
+            cooldown = TimeSpan.FromMinutes(15);
         }
         
-        var chatCmd = new ChatAd(name, output, cooldown);
+        var chatCmd = new ChatAd(name, output, (long)cooldown.TotalSeconds);
         _add.Invoke(chatCmd);
     }
 }

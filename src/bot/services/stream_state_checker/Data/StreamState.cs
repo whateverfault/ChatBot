@@ -10,7 +10,7 @@ public class StreamState {
     public long LastOnline { get; set; }
     
     [JsonProperty("was_online")]
-    public bool WasOnline { get; set; }
+    public bool Online { get; set; }
     
     [JsonProperty("online_time")]
     public long OnlineTime { get; set; }
@@ -22,7 +22,7 @@ public class StreamState {
     public StreamState() {
         StreamStart = 0;
         LastOnline = 0;
-        WasOnline = false;
+        Online = false;
         OnlineTime = 0;
         OfflineTime = 0;
     }
@@ -31,12 +31,12 @@ public class StreamState {
     public StreamState(
         [JsonProperty("stream_start")] long streamStart,
         [JsonProperty("last_streamed")] long lastOnline,
-        [JsonProperty("was_streaming")] bool wasOnline,
+        [JsonProperty("was_streaming")] bool online,
         [JsonProperty("online_time")] long onlineTime,
         [JsonProperty("offline_time")] long offlineTime) {
         StreamStart = streamStart;
         LastOnline = lastOnline;
-        WasOnline = wasOnline;
+        Online = online;
         OnlineTime = onlineTime;
         OfflineTime = offlineTime;
     }

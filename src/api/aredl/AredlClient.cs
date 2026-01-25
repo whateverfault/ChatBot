@@ -14,6 +14,8 @@ public class AredlClient {
                                                                   MaxConnectionsPerServer = 50,
                                                                   UseCookies = false,
                                                                   AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                                                                  UseProxy = true,
+                                                                  Proxy = WebRequest.DefaultWebProxy,
                                                               };
     private readonly HttpClient _httpClient;
     private readonly AredlCache? _cache;
@@ -116,7 +118,7 @@ public class AredlClient {
             var result = levels?.Data.AsParallel()
                                 .Where(levelInfo =>
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
-                                              .Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                                              .Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (result != null) {
                 return result.ToList();
@@ -131,8 +133,9 @@ public class AredlClient {
         }
     }
 
-    public async Task<LevelInfo?> GetLevelByName(string name, string? creator = null,
-                                                        EventHandler<string>? errorCallback = null) {
+    public async Task<LevelInfo?> GetLevelByName(string name,
+                                                 string? creator = null, 
+                                                 EventHandler<string>? errorCallback = null) {
         try {
             var levels = await ListLevels(errorCallback);
 
@@ -216,7 +219,11 @@ public class AredlClient {
 
             var deserialized = JsonConvert.DeserializeObject<List<LevelInfo>>(content);
             if (deserialized == null) return null;
-                
+
+            Parallel.ForEach(deserialized, x => {
+                                               x.Platformer = true;
+                                           });
+            
             var result = new ListLevelsResponse(deserialized);
             _cache?.CachePlatformerLevelsList(result);
             return result;

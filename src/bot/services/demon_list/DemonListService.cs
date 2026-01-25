@@ -89,8 +89,7 @@ public class DemonListService : Service {
         if (top <= 0) return null;
         
         try {
-            if (profile.Hardest == null
-             || profile.User == null) return null;
+            if (profile.User == null) return null;
             
             var response = await _aredlClient.ListUserRecords(profile.User.Id, (_, message) => {
                                                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
@@ -219,6 +218,26 @@ public class DemonListService : Service {
         }
     }
 
+    public async Task<LevelInfo?> GetRandomPlatformerLevel(int from = -1, int to = -1) {
+        try {
+            if (from < 1) from = 1;
+            
+            var levelList = await _aredlClient.ListPlatformerLevels((_, message) => { 
+                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                          });
+            if (levelList == null) return null;
+            
+            if (to < from || to > levelList.Data.Count) {
+                to = levelList.Data.Count;
+            }
+            if (from > to) from = 1;
+            var randomIndex = Random.Shared.Next(from-1, to);
+            return levelList.Data[randomIndex];
+        } catch (Exception) {
+            return null;
+        }
+    }
+    
     public async Task<ClanInfo?> GetClanInfo(string tag) {
         try {
             var clan = await _aredlClient.GetClan(tag, (_, message) => {
@@ -268,8 +287,6 @@ public class DemonListService : Service {
                                                                  (_, message) => {
                                                                      ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                  });
-            if (level != null) level.Platformer = true;
-            
             return level;
         }
         catch (Exception) {
@@ -282,9 +299,6 @@ public class DemonListService : Service {
             var levels =
                 await _aredlClient.GetPlatformerLevelsByName(levelName,
                                                              (_, message) => { ErrorHandler.LogMessage(LogLevel.Error, message); });
-            if (levels == null) return levels;
-
-            foreach (var level in levels) level.Platformer = true;
             return levels;
         }
         catch (Exception) {
@@ -298,8 +312,6 @@ public class DemonListService : Service {
                                                                     (_, message) => {
                                                                         ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                     });
-            if (level != null) level.Platformer = true;
-            
             return level;
         }
         catch (Exception) {
@@ -339,8 +351,7 @@ public class DemonListService : Service {
         if (top <= 0) return null;
         
         try {
-            if (profile.Hardest == null
-             || profile.User == null) return null;
+            if (profile.User == null) return null;
             
             var response = await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
                                                                                    ErrorHandler.LogMessage(LogLevel.Error, message);
@@ -447,7 +458,7 @@ public class DemonListService : Service {
     }
     
     public string FormatClanInfo(ClanInfo clanInfo) {
-        var formated = $"#{clanInfo.Rank} [{clanInfo.Clan.Tag}] {clanInfo.Clan.GlobalName} | https://aredl.net/profile/clan/{clanInfo.Clan.Id}";
+        var formated = $"#{clanInfo.Rank} [{clanInfo.Clan.Tag}] {clanInfo.Clan.GlobalName} | aredl.net/profile/clan/{clanInfo.Clan.Id}";
         return formated;
     }
 
@@ -456,7 +467,7 @@ public class DemonListService : Service {
             return string.Empty;
         }
         
-        var formated = $"#{profile.Rank} {profile.User.GlobalName} | https://aredl.net/profile/user/{profile.User.UserName}";
+        var formated = $"#{profile.Rank} {profile.User.GlobalName} | aredl.net/profile/user/{profile.User.UserName}";
         return formated;
     }
     
@@ -468,7 +479,7 @@ public class DemonListService : Service {
         
         var enjoyment = (levelInfo.EdelEnjoyment == null) switch {
                             true  => string.IsNullOrEmpty(tier) ? string.Empty : ")",
-                            false => string.IsNullOrEmpty(tier) ? $"(EDL: {(int)levelInfo.EdelEnjoyment})" : $"; EDL: {(int)levelInfo.EdelEnjoyment})",
+                            false => string.IsNullOrEmpty(tier) ? $"(EDEL: {(int)levelInfo.EdelEnjoyment})" : $"; EDEL: {(int)levelInfo.EdelEnjoyment})",
                         };
 
         return $"{tier}{enjoyment}";

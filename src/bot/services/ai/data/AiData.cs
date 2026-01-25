@@ -5,14 +5,19 @@ namespace ChatBot.bot.services.ai.data;
 public class AiData {
     [JsonProperty("api_key")]
     public string ApiKey { get; set; }
+    
     [JsonProperty("model")]
     public string Model { get; set;  }
+    
     [JsonProperty("base_prompt")]
     public string BasePrompt { get; set;  }
+    
     [JsonProperty("endpoint")]
     public string Endpoint { get; set; }
+    
     [JsonProperty("provider")]
     public string Provider { get; set; }
+    
     [JsonProperty("fallback")]
     public AiFallback Fallback { get; set;  }
     

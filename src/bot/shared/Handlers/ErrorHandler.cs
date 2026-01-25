@@ -1,4 +1,6 @@
-﻿using ChatBot.bot.services.logger;
+﻿using ChatBot.bot.services.localization;
+using ChatBot.bot.services.localization.data;
+using ChatBot.bot.services.logger;
 using ChatBot.bot.services.Static;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
@@ -24,6 +26,7 @@ public enum ErrorCode {
     UserNotFound,
     TooFewPoints,
     AccountNotFound,
+    TooFewAccounts,
     NoAvailable,
     NotFound,
     NotEnough,
@@ -35,77 +38,84 @@ public enum ErrorCode {
 
 public static class ErrorHandler {
     private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
-    
-    private static readonly string[] _internalErrorMessages = [
-                                                                  "Invalid Input.",
-                                                                  "Too Few Arguments.",
-                                                                  "Already exists.",
-                                                                  "Function is Disabled.",
-                                                                  "Corrupted credentials.",
-                                                                  "Invalid data.",
-                                                                  "Not Initialized.",
-                                                                  "List is Empty.",
-                                                                  "Too Few Data.",
-                                                                  "Something Went Wrong.",
-                                                                  "Failed to create a clip",
-                                                                  "Request Failed.",
-                                                                  "Translation failed.",
-                                                                  "Connection failed.",
-                                                                  "Reward isn't properly set.",
-                                                                  "User not found.",
-                                                                  "Too few points.",
-                                                                  "Account not found.",
-                                                                  "No Available.",
-                                                                  "Not Found.",
-                                                                  "Not Enough.",
-                                                                  "Permission denied.",
-                                                                  "AntiMute Activated.",
-                                                                  "This Function Requires Full Authorization.",
-                                                              ];
+
+    private static readonly LocalizationService _localization =
+        (LocalizationService)Services.Get(ServiceId.Localization);
+
+    private static readonly string[] _engErrorMessages = [
+                                                             "Invalid Input.",
+                                                             "Too Few Arguments.",
+                                                             "Already exists.",
+                                                             "Function is Disabled.",
+                                                             "Corrupted credentials.",
+                                                             "Invalid data.",
+                                                             "Not Initialized.",
+                                                             "List is Empty.",
+                                                             "Too Few Data.",
+                                                             "Something Went Wrong.",
+                                                             "Failed to create a clip",
+                                                             "Request Failed.",
+                                                             "Translation failed.",
+                                                             "Connection failed.",
+                                                             "Reward isn't properly set.",
+                                                             "User not found.",
+                                                             "Too few points.",
+                                                             "Account not found.",
+                                                             "Too Few Accounts.",
+                                                             "No Available.",
+                                                             "Not Found.",
+                                                             "Not Enough.",
+                                                             "Permission denied.",
+                                                             "AntiMute Activated.",
+                                                             "This Function Requires Full Authorization.",
+                                                         ];
 
 
-    private static readonly string[] _twitchErrorMessages = [
-                                                                "Неправильный ввод.",
-                                                                "Слишком мало аругментов.",
-                                                                "Уже существует.",
-                                                                "Функция отключена.",
-                                                                "Некорректные данные для подключения.",
-                                                                "Некорректные данные.",
-                                                                "Не инициализированно.",
-                                                                "Пусто.",
-                                                                "Слишком мало данных.",
-                                                                "Что-то пошло не так.",
-                                                                "Не удалось создать клип.",
-                                                                "Запрос не удался.",
-                                                                "Не удалось перевести.",
-                                                                "Не удалось подключиться к сети.",
-                                                                "Награда не установлена.",
-                                                                "Пользователь не найден.",
-                                                                "Недостаточно фантиков.",
-                                                                "Аккаунт не найден.",
-                                                                "Нет доступных.",
-                                                                "Не найдено.",
-                                                                "Недостаточно.",
-                                                                "Недостаточно прав.",
-                                                                "Сработала защита от мута.",
-                                                                "Эта функция требует полной авторизации.",
-                                                            ];
+    private static readonly string[] _ruErrorMessages = [
+                                                            "Неправильный ввод.",
+                                                            "Слишком мало аругментов.",
+                                                            "Уже существует.",
+                                                            "Функция отключена.",
+                                                            "Некорректные данные для подключения.",
+                                                            "Некорректные данные.",
+                                                            "Не инициализированно.",
+                                                            "Пусто.",
+                                                            "Слишком мало данных.",
+                                                            "Что-то пошло не так.",
+                                                            "Не удалось создать клип.",
+                                                            "Запрос не удался.",
+                                                            "Не удалось перевести.",
+                                                            "Не удалось подключиться к сети.",
+                                                            "Награда не установлена.",
+                                                            "Пользователь не найден.",
+                                                            "Недостаточно фантиков.",
+                                                            "Аккаунт не найден.",
+                                                            "Слишком мало аккаунтов.",
+                                                            "Нет доступных.",
+                                                            "Не найдено.",
+                                                            "Недостаточно.",
+                                                            "Недостаточно прав.",
+                                                            "Сработала защита от мута.",
+                                                            "Эта функция требует полной авторизации.",
+                                                        ];
 
 
-    public static string? GetErrorString(ErrorCode? error, bool eng = false) {
-        if (error == null) return null;
+    public static string GetErrorString(ErrorCode? error) {
+        if (error == null)
+            return string.Empty;
 
-        if (eng) 
-            return _internalErrorMessages[(int)error];
-        return _twitchErrorMessages[(int)error];
+        return _localization.Language switch {
+            Lang.Ru => _ruErrorMessages[(int)error],
+            _       => _engErrorMessages[(int)error],
+        };
     }
-    
+
     public static async Task<bool> ReplyWithError(ErrorCode? error, ChatMessage message, ITwitchClient? client) {
         if (client == null || error == null || error == ErrorCode.None) {
             return false;
         }
-        
-        await client.SendMessage($"Ошибка: {_twitchErrorMessages[(int)error]}", message.Id);
+
+        await client.SendMessage($"{_localization.GetStr(StrId.ErrorWord)}: {GetErrorString(error)}", message.Id);
         return true;
     }
 
@@ -114,24 +124,22 @@ public static class ErrorHandler {
             return false;
         }
 
-        mention = string.IsNullOrEmpty(mention)?
-                      string.Empty :
-                      $"@{mention} ";
-        
-        await client.SendMessage($"{mention}Ошибка: {_twitchErrorMessages[(int)error]}");
+        mention = string.IsNullOrEmpty(mention) ? string.Empty : $"@{mention} ";
+
+        await client.SendMessage($"{mention}Ошибка: {GetErrorString(error)}");
         return true;
     }
-    
+
     public static void LogMessage(LogLevel logLevel, string message) {
         _logger.Log(logLevel, message);
     }
-    
-    public static bool LogError(ErrorCode code) {
-        if (code == ErrorCode.None) {
+
+    public static bool LogError(ErrorCode error) {
+        if (error == ErrorCode.None) {
             return false;
         }
-        
-        LogMessage(LogLevel.Error, _internalErrorMessages[(int)code]);
+
+        LogMessage(LogLevel.Error, GetErrorString(error));
         return true;
     }
 
@@ -142,14 +150,14 @@ public static class ErrorHandler {
         }
 
         IoHandler.Clear();
-        IoHandler.WriteLine(_internalErrorMessages[(int)error]);
+        IoHandler.WriteLine(GetErrorString(error));
         IoHandler.ReadLine();
         IoHandler.Clear();
     }
-    
+
     public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
         LogError(error);
-        
+
         IoHandler.Clear();
         IoHandler.WriteLine(message);
         IoHandler.ReadKey();

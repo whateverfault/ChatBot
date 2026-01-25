@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.interfaces;
+﻿using System.Text;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai.data.clients.DeepSeek;
 using ChatBot.bot.services.ai.data.clients.Google;
 using ChatBot.bot.services.ai.data.clients.HuggingFace;
@@ -36,27 +37,38 @@ public class AiService : Service {
 
         RemoveUnusedChats(id);
         
-        var response = 
-            await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
-                                                         ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                     });
-        if (response != null || aiData.Fallback.FallbackState != State.Enabled) {
-            if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);
-            response += $" #{chat.Id}";
-            return new Result<string?, ErrorCode?>(response, null);
+        var responseSb = new StringBuilder();
+        responseSb.Append(await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
+                                                                               ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                                           }));
+        
+        if (aiData.Fallback.FallbackState != State.Enabled) {
+            if (responseSb.Length <= 0) {
+                return new Result<string?, ErrorCode?>(null, ErrorCode.RequestFailed);
+            }
+            
+            chat.AddMessage(prompt, responseSb.ToString());
+            responseSb.Append($" #{chat.Id}");
+            return new Result<string?, ErrorCode?>(responseSb.ToString(), null);
         }
 
         aiIndex = (int)aiData.Fallback.FallbackAi;
         aiClient = _aiClients[aiIndex];
         aiData = Options.AiData[aiIndex];
+
+        responseSb.Clear();
+        responseSb.Append(await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
+                                                                               ErrorHandler.LogMessage(LogLevel.Error,
+                                                                                   message);
+                                                                           }));
         
-        response = await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
-                                                                ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                            });
+        if (responseSb.Length <= 0) {
+            return new Result<string?, ErrorCode?>(null, ErrorCode.RequestFailed);
+        }
         
-        if (!string.IsNullOrEmpty(response)) chat.AddMessage(prompt, response);
-        response += $" #{chat.Id}";
-        return new Result<string?, ErrorCode?>(response, null);
+        chat.AddMessage(prompt, responseSb.ToString());
+        responseSb.Append($" #{chat.Id}");
+        return new Result<string?, ErrorCode?>(responseSb.ToString(), null);
     }
 
     private void RemoveUnusedChats(string? id = null) {
@@ -133,7 +145,7 @@ public class AiService : Service {
     }
     
     public void HfFallbackStateNext() {
-        var aiIndex = (int)AiKind.HuggingFace;
+        const int aiIndex = (int)AiKind.HuggingFace;
         var fallbackAi = (int)Options.AiData[aiIndex].Fallback.FallbackState;
         
         Options.AiData[aiIndex].Fallback.FallbackState =

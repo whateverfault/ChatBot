@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 namespace ChatBot.bot.services.chat_commands.data;
 
 public delegate Task CmdActionHandler(ChatCmdArgs chatCmdArgs);
+public delegate string DynamicStringHandler(ChatCommand cmd);
+
 
 public abstract class ChatCommand {
     protected static readonly ChatCommandsService ChatCommandsService = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
@@ -18,9 +20,20 @@ public abstract class ChatCommand {
     
     [JsonProperty("args")]
     public string Args { get; protected set; }
-    
+
     [JsonProperty("description")]
-    public string Description { get; protected set; }
+    public string StaticDescription;
+    
+    [JsonIgnore]
+    private DynamicStringHandler? DynamicDescription { get; }
+    
+    [JsonIgnore]
+    public string Description {
+        get => DynamicDescription == null
+               ? StaticDescription
+               : DynamicDescription.Invoke(this);
+        private set => StaticDescription = value;
+    }
     
     [JsonProperty("has_identifier")]
     public bool HasIdentifier { get; protected set; }
@@ -35,7 +48,7 @@ public abstract class ChatCommand {
     public bool CooldownPerUser { get; protected set; }
     
     [JsonProperty("cooldown_users")]
-    public List<CooldownUser> CooldownUsers { get; protected set; }
+    public Dictionary<string, CooldownUser> CooldownUsers { get; protected set; }
     
     [JsonProperty("last_used")]
     public long LastUsed { get; private set; }
@@ -48,26 +61,27 @@ public abstract class ChatCommand {
     
     [JsonProperty("state")]
     public State State { get; protected set; }
-
+    
     
     protected ChatCommand(
         int id,
         string name,
         string args,
-        string description,
+        string desc,
         bool hasIdentifier,
         List<string> aliases,
         int cooldown,
         bool cooldownPerUser,
-        List<CooldownUser> cooldownUsers,
+        Dictionary<string, CooldownUser> cooldownUsers,
         long lastUsed,
         CmdActionHandler action,
         Restriction restriction,
-        State state) {
+        State state,
+        DynamicStringHandler? dynamicDescription = null) {
         Id = id;
         Name = name;
         Args = args;
-        Description = description;
+        StaticDescription = desc;
         HasIdentifier = hasIdentifier;
         Aliases = aliases;
         Cooldown = cooldown;
@@ -77,6 +91,8 @@ public abstract class ChatCommand {
         Action = action;
         Restriction = restriction;
         State = state;
+
+        DynamicDescription = dynamicDescription;
     }
 
     public string GetName() {
@@ -134,8 +150,8 @@ public abstract class ChatCommand {
     }
     
     public void AddCooldownUser(string userId) {
-        CooldownUsers.RemoveAll(x => x.UserId.Equals(userId));
-        CooldownUsers.Add(new CooldownUser(userId));
+        CooldownUsers.Remove(userId);
+        CooldownUsers.Add(userId, new CooldownUser(userId));
         ChatCommandsService.Options.Save();
     }
     

@@ -15,7 +15,7 @@ internal class SaveData {
 
     [JsonProperty("supply")]
     public long MoneySupply { get; set; }
-
+    
 
     public SaveData() {
         FromDto(new SaveDataDto());

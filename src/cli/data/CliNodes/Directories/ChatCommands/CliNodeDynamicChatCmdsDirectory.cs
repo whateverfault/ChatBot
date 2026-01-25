@@ -30,17 +30,15 @@ public class CliNodeDynamicChatCmdsDirectory : CliNodeDirectory {
                                               "Content",
                                               state,
                                               true,
-                                              []
+                                              [
+                                                  new CliNodeText(
+                                                                  "-----------------------------------",
+                                                                  false,
+                                                                  true,
+                                                                  1
+                                                                 ),
+                                              ]
                                               );
-
-        _content.AddNode(
-                         new CliNodeText(
-                                         "-----------------------------------",
-                                         false,
-                                         true,
-                                         1
-                                        )
-                         );
 
         var commands = _state.Data.ChatCommands.GetCustomChatCommands();
         foreach (var cmd in commands) {

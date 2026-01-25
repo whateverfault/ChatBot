@@ -1,10 +1,15 @@
 ﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.localization;
+using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using Newtonsoft.Json;
 
 namespace ChatBot.bot.services.chat_commands.data;
 
 public sealed class DefaultChatCommand : ChatCommand {
+    private static readonly LocalizationService _localization = (LocalizationService)Services.Get(ServiceId.Localization); 
+    
+    
     public DefaultChatCommand(
         int id,
         string name,
@@ -15,19 +20,20 @@ public sealed class DefaultChatCommand : ChatCommand {
         int cooldown = 1, 
         List<string>? aliases = null,
         bool hasIdentifier = true) : base(
-                                          id,
-                                          name,
-                                          args,
-                                          description,
-                                          hasIdentifier,
-                                          aliases ?? [],
-                                          cooldown,
-                                          false,
-                                          [],
-                                          0,
-                                          action,
-                                          restriction,
-                                          State.Enabled) {
+                                                       id,
+                                                       name,
+                                                       args,
+                                                       description,
+                                                       hasIdentifier,
+                                                       aliases ?? [],
+                                                       cooldown,
+                                                       false,
+                                                       [],
+                                                       0,
+                                                       action,
+                                                       restriction,
+                                                       State.Enabled,
+                                                       GetDescription) {
     }
     
     [JsonConstructor]
@@ -40,7 +46,7 @@ public sealed class DefaultChatCommand : ChatCommand {
         [JsonProperty("aliases")] List<string> aliases,
         [JsonProperty("cooldown")] int cooldown,
         [JsonProperty("cooldown_per_user")] bool cooldownPerUser,
-        [JsonProperty("cooldown_users")] List<CooldownUser> cooldownUsers,
+        [JsonProperty("cooldown_users")] Dictionary<string, CooldownUser> cooldownUsers,
         [JsonProperty("last_used")] long lastUsed,
         [JsonProperty("restriction")] Restriction restriction,
         [JsonProperty("state")] State state) : base(
@@ -56,7 +62,8 @@ public sealed class DefaultChatCommand : ChatCommand {
                                                     lastUsed,
                                                     GetDefaultCmdActionHandler(id),
                                                     restriction,
-                                                    State.Enabled) {
+                                                    State.Enabled,
+                                                    GetDescription) {
     }
 
     private static CmdActionHandler GetDefaultCmdActionHandler(int id) {
@@ -67,5 +74,9 @@ public sealed class DefaultChatCommand : ChatCommand {
         }
         
         return _ => Task.CompletedTask;
+    }
+    
+    private static string GetDescription(ChatCommand cmd) {
+        return _localization.GetCmdDescStr(cmd);
     }
 }

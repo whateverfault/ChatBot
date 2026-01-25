@@ -1,14 +1,18 @@
 ﻿using ChatBot.bot.services.ai;
+using ChatBot.bot.services.bank_account_filtering;
 using ChatBot.bot.services.bank;
+using ChatBot.bot.services.bot_lifecycle;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.demon_list;
+using ChatBot.bot.services.emotes;
 using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.interpreter;
 using ChatBot.bot.services.level_requests;
+using ChatBot.bot.services.localization;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
@@ -40,12 +44,16 @@ public enum ServiceId {
     GameRequests, 
     StreamStateChecker,
     TgNotifications,
+    Lifecycle,
     ChatAds,
     Casino,
     Bank,
+    BankAccountFiltering,
     Shop,
     Interpreter, 
     Scopes,
+    Localization,
+    Emotes,
 }
 
 public static class Services {
@@ -60,6 +68,20 @@ public static class Services {
                                                                                     (
                                                                                         new PresetsService(),
                                                                                         new PresetsEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
+                                                                                    ServiceId.Emotes,
+                                                                                    (
+                                                                                        new EmotesService(),
+                                                                                        new EmotesEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
+                                                                                    ServiceId.Localization,
+                                                                                    (
+                                                                                        new LocalizationService(),
+                                                                                        new LocalizationEvents()
                                                                                     )
                                                                                 },
                                                                                 {
@@ -161,6 +183,13 @@ public static class Services {
                                                                                     )
                                                                                 },
                                                                                 {
+                                                                                    ServiceId.Lifecycle,
+                                                                                    (
+                                                                                        new BotLifecycleService(),
+                                                                                        new BotLifecycleEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
                                                                                     ServiceId.ChatAds,
                                                                                     (
                                                                                         new ChatAdsService(),
@@ -179,6 +208,13 @@ public static class Services {
                                                                                     (
                                                                                         new BankService(),
                                                                                         new BankEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
+                                                                                    ServiceId.BankAccountFiltering,
+                                                                                    (
+                                                                                        new BankAccountFilteringService(),
+                                                                                        new BankAccountFilteringEvents()
                                                                                     )
                                                                                 },
                                                                                 {

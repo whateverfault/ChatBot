@@ -16,7 +16,7 @@ public class ChatAdsService : Service {
 
     public void SendChatAds(StreamState streamState, StreamData? streamData) {
         if (Options.ServiceState == State.Disabled) return;
-        if (!streamState.WasOnline || streamState.OnlineTime <= 0) return;
+        if (!streamState.Online || streamState.OnlineTime <= 0) return;
         
         var client = TwitchChatBot.Instance.GetClient();
         if (client == null) return;

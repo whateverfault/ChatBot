@@ -32,7 +32,7 @@ public class ModerationService : Service {
     public async void HandleMessage(ChatMessage message, FilterStatus status, int patternIndex) {
         try {
             if (Options.ServiceState == State.Disabled) return;
-            if (status == FilterStatus.NotMatch) return;
+            if (status == FilterStatus.Ok) return;
 
             if (patternIndex < 0 || patternIndex >= Options.ModerationActions.Count) return;
         

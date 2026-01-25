@@ -11,7 +11,8 @@ namespace ChatBot.bot.services.casino;
 public struct GambleResult {
     public bool Ok;
     public long Win;
-    public string UserId;
+    public string WinnerUserId;
+    public string LooserUserId;
     public double Multiplier;
     public bool Result;
 }
@@ -40,7 +41,7 @@ public class CasinoService : Service {
             return new Result<GambleResult?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
         
-        var result = new GambleResult { Ok = true, Result = false, Win = -quantity, UserId = userId, };
+        var result = new GambleResult { Ok = true, Result = false, Win = -quantity, WinnerUserId = userId, };
         var takeOutResult = Bank.TakeOut(userId, quantity, gain: true);
         
         if (!Bank.GetBalance(userId, out var balance)){
@@ -52,7 +53,7 @@ public class CasinoService : Service {
         }
 
         result = CalculateGambleResult(quantity, balance);
-        result.UserId = userId;
+        result.WinnerUserId = userId;
         
         Bank.Deposit(userId, result.Win, gain: true);
         return new Result<GambleResult?, ErrorCode?>(result, null);
@@ -122,6 +123,7 @@ public class CasinoService : Service {
         
         takeOutResult = Bank.TakeOut(duel.Object, duel.Quantity, gain: true);
         if (!takeOutResult.Ok) {
+            Bank.Deposit(duel.Subject, duel.Quantity, gain: true);
             return new Result<GambleResult?, ErrorCode?>(result, takeOutResult.Error);
         }
         
@@ -129,15 +131,18 @@ public class CasinoService : Service {
         result = CalculateGambleResult(duel.Quantity, balance);
 
         var random = Random.Shared.Next(0, 2);
-        var winner = random == 0? 
-                         duel.Subject :
-                         duel.Object;
+        result.WinnerUserId = random == 0? 
+                                  duel.Subject :
+                                  duel.Object;
+        
+        result.LooserUserId = random == 0? 
+                                  duel.Subject : 
+                                  duel.Object;
 
         result.Win = duel.Quantity;
         result.Result = true;
-        result.UserId = winner;
         
-        Bank.Deposit(winner, result.Win*2, gain: true);
+        Bank.Deposit(result.WinnerUserId, result.Win*2, gain: true);
         Options.RemoveDuel(objectId, subjectId);
         
         return new Result<GambleResult?, ErrorCode?>(result, null);

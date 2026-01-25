@@ -7,10 +7,14 @@ using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_ads.data;
 using ChatBot.bot.services.demon_list;
+using ChatBot.bot.services.emotes;
+using ChatBot.bot.services.emotes.data;
 using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.interpreter;
 using ChatBot.bot.services.level_requests;
-using ChatBot.bot.services.logger;
+using ChatBot.bot.services.localization;
+using ChatBot.bot.services.localization.data;
+using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
 using ChatBot.bot.services.shop;
 using ChatBot.bot.services.shop.data;
@@ -31,7 +35,8 @@ public static class CommandsList {
     private const int PAGE_TERMINATOR_CMD_ID = -1;
         
     private static readonly ChatCommandsService _chatCmds = (ChatCommandsService)Services.Get(ServiceId.ChatCommands);
-    private static readonly LoggerService _logger = (LoggerService)Services.Get(ServiceId.Logger);
+    private static readonly LocalizationService _localization = (LocalizationService)Services.Get(ServiceId.Localization);
+    private static readonly EmotesService _emotes = (EmotesService)Services.Get(ServiceId.Emotes);
     private static readonly TwitchChatBot _bot = TwitchChatBot.Instance; 
     
     public static List<DefaultChatCommand> DefaultsCommands { get; }
@@ -40,10 +45,10 @@ public static class CommandsList {
     static CommandsList() {
         DefaultsCommands = [
                                new DefaultChatCommand(
-                                                      75,
+                                                      9,
                                                       "ping",
                                                       string.Empty,
-                                                      "пинг.",
+                                                      string.Empty,
                                                       Ping,
                                                       Restriction.DevBroad
                                                      ),
@@ -51,7 +56,7 @@ public static class CommandsList {
                                                    1,
                                                    "help",
                                                    "[cmd_name]",
-                                                   "использование и описание комманд.",
+                                                   string.Empty,
                                                    Help,
                                                    Restriction.Everyone
                                                   ),
@@ -59,15 +64,16 @@ public static class CommandsList {
                                                       0,
                                                       "cmds",
                                                       "[page]",
-                                                      "список комманд.",
+                                                      string.Empty,
                                                       Cmds,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["commands",]
                                                   ),
                                new DefaultChatCommand(
                                                       47,
                                                       "more",
                                                       "[page]",
-                                                      "список дополнительных комманд.",
+                                                      string.Empty,
                                                       More,
                                                       Restriction.Everyone
                                                      ),
@@ -75,7 +81,7 @@ public static class CommandsList {
                                                       2,
                                                       "followage",
                                                       "[username]",
-                                                      "время, которое пользователь отслеживает канал.",
+                                                      string.Empty,
                                                       Followage,
                                                       Restriction.Everyone
                                                      ),
@@ -83,7 +89,7 @@ public static class CommandsList {
                                                       8,
                                                       "req",
                                                       string.Empty, 
-                                                      "узнать включены ли реквесты",
+                                                      string.Empty,
                                                       ReqEveryone,
                                                       Restriction.Everyone
                                                      ),
@@ -99,7 +105,7 @@ public static class CommandsList {
                                                       3,
                                                       "title",
                                                       string.Empty, 
-                                                      "посмотреть название стрима.",
+                                                      string.Empty,
                                                       TitleEveryone,
                                                       Restriction.Everyone
                                                      ),
@@ -107,15 +113,15 @@ public static class CommandsList {
                                                       4,
                                                       "title",
                                                       "[title]",
-                                                      "посмотреть/изменить название стрима.",
+                                                      string.Empty,
                                                       Title,
-                                                      Restriction.DevMod
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       5,
                                                       "game",
                                                       string.Empty,
-                                                      "посмотреть категорию стрима.",
+                                                      string.Empty,
                                                       GameEveryone,
                                                       Restriction.Everyone
                                                      ),
@@ -123,15 +129,15 @@ public static class CommandsList {
                                                       6,
                                                       "game",
                                                       "[game]",
-                                                      "изменить категорию стрима.",
+                                                      string.Empty,
                                                       Game,
-                                                      Restriction.DevMod
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       7,
                                                       "clip",
                                                       string.Empty,
-                                                      "создать клип.",
+                                                      string.Empty,
                                                       Clip,
                                                       Restriction.Vip
                                                      ),
@@ -147,7 +153,7 @@ public static class CommandsList {
                                                       10,
                                                       "when",
                                                       "[text]",
-                                                      Get7TvEmote(Emote.Wait),
+                                                      string.Empty,
                                                       When,
                                                       Restriction.Everyone
                                                      ),
@@ -155,15 +161,39 @@ public static class CommandsList {
                                                       11,
                                                       "ban",
                                                       "[text]",
-                                                      Get7TvEmote(Emote.Jail),
-                                                      Ban,
+                                                      string.Empty,
+                                                      BanEveryone,
                                                       Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      17,
+                                                      "ban",
+                                                      "[username]",
+                                                      string.Empty,
+                                                      Ban,
+                                                      Restriction.DevMod
+                                                     ),
+                               new DefaultChatCommand(
+                                                      81,
+                                                      "unban",
+                                                      "[text]",
+                                                      string.Empty,
+                                                      UnBanEveryone,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      82,
+                                                      "unban",
+                                                      "[username]",
+                                                      string.Empty,
+                                                      UnBan,
+                                                      Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
                                                       79,
                                                       "mute",
                                                       "<username>",
-                                                      "Замутить пользователя.",
+                                                      string.Empty,
                                                       Mute,
                                                       Restriction.Everyone
                                                      ),
@@ -179,7 +209,7 @@ public static class CommandsList {
                                                       12,
                                                       "ai",
                                                       "[prompt]",
-                                                      "задать вопрос ии.",
+                                                      string.Empty,
                                                       Ai,
                                                       Restriction.Everyone,
                                                       aliases: ["ask",]
@@ -188,7 +218,7 @@ public static class CommandsList {
                                                       13,
                                                       "potato",
                                                       "[entry]",
-                                                      "сгенерировать сообщение",
+                                                      string.Empty,
                                                       Potato,
                                                       Restriction.Everyone
                                                      ),
@@ -196,33 +226,9 @@ public static class CommandsList {
                                                       14,
                                                       "carrot",
                                                       string.Empty,
-                                                      "зарандомить новое сообщение",
+                                                      string.Empty,
                                                       Carrot,
                                                       Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
-                                                      PAGE_TERMINATOR_CMD_ID,
-                                                      string.Empty,
-                                                      string.Empty,
-                                                      string.Empty,
-                                                      PageTerminator,
-                                                      Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
-                                                      15,
-                                                      "req",
-                                                      "[on/points/off]",
-                                                      "включить/выключить реквесты",
-                                                      Req,
-                                                      Restriction.DevMod
-                                                     ),
-                               new DefaultChatCommand(
-                                                      16,
-                                                      "set-req-reward",
-                                                      string.Empty, 
-                                                      "установить награду для реквестов.",
-                                                      SetReqReward,
-                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -236,7 +242,7 @@ public static class CommandsList {
                                                       18,
                                                       "guess",
                                                       "[username]",
-                                                      "угадать ник написавшего.",
+                                                      string.Empty,
                                                       Guess,
                                                       Restriction.Vip
                                                      ),
@@ -244,7 +250,7 @@ public static class CommandsList {
                                                       19,
                                                       "whose",
                                                       string.Empty,
-                                                      "узнать ник написавшего.",
+                                                      string.Empty,
                                                       Whose,
                                                       Restriction.DevBroad
                                                      ),
@@ -252,7 +258,7 @@ public static class CommandsList {
                                                       20,
                                                       "repeat",
                                                       string.Empty,
-                                                      "повторить сообщение.",
+                                                      string.Empty,
                                                       Repeat,
                                                       Restriction.Vip
                                                      ),
@@ -265,28 +271,20 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      21,
-                                                      "translate",
-                                                      "<text> [--lang lang_code --source_lang lang_code]",
-                                                      "перевести текст.",
-                                                      Translate,
-                                                      Restriction.Vip
+                                                      15,
+                                                      "req",
+                                                      "[on/points/off]",
+                                                      string.Empty,
+                                                      Req,
+                                                      Restriction.DevMod
                                                      ),
                                new DefaultChatCommand(
-                                                      22,
-                                                      "detect-lang",
-                                                      "<text>",
-                                                      "узнать язык, на котором написан текст.",
-                                                      DetectLang,
-                                                      Restriction.Vip
-                                                     ),
-                               new DefaultChatCommand(
-                                                      23,
-                                                      "lang",
-                                                      "[lang_code]",
-                                                      "установить дефолтный язык переводчика.",
-                                                      Lang,
-                                                      Restriction.Vip
+                                                      16,
+                                                      "set-req-reward",
+                                                      string.Empty, 
+                                                      string.Empty,
+                                                      SetReqReward,
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -300,7 +298,7 @@ public static class CommandsList {
                                                       28,
                                                       "hardest",
                                                       "[username] [--top <number>]",
-                                                      "хардест пользователя по AREDL.",
+                                                      string.Empty,
                                                       Hardest,
                                                       Restriction.Everyone
                                                      ),
@@ -308,7 +306,7 @@ public static class CommandsList {
                                                       29,
                                                       "easiest",
                                                       "[username] [--top <number>]",
-                                                      "легчайший экстрим пользователя по AREDL.",
+                                                      string.Empty,
                                                       Easiest,
                                                       Restriction.Everyone,
                                                       aliases: ["lowest",]
@@ -317,7 +315,7 @@ public static class CommandsList {
                                                       25,
                                                       "top",
                                                       "<position>",
-                                                      "уровень стоящий на данной позиции по AREDL.",
+                                                      string.Empty,
                                                       Top,
                                                       Restriction.Everyone
                                                      ),
@@ -325,7 +323,7 @@ public static class CommandsList {
                                                       26,
                                                       "place",
                                                       "<level_name> [--page number]",
-                                                      "позиция уровня по AREDL.",
+                                                      string.Empty,
                                                       Place,
                                                       Restriction.Everyone
                                                      ),
@@ -333,7 +331,7 @@ public static class CommandsList {
                                                       27,
                                                       "roulette",
                                                       "<number> <number>",
-                                                      "зарандомить экстрим.",
+                                                      string.Empty,
                                                       Roulette,
                                                       Restriction.Everyone,
                                                       aliases: ["rulet",]
@@ -350,7 +348,7 @@ public static class CommandsList {
                                                       59,
                                                       "phardest",
                                                       "[username] [--top <number>]",
-                                                      "хардест пользователя по Pemon List.",
+                                                      string.Empty,
                                                       PHardest,
                                                       Restriction.Everyone
                                                      ),
@@ -358,7 +356,7 @@ public static class CommandsList {
                                                       60,
                                                       "peasiest",
                                                       "[username] [--top <number>]",
-                                                      "легчайший экстрим пользователя по Pemon List.",
+                                                      string.Empty,
                                                       PEasiest,
                                                       Restriction.Everyone,
                                                       aliases: ["plowest",]
@@ -367,7 +365,7 @@ public static class CommandsList {
                                                       31,
                                                       "ptop",
                                                       "<position>",
-                                                      "уровень стоящий на данной позиции по Pemon List.",
+                                                      string.Empty,
                                                       Ptop,
                                                       Restriction.Everyone
                                                      ),
@@ -375,9 +373,18 @@ public static class CommandsList {
                                                       32,
                                                       "pplace",
                                                       "<level> [--page <number>]",
-                                                      "позиция уровня по Pemon List.",
+                                                      string.Empty,
                                                       Pplace,
                                                       Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      80,
+                                                      "proulette",
+                                                      "<number> <number>",
+                                                      string.Empty,
+                                                      PRoulette,
+                                                      Restriction.Everyone,
+                                                      aliases: ["prulet",]
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -391,7 +398,7 @@ public static class CommandsList {
                                                       76,
                                                       "profile",
                                                       "<username>",
-                                                      "Информация о пользователе.",
+                                                      string.Empty,
                                                       Profile,
                                                       Restriction.Everyone
                                                      ),
@@ -399,7 +406,7 @@ public static class CommandsList {
                                                       33,
                                                       "clan",
                                                       "<clan_tag>",
-                                                      "Информация о клане.",
+                                                      string.Empty,
                                                       Clan,
                                                       Restriction.Everyone
                                                      ),
@@ -407,7 +414,7 @@ public static class CommandsList {
                                                       34,
                                                       "clan-hardest",
                                                       "<clan_tag>",
-                                                      "хардест клана.",
+                                                      string.Empty,
                                                       ClanHardest,
                                                       Restriction.Everyone
                                                      ),
@@ -415,7 +422,7 @@ public static class CommandsList {
                                                       35,
                                                       "clan-roulette",
                                                       "<clan_tag>",
-                                                      "случайный пройденный кланом уровень.",
+                                                      string.Empty,
                                                       ClanRoulette,
                                                       Restriction.Everyone,
                                                       aliases: ["clan-rulet",]
@@ -432,7 +439,7 @@ public static class CommandsList {
                                                       36,
                                                       "games",
                                                       "[--page <number>]",
-                                                      "список заказов игр.",
+                                                      string.Empty,
                                                       Games,
                                                       Restriction.Everyone
                                                      ),
@@ -440,32 +447,32 @@ public static class CommandsList {
                                                       37,
                                                       "add-game",
                                                       "<game_name> [--position <number>] [--user <username>]",
-                                                      "добавить игру в очередь.",
+                                                      string.Empty,
                                                       AddGame,
-                                                      Restriction.Broadcaster
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       38,
                                                       "complete",
                                                       "<game_index>",
-                                                      "удалить игру из очереди.",
+                                                      string.Empty,
                                                       CompleteGame,
-                                                      Restriction.Broadcaster
+                                                      Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
                                                       39,
                                                       "reset-games",
                                                       string.Empty,
-                                                      "очистить очередь заказов игр.",
+                                                      string.Empty,
                                                       ResetGames,
-                                                      Restriction.Broadcaster,
+                                                      Restriction.DevBroad,
                                                       aliases: ["nuke-games",]
                                                      ),
                                new DefaultChatCommand(
                                                       40,
                                                       "add-game-reqs-reward",
                                                       string.Empty,
-                                                      "добавить награду для заказа игр.",
+                                                      string.Empty,
                                                       AddGameRequestsReward,
                                                       Restriction.DevBroad
                                                       ),
@@ -473,7 +480,7 @@ public static class CommandsList {
                                                       41,
                                                       "reset-game-reqs-rewards",
                                                       string.Empty,
-                                                      "очистить список наград для заказа игр.",
+                                                      string.Empty,
                                                       ResetGameRequestsRewards,
                                                       Restriction.DevBroad
                                                      ),
@@ -489,7 +496,7 @@ public static class CommandsList {
                                                       42,
                                                       "create-reward",
                                                       "<title;cost> [;is_input_required (true/false)]",
-                                                      "создать награду.",
+                                                      string.Empty,
                                                       CreateReward,
                                                       Restriction.DevBroad
                                                      ),
@@ -497,8 +504,8 @@ public static class CommandsList {
                                                       43,
                                                       "delete-reward",
                                                       "<reward_id>",
-                                                      "удалить награду.",
-                                                      DeleteReward,
+                                                      string.Empty,
+                                                      RemoveReward,
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
@@ -513,7 +520,7 @@ public static class CommandsList {
                                                       44,
                                                       "tg-notify",
                                                       string.Empty,
-                                                      "узнать включены ли уведомления.",
+                                                      string.Empty,
                                                       TgNotifyEveryone,
                                                       Restriction.Everyone
                                                      ),
@@ -521,7 +528,7 @@ public static class CommandsList {
                                                       45,
                                                       "tg-notify",
                                                       "[enable/disable]",
-                                                      "включить/выключить уведомления.",
+                                                      string.Empty,
                                                       TgNotify,
                                                       Restriction.DevBroad
                                                      ),
@@ -529,7 +536,7 @@ public static class CommandsList {
                                                       46,
                                                       "tg-notify-prompt",
                                                       "<notification_prompt>",
-                                                      "изменить текст уведомления.",
+                                                      string.Empty,
                                                       TgNotifyPrompt,
                                                       Restriction.DevBroad
                                                      ),
@@ -545,7 +552,7 @@ public static class CommandsList {
                                                       48,
                                                       "list-cmds",
                                                       "[page]",
-                                                      "список команд с их ID.",
+                                                      string.Empty,
                                                       ListCustomCmds,
                                                       Restriction.DevBroad
                                                      ),
@@ -553,7 +560,7 @@ public static class CommandsList {
                                                       49,
                                                       "add-cmd",
                                                       "<name>;<output>;[has_identifier true/false]",
-                                                      "добавить команду.",
+                                                      string.Empty,
                                                       AddCmd,
                                                       Restriction.DevBroad
                                                      ),
@@ -561,7 +568,7 @@ public static class CommandsList {
                                                       50,
                                                       "remove-cmd",
                                                       "<id>",
-                                                      "удалить команду.",
+                                                      string.Empty,
                                                       RemoveCmd,
                                                       Restriction.DevBroad
                                                      ),
@@ -569,7 +576,7 @@ public static class CommandsList {
                                                       51,
                                                       "change-cmd-desc",
                                                       "<id>;<new_desc>",
-                                                      "изменить описание команды.",
+                                                      string.Empty,
                                                       ChangeCmdDescription,
                                                       Restriction.DevBroad
                                                      ),
@@ -577,7 +584,7 @@ public static class CommandsList {
                                                       52,
                                                       "change-cmd-output",
                                                       "<id>;<new_output>",
-                                                      "изменить вывод команды.",
+                                                      string.Empty,
                                                       ChangeCmdOutput,
                                                       Restriction.DevBroad
                                                      ),
@@ -593,7 +600,7 @@ public static class CommandsList {
                                                       53,
                                                       "list-chat-ads",
                                                       "[--page number]",
-                                                      "список чат-реклам.",
+                                                      string.Empty,
                                                       ListChatAds,
                                                       Restriction.DevBroad
                                                      ),
@@ -601,7 +608,7 @@ public static class CommandsList {
                                                       54,
                                                       "add-chat-ad",
                                                       "<name>;<output>;<cooldown>(in secs)",
-                                                      "добавить чат-рекламу.",
+                                                      string.Empty,
                                                       AddChatAd,
                                                       Restriction.DevBroad
                                                      ),
@@ -609,7 +616,7 @@ public static class CommandsList {
                                                       55,
                                                       "remove-chat-ad",
                                                       "<id>",
-                                                      "удалить чат-рекламу.",
+                                                      string.Empty,
                                                       RemoveChatAd,
                                                       Restriction.DevBroad
                                                      ),
@@ -617,7 +624,7 @@ public static class CommandsList {
                                                       56,
                                                       "change-chat-ad-name",
                                                       "<id>;<new_name>",
-                                                      "изменить название чат-рекламы.",
+                                                      string.Empty,
                                                       ChangeChatAdName,
                                                       Restriction.DevBroad
                                                      ),
@@ -625,7 +632,7 @@ public static class CommandsList {
                                                       57,
                                                       "change-chat-ad-output",
                                                       "<id>;<new_output>",
-                                                      "изменить описание чат-рекламы.",
+                                                      string.Empty,
                                                       ChangeChatAdOutput,
                                                       Restriction.DevBroad
                                                      ),
@@ -633,7 +640,7 @@ public static class CommandsList {
                                                       58,
                                                       "change-chat-ad-cooldown",
                                                       "<id>;<new_cooldown>(in secs)",
-                                                      "изменить перезарядку чат-рекламы.",
+                                                      string.Empty,
                                                       ChangeChatAdCooldown,
                                                       Restriction.DevBroad
                                                      ),
@@ -649,7 +656,7 @@ public static class CommandsList {
                                                       62,
                                                       "shop",
                                                       "[--page number]",
-                                                      "список лотов.",
+                                                      string.Empty,
                                                       Shop,
                                                       Restriction.Everyone
                                                      ),
@@ -657,7 +664,7 @@ public static class CommandsList {
                                                       77,
                                                       "add-lot",
                                                       "<lot_name;cost>",
-                                                      "добавить лот.",
+                                                      string.Empty,
                                                       ShopAdd,
                                                       Restriction.DevBroad
                                                      ),
@@ -665,7 +672,7 @@ public static class CommandsList {
                                                       78,
                                                       "remove-lot",
                                                       "<lot_name>",
-                                                      "удалить лот.",
+                                                      string.Empty,
                                                       ShopRemove,
                                                       Restriction.Everyone
                                                      ),
@@ -673,15 +680,15 @@ public static class CommandsList {
                                                       75,
                                                       "buy",
                                                       "<lot_name>;[amount]",
-                                                      "купить лот.",
+                                                      string.Empty,
                                                       Buy,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      76,
+                                                      24,
                                                       "use",
                                                       "<lot_name>",
-                                                      "использовать лот.",
+                                                      string.Empty,
                                                       Use,
                                                       Restriction.Everyone
                                                      ),
@@ -697,7 +704,7 @@ public static class CommandsList {
                                                       63,
                                                       "gamble",
                                                       "<money>",
-                                                      "слить баллы.",
+                                                      string.Empty,
                                                       Gamble,
                                                       Restriction.Everyone
                                                      ),
@@ -705,15 +712,16 @@ public static class CommandsList {
                                                       61,
                                                       "balance",
                                                       string.Empty,
-                                                      "вывести баланс.",
+                                                      string.Empty,
                                                       Balance,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["account",]
                                                      ),
                                new DefaultChatCommand(
                                                       64,
                                                       "give",
                                                       "<money;username>",
-                                                      "отдать нищему фантики.",
+                                                      string.Empty,
                                                       Give,
                                                       Restriction.Everyone
                                                      ),
@@ -721,7 +729,7 @@ public static class CommandsList {
                                                       65,
                                                       "giveaway",
                                                       "[money]",
-                                                      "раздать нищим фантики.",
+                                                      string.Empty,
                                                       Giveaway,
                                                       Restriction.Everyone
                                                      ),
@@ -737,7 +745,7 @@ public static class CommandsList {
                                                       70,
                                                       "duel",
                                                       "<money;username>",
-                                                      "парный гемблинг.",
+                                                      string.Empty,
                                                       Duel,
                                                       Restriction.Everyone
                                                      ),
@@ -745,31 +753,33 @@ public static class CommandsList {
                                                       71,
                                                       "accept-duel",
                                                       "[username]",
-                                                      "принять предложение погемблить.",
+                                                      string.Empty,
                                                       AcceptDuel,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       72,
-                                                      "decline-duel",
+                                                      "reject-duel",
                                                       "[username]",
-                                                      "отказать в предложении погемблить.",
+                                                      string.Empty,
                                                       DeclineDuel,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["decline-duels",]
                                                      ),
                                new DefaultChatCommand(
                                                       73,
-                                                      "remove-duels",
+                                                      "reject-all-duels",
                                                       "[username]",
-                                                      "удалить все дуэли.",
-                                                      RemoveDuels,
-                                                      Restriction.Everyone
+                                                      string.Empty,
+                                                      DeclineAllDuels,
+                                                      Restriction.Everyone,
+                                                      aliases: ["decline-all-duels",]
                                                      ),
                                new DefaultChatCommand(
                                                       74,
                                                       "list-duels",
                                                       string.Empty,
-                                                      "предложения погемблить.",
+                                                      string.Empty,
                                                       ListDuels,
                                                       Restriction.Everyone
                                                      ),
@@ -785,7 +795,7 @@ public static class CommandsList {
                                                       66,
                                                       "bank-list-rewards",
                                                       "[--page number]",
-                                                      "вывести список наград.",
+                                                      string.Empty,
                                                       BankListRewards,
                                                       Restriction.DevBroad
                                                      ),
@@ -793,7 +803,7 @@ public static class CommandsList {
                                                       67,
                                                       "bank-create-reward",
                                                       "<money>",
-                                                      "создать награду.",
+                                                      string.Empty,
                                                       BankCreateReward,
                                                       Restriction.DevBroad
                                                      ),
@@ -801,9 +811,41 @@ public static class CommandsList {
                                                       68,
                                                       "bank-delete-reward",
                                                       "<id>",
-                                                      "удалить награду.",
+                                                      string.Empty,
                                                       BankDeleteReward,
                                                       Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      PAGE_TERMINATOR_CMD_ID,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      21,
+                                                      "translate",
+                                                      "<text> [--lang lang_code --source_lang lang_code]",
+                                                      string.Empty,
+                                                      Translate,
+                                                      Restriction.Vip
+                                                     ),
+                               new DefaultChatCommand(
+                                                      22,
+                                                      "detect-lang",
+                                                      "<text>",
+                                                      string.Empty,
+                                                      DetectLang,
+                                                      Restriction.Vip
+                                                     ),
+                               new DefaultChatCommand(
+                                                      23,
+                                                      "lang",
+                                                      "[lang_code]",
+                                                      string.Empty,
+                                                      Lang,
+                                                      Restriction.Vip
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -817,11 +859,12 @@ public static class CommandsList {
                                                       69,
                                                       "evaluate",
                                                       "<expression>",
-                                                      "выполнить выражение.",
+                                                      string.Empty,
                                                       Evaluate,
                                                       Restriction.DevBroad,
                                                       aliases: ["eval", "e",]
                                                      ),
+                               
                            ];
     }
     
@@ -907,7 +950,7 @@ public static class CommandsList {
                 continue;
             }
             
-            var desc = string.IsNullOrEmpty(cmd.Args) || cmd.Description.Equals("--") ? 
+            var desc = string.IsNullOrEmpty(cmd.Description) || cmd.Description.Equals("--") ? 
                            string.Empty :
                            $"- {cmd.Description}";
 
@@ -932,7 +975,7 @@ public static class CommandsList {
 
         switch (args.Count) {
             case <= 0: {
-                var usage = $"{cmdId}<комманда> \"аргумент1\" \"аргумент2\" ... | {cmdId}{_chatCmds.Options.DefaultCmds[1].Name} для списка комманд";
+                var usage = _localization.GetStr(StrId.Usage, cmdId, cmdId);
                 switch (_chatCmds.Options.SendWhisperIfPossible) {
                     case false: {
                         await client.SendMessage(usage, chatMessage.Id); break;
@@ -943,7 +986,7 @@ public static class CommandsList {
                 }
                 break;
             }
-            case > 0: {
+            default: {
                 var cmdName = args[0];
                 if (cmdName.Length > 0 && cmdName[0] == cmdId) {
                     cmdName = cmdName[1..];
@@ -984,7 +1027,7 @@ public static class CommandsList {
                     if (!string.Equals(cmdName, cmd.Name, StringComparison.InvariantCultureIgnoreCase) 
                      && !cmd.Aliases.Contains(cmdName)) continue;
                     
-                    var desc = string.IsNullOrEmpty(cmd.Args) || cmd.Description.Equals("--") ? 
+                    var desc = string.IsNullOrEmpty(cmd.Description) || cmd.Description.Equals("--") ? 
                                    string.Empty :
                                    $"- {cmd.Description}";
 
@@ -992,11 +1035,11 @@ public static class CommandsList {
                                    string.Empty :
                                    cmd.Args;
                     
-                    await client.SendMessage($"{cmdId}{cmd.Name} {arguments} {desc} | Страница {page}", chatMessage.Id);
+                    await client.SendMessage($"{cmdId}{cmd.Name} {arguments} {desc} | {_localization.GetStr(StrId.Page, page)}", chatMessage.Id);
                     return;
                 }
-                
-                await client.SendMessage($"Команда {cmdId}{cmdName} не существует.", chatMessage.Id);
+
+                await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
                 break;
             }
         }
@@ -1022,19 +1065,19 @@ public static class CommandsList {
 
         var random = Random.Shared.Next(0, 6);
         var randomizedMessage = random switch {
-                                    0 => $"{argSb} уже завтра! PewPewPew PewPewPew PewPewPew",
-                                    1 => $"{argSb} на этой неделе! {Get7TvEmote(Emote.Aga)} {Get7TvEmote(Emote.Aga)} {Get7TvEmote(Emote.Aga)}",
-                                    2 => $"{argSb} в следующем месяце! {Get7TvEmote(Emote.Like)} {Get7TvEmote(Emote.Like)} {Get7TvEmote(Emote.Like)}",
-                                    3 => $"{argSb} через год {Get7TvEmote(Emote.Wait)} {Get7TvEmote(Emote.Wait)} {Get7TvEmote(Emote.Wait)}",
-                                    4 => $"{argSb} через 69 лет {Get7TvEmote(Emote.Sad)} {Get7TvEmote(Emote.Sad)} {Get7TvEmote(Emote.Sad)}",
-                                    5 => $"{argSb} никогда {Get7TvEmote(Emote.Laugh)} {Get7TvEmote(Emote.Laugh)} {Get7TvEmote(Emote.Laugh)}",
+                                    0 => _localization.GetStr(StrId.When0, argSb),
+                                    1 => _localization.GetStr(StrId.When1, argSb, _emotes.Get7TvEmote(EmoteId.Aga), _emotes.Get7TvEmote(EmoteId.Aga), _emotes.Get7TvEmote(EmoteId.Aga)),
+                                    2 => _localization.GetStr(StrId.When2, argSb, _emotes.Get7TvEmote(EmoteId.Like), _emotes.Get7TvEmote(EmoteId.Like), _emotes.Get7TvEmote(EmoteId.Like)),
+                                    3 => _localization.GetStr(StrId.When3, argSb, _emotes.Get7TvEmote(EmoteId.Wait), _emotes.Get7TvEmote(EmoteId.Wait), _emotes.Get7TvEmote(EmoteId.Wait)),
+                                    4 => _localization.GetStr(StrId.When4, argSb, _emotes.Get7TvEmote(EmoteId.Sad), _emotes.Get7TvEmote(EmoteId.Sad), _emotes.Get7TvEmote(EmoteId.Sad)),
+                                    5 => _localization.GetStr(StrId.When5, argSb, _emotes.Get7TvEmote(EmoteId.Laugh), _emotes.Get7TvEmote(EmoteId.Laugh), _emotes.Get7TvEmote(EmoteId.Laugh)),
                                     _ => string.Empty,
                                 };
         
         await client.SendMessage(randomizedMessage, chatMessage.Id); 
     }
-
-    private static async Task Ban(ChatCmdArgs cmdArgs) {
+    
+    private static async Task BanEveryone(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client == null) return;
         
@@ -1051,10 +1094,107 @@ public static class CommandsList {
         foreach (var arg in args) {
             argSb.Append($"{arg} ");
         }
-                
-        await client.SendMessage($"{argSb} отправлен в бан sillyJAIL sillyJAIL sillyJAIL", chatMessage.Id);
+
+        var str = _localization.GetStr(StrId.FakeBan, argSb, _emotes.Get7TvEmote(EmoteId.Jail), _emotes.Get7TvEmote(EmoteId.Jail), _emotes.Get7TvEmote(EmoteId.Jail));
+        await client.SendMessage(str, chatMessage.Id);
     }
 
+    private static async Task Ban(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        if (args.Count < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var usernameSb = new StringBuilder();
+                
+        foreach (var arg in args) {
+            usernameSb.Append($"{arg} ");
+        }
+
+        var username = usernameSb.ToString().Trim();
+        
+        if (username.Length > 0 && username[0] == '@')
+            username = username[1..^1];
+
+        var userInfo = await _bot.Api.GetUserInfoByUserName(username, client.Credentials);
+        if (userInfo == null) {
+            await BanEveryone(cmdArgs);
+            return;
+        }
+
+        var messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
+        messageFilter.AddBannedUser(userInfo);
+        
+        var banFromBotStr = _localization.GetStr(StrId.BanFromBot, userInfo.DisplayName, _emotes.Get7TvEmote(EmoteId.Jail), _emotes.Get7TvEmote(EmoteId.Jail), _emotes.Get7TvEmote(EmoteId.Jail));
+        await client.SendMessage(banFromBotStr, chatMessage.Id);
+    }
+    
+    private static async Task UnBanEveryone(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        if (args.Count < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var argSb = new StringBuilder();
+                
+        foreach (var arg in args) {
+            argSb.Append($"{arg} ");
+        }
+
+        var str = _localization.GetStr(StrId.FakeUnBan, argSb, _emotes.Get7TvEmote(EmoteId.Happy), _emotes.Get7TvEmote(EmoteId.Happy), _emotes.Get7TvEmote(EmoteId.Happy));
+        await client.SendMessage(str, chatMessage.Id);
+    }
+
+    private static async Task UnBan(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        if (args.Count < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var usernameSb = new StringBuilder();
+                
+        foreach (var arg in args) {
+            usernameSb.Append($"{arg} ");
+        }
+
+        var username = usernameSb.ToString().Trim();
+        if (username.Length > 0 && username[0] == '@')
+            username = username[1..^1];
+
+        var userInfo = await _bot.Api.GetUserInfoByUserName(username, client.Credentials);
+        if (userInfo == null) {
+            await UnBanEveryone(cmdArgs);
+            return;
+        }
+
+        var messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
+        if (!messageFilter.RemoveBannedUser(userInfo)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+        
+        var unbanFromBotStr = _localization.GetStr(StrId.UnBanFromBot, userInfo.DisplayName, _emotes.Get7TvEmote(EmoteId.Happy), _emotes.Get7TvEmote(EmoteId.Happy), _emotes.Get7TvEmote(EmoteId.Happy));
+        await client.SendMessage(unbanFromBotStr, chatMessage.Id);
+    }
+    
     private static async Task Mute(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
@@ -1069,7 +1209,7 @@ public static class CommandsList {
 
         var username = args[0];
         var userId = await _bot.Api.GetUserId(username, client.Credentials, (_, message) => {
-                                                                             _logger.Log(LogLevel.Error, message);
+                                                                             ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                          });
         if (userId == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
@@ -1084,11 +1224,11 @@ public static class CommandsList {
 
         var random = Random.Shared.Next(0, 5);
         var message = random switch {
-                          0 => $"{username} отошел поспать.",
-                          1 => $"{username} решил передохнуть.",
-                          2 => $"{username} bb.",
-                          3 => $"{username} очень устал.",
-                          _ => $"{username} пошел посрать.",
+                          0 => _localization.GetStr(StrId.Mute0, username),
+                          1 => _localization.GetStr(StrId.Mute1, username),
+                          2 => _localization.GetStr(StrId.Mute2, username),
+                          3 => _localization.GetStr(StrId.Mute3, username),
+                          _ => _localization.GetStr(StrId.Mute4, username),
                       };
 
         await client.SendMessage(message, chatMessage.Id);
@@ -1198,7 +1338,8 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
-        if (levelRequests.GetServiceState() == State.Disabled) return;
+        if (levelRequests.GetServiceState() == State.Disabled) 
+            return;
         
         var reqState = levelRequests.GetReqState();
         switch (args.Count) {
@@ -1211,7 +1352,7 @@ public static class CommandsList {
                         reqState = ReqState.Off;
                         await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials, 
                                                           (_, message) => { 
-                                                              _logger.Log(LogLevel.Error, message);
+                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
                                                           });
                         break;
                     }
@@ -1219,7 +1360,7 @@ public static class CommandsList {
                         reqState = ReqState.Points;
                         var result = await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), true, client.Credentials,
                                                                             (_, message) => {
-                                                                                _logger.Log(LogLevel.Error, message);
+                                                                                ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                             });
                         if (!result) {
                             await ErrorHandler.ReplyWithError(ErrorCode.NoRewardSet, chatMessage, client);
@@ -1231,7 +1372,7 @@ public static class CommandsList {
                         reqState = ReqState.On;
                         await _bot.Api.SetChannelRewardState(levelRequests.GetRewardId(), false, client.Credentials,
                                                           (_, message) => {
-                                                              _logger.Log(LogLevel.Error, message);
+                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
                                                           });
                         break;
                     }
@@ -1240,7 +1381,9 @@ public static class CommandsList {
         }
 
         levelRequests.Options.SetReqState(reqState);
-        await client.SendMessage($"Реквесты теперь {levelRequests.GetReqStateStr(reqState)}", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.RequestsStateChanged, levelRequests.GetReqStateStr(reqState));
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task SetReqReward(ChatCmdArgs cmdArgs) {
@@ -1251,12 +1394,15 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendMessage("Используйте эту команду внутри награды.", chatMessage.Id);
+            var errorStr = _localization.GetStr(StrId.UseCmdInsideReward);
+            await client.SendMessage(errorStr, chatMessage.Id);
             return;
         }
         
         levelRequests.SetRewardId(chatMessage.RewardId);
-        await client.SendMessage("Награда для реквестов успешно установлена.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.RequestsRewardSet);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Potato(ChatCmdArgs cmdArgs) {
@@ -1291,14 +1437,18 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var clipId = await _bot.Api.CreateClip(client.Credentials, (_, message) => {
-                                                                         _logger.Log(LogLevel.Error, message);
+                                                                         ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                      });
 
         if (clipId == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.ClipCreationFailed, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Клип создан - https://www.twitch.tv/{client.Credentials.Broadcaster.Login}/clip/{clipId}", chatMessage.Id);
+
+        var link = $"https://www.twitch.tv/{client.Credentials.Broadcaster.Login}/clip/{clipId}";
+        
+        var str = _localization.GetStr(StrId.ClipCreated, link);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task TitleEveryone(ChatCmdArgs cmdArgs) {
@@ -1307,10 +1457,16 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
-                                                                                  _logger.Log(LogLevel.Error, message);
+                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                               });
+
+        if (channelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
         
-        await client.SendMessage($"Название стрима - {channelInfo!.Title}", chatMessage.Id);
+        var str = _localization.GetStr(StrId.StreamsTitle, channelInfo.Title);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Title(ChatCmdArgs cmdArgs) {
@@ -1331,9 +1487,12 @@ public static class CommandsList {
         }
 
         var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
-                                                                                  _logger.Log(LogLevel.Error, message);
+                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                               });
-        if (channelInfo == null) return;
+        if (channelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
         
         var titleSb = new StringBuilder();
         titleSb.Append($"{baseTitle} ");
@@ -1342,13 +1501,15 @@ public static class CommandsList {
         }
 
         var result = await _bot.Api.UpdateChannelInfo(titleSb.ToString(), channelInfo.GameId, client.Credentials, (_, message) => {
-                                                            _logger.Log(LogLevel.Error, message);
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
                                                         });
         if (!result) {
-            await client.SendMessage("Не удалось изменить название", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Название стрима изменено на {titleSb}", chatMessage.Id);
+
+        var str = _localization.GetStr(StrId.StreamTitleChanged, titleSb);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Followage(ChatCmdArgs cmdArgs) {
@@ -1365,19 +1526,19 @@ public static class CommandsList {
         }
 
         var followage = await _bot.Api.GetFollowage(username, client.Credentials, (_, message) => {
-                                                               _logger.Log(LogLevel.Error, message);
+                                                               ErrorHandler.LogMessage(LogLevel.Error, message);
                                                            });
         if (followage == null) {
             if (args.Count > 0) {
-                result = 
-                    username == chatMessage.Channel ?
-                             $"{username} это владелец канала {Get7TvEmote(Emote.Rizz)}" :
-                             $"{username} не фолловнут на {chatMessage.Channel} {Get7TvEmote(Emote.Sad)}";
+                result =
+                    username == chatMessage.Channel
+                        ? _localization.GetStr(StrId.UserIsBroadcaster, username, _emotes.Get7TvEmote(EmoteId.Rizz))
+                        : _localization.GetStr(StrId.UserNotFollowed, username, chatMessage.Channel, _emotes.Get7TvEmote(EmoteId.Sad));
             } else {
-                result = 
-                    username == chatMessage.Channel ?
-                        $"Вы владелец канала {Get7TvEmote(Emote.Rizz)}" :
-                        $"Вы не фолловнуты на {chatMessage.Channel} {Get7TvEmote(Emote.Sad)}";
+                result =
+                    username == chatMessage.Channel
+                        ? _localization.GetStr(StrId.YouAreBroadcaster, _emotes.Get7TvEmote(EmoteId.Rizz))
+                        : _localization.GetStr(StrId.YouNotFollowed, chatMessage.Channel, _emotes.Get7TvEmote(EmoteId.Sad));
             }
 
             await client.SendMessage(result, chatMessage.Id);
@@ -1395,10 +1556,11 @@ public static class CommandsList {
             followage.Value.Days%365%30 == 0 ?
                 "" :
                 $"{followage.Value.Days%365%30} {Declensioner.Days(followage.Value.Days%365%30)}";
-        result = 
-            args.Count > 0 ? 
-                $"{username} фолловнут на {chatMessage.Channel} {years} {months} {days}" : 
-                $"Вы фолловнуты на {chatMessage.Channel} {years} {months} {days}";
+        result =
+            args.Count > 0
+                ? _localization.GetStr(StrId.UserFollowedFor, username, chatMessage.Channel, years, months, days)
+                : _localization.GetStr(StrId.YouFollowedFor, chatMessage.Channel, years, months, days);
+        
         await client.SendMessage(result, chatMessage.Id);
     }
 
@@ -1407,11 +1569,17 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
-                                                                                  _logger.Log(LogLevel.Error, message);
+                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                               });
         var chatMessage = cmdArgs.Parsed.ChatMessage;
+
+        if (channelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
         
-        await client.SendMessage($"Текущая категория - {channelInfo!.GameName}", chatMessage.Id);
+        var str = _localization.GetStr(StrId.CurrentCategory, channelInfo.GameName);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Game(ChatCmdArgs cmdArgs) {
@@ -1431,7 +1599,7 @@ public static class CommandsList {
         }
         
         var channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
-                                                                                  _logger.Log(LogLevel.Error, message);
+                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                               });
         if (channelInfo == null) return;
         
@@ -1445,21 +1613,26 @@ public static class CommandsList {
         }
 
         var gameId = await _bot.Api.FindGameId(gameSb.ToString(), client.Credentials, (_, message) => {
-                                                     _logger.Log(LogLevel.Error, message);
+                                                     ErrorHandler.LogMessage(LogLevel.Error, message);
                                                  });
         if (gameId == null) return;
         
         var result = await _bot.Api.UpdateChannelInfo(channelInfo.Title, gameId, client.Credentials, (_, message) => {
-                                                            _logger.Log(LogLevel.Error, message);
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
                                                         });
         if (!result) {
-            await client.SendMessage("Не удалось изменить категорию", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         channelInfo = await _bot.Api.GetChannelInfo(client.Credentials, (_, message) => {
-                                                                              _logger.Log(LogLevel.Error, message);
+                                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                           });
-        await client.SendMessage($"Категория изменена на {channelInfo!.GameName}", chatMessage.Id);
+
+        if (channelInfo == null)
+            return;
+        
+        var str = _localization.GetStr(StrId.CategoryChanged, channelInfo.GameName);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Guess(ChatCmdArgs cmdArgs) {
@@ -1471,7 +1644,8 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         if (messageRandomizer.Options.MessageState == MessageState.Guessed) {
-            await client.SendMessage("Уже отгадано.", chatMessage.Id);
+            var str = _localization.GetStr(StrId.AlreadyGuessed);
+            await client.SendMessage(str, chatMessage.Id);
             return;
         }
 
@@ -1487,14 +1661,16 @@ public static class CommandsList {
         }
 
         var userId = await _bot.Api.GetUserId(args[0], client.Credentials, (_, msg) => {
-                                               _logger.Log(LogLevel.Error, msg);
+                                               ErrorHandler.LogMessage(LogLevel.Error, msg);
                                            });
         if (userId == null) return;
         
         if (userId != message.UserId) {
-            await client.SendMessage("Неправильно.", chatMessage.Id);
+            var str = _localization.GetStr(StrId.IncorrectWord);
+            await client.SendMessage(str, chatMessage.Id);
         } else {
-            await client.SendMessage($"Правильно, это было сообщение от {args[0]}.", chatMessage.Id);
+            var str = _localization.GetStr(StrId.GuessedMessageCorrect, args[0]);
+            await client.SendMessage(str, chatMessage.Id);
             messageRandomizer.Options.SetMessageState(MessageState.Guessed);
         }
     }
@@ -1513,9 +1689,14 @@ public static class CommandsList {
         }
 
         var username = await _bot.Api.GetUserName(message.UserId, client.Credentials, true, (_, msg) => {
-                                                   _logger.Log(LogLevel.Error, msg);
+                                                   ErrorHandler.LogMessage(LogLevel.Error, msg);
                                                });
-        await client.SendMessage($"Это было сообщение от '{username}'", chatMessage.Id);
+
+        if (username == null)
+            return;
+        
+        var str = _localization.GetStr(StrId.WhoseResult, username);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task Repeat(ChatCmdArgs cmdArgs) {
@@ -1574,7 +1755,9 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.TranslationFailed, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Перевод: {translated}", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.TranslateResult, translated);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task DetectLang(ChatCmdArgs cmdArgs) {
@@ -1602,11 +1785,13 @@ public static class CommandsList {
         }
         
         var lang = await translator.DetectLanguage(textSb.ToString());
-        if (lang == null) {
+        if (lang?.LanguageCode == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Самый близкий язык - {lang.LanguageCode}", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.DetectLangResult, lang.LanguageCode);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task Lang(ChatCmdArgs cmdArgs) {
@@ -1628,7 +1813,9 @@ public static class CommandsList {
         }
         
         translator.SetTargetLanguage(args[0]);
-        await client.SendMessage($"Язык установлен на '{args[0]}'", chatMessage.Id);
+
+        var str = _localization.GetStr(StrId.LangResult, args[0]);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Carrot(ChatCmdArgs cmdArgs) {
@@ -1719,7 +1906,7 @@ public static class CommandsList {
         var pages = 
             levelsInfo.Count <= 1 ? 
                 string.Empty : 
-                $"Страница {page+1} из {levelsInfo.Count} |";
+                $"{_localization.GetStr(StrId.PageOutOf, page + 1, levelsInfo.Count)} |";
         
         var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
         await client.SendMessage($"{pages} {formatedOutput}", chatMessage.Id);
@@ -1794,7 +1981,7 @@ public static class CommandsList {
         var pages = 
             levelsInfo.Count <= 1 ? 
                 string.Empty : 
-                $"Страница {page+1} из {levelsInfo.Count} |";
+                $"{_localization.GetStr(StrId.PageOutOf, page + 1, levelsInfo.Count)} |";
         
         var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
         await client.SendMessage($"{pages} {formatedOutput}", chatMessage.Id);
@@ -2219,6 +2406,39 @@ public static class CommandsList {
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
 
+    private static async Task PRoulette(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        var from = -1;
+        var to = -1;
+
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+
+        if (args.Count > 0) {
+            from = int.Parse(args[0]);
+            if (args.Count > 1) {
+                to = int.Parse(args[1]);
+            }
+        }
+                        
+        var levelInfo = await demonList.GetRandomPlatformerLevel(from, to);
+        if (levelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
+        await client.SendMessage(formatedOutput, chatMessage.Id);
+    }
+    
     private static async Task Clan(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
@@ -2347,7 +2567,7 @@ public static class CommandsList {
             }
 
             var username = await _bot.Api.GetUserName(gameRequest.UserId, client.Credentials, true, (_, message) => {
-                                                     _logger.Log(LogLevel.Error, message);
+                                                     ErrorHandler.LogMessage(LogLevel.Error, message);
                                                  });
             reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
         }
@@ -2363,12 +2583,15 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (chatMessage.RewardId == null) {
-            await client.SendMessage("Используйте эту комманду внутри награды.", chatMessage.Id);
+            var errorStr = _localization.GetStr(StrId.UseCmdInsideReward);
+            await client.SendMessage(errorStr, chatMessage.Id);
             return;
         }
         
         gameRequest.Options.AddReward(chatMessage.RewardId);
-        await client.SendMessage("Награда добавлена в список.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.GameRequestsRewardAdded);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task ResetGameRequestsRewards(ChatCmdArgs cmdArgs) {
@@ -2379,7 +2602,9 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         
         gameRequest.Options.ResetRewards();
-        await client.SendMessage("Список наград очищен.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.GameRequestsRewardsReset);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task AddGame(ChatCmdArgs cmdArgs) {
@@ -2419,7 +2644,9 @@ public static class CommandsList {
         var gameName = gameRequests[indexToRemove].GameName;
         
         gameRequestService.Options.RemoveRequest(indexToRemove);
-        await client.SendMessage($"Игра {gameName} удалена из очереди.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.GameRequestRemoved, gameName);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ResetGames(ChatCmdArgs cmdArgs) {
@@ -2430,7 +2657,9 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         gameRequestService.Options.ResetRequests();
-        await client.SendMessage("Список заказов очищен.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.GameRequestsReset);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task CreateReward(ChatCmdArgs cmdArgs) {
@@ -2466,17 +2695,18 @@ public static class CommandsList {
                                                           client.Credentials, 
                                                           userInputRequired: requireInput, 
                                                           callback: (_, message) => { 
-                                                                _logger.Log(LogLevel.Error, message); 
+                                                                ErrorHandler.LogMessage(LogLevel.Error, message); 
                                                             });
         if (rewardId == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         
-        await client.SendMessage($"Награда успешно создана. ({rewardId})", chatMessage.Id);
+        var str = _localization.GetStr(StrId.RewardCreated, rewardId);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
-    private static async Task DeleteReward(ChatCmdArgs cmdArgs) {
+    private static async Task RemoveReward(ChatCmdArgs cmdArgs) {
         if (await ErrorIfNotFullyAuthorized()) {
             return;
         }
@@ -2494,14 +2724,15 @@ public static class CommandsList {
 
         var rewardId = args[0];
         var result = await _bot.Api.DeleteChannelReward(rewardId, client.Credentials, (_, message) => {
-                                                              _logger.Log(LogLevel.Error, message);
+                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
                                                           });
         if (!result) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
         
-        await client.SendMessage($"Награда успешно удалена. ({rewardId})", chatMessage.Id);
+        var str = _localization.GetStr(StrId.RewardRemoved, rewardId);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task TgNotifyEveryone(ChatCmdArgs cmdArgs) {
@@ -2513,9 +2744,11 @@ public static class CommandsList {
 
         var stateStr =
             tgNotifications.GetServiceState() == State.Enabled? 
-                "включены":
-                "отключены";
-        await client.SendMessage($"Уведомления о стримах {stateStr}", chatMessage.Id);
+                _localization.GetStr(StrId.EnabledPlural) :
+                _localization.GetStr(StrId.DisabledPlural);
+        
+        var str = _localization.GetStr(StrId.TgNotificationsServiceStateChangedEveryone, stateStr);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task TgNotify(ChatCmdArgs cmdArgs) {
@@ -2544,9 +2777,11 @@ public static class CommandsList {
         
         var stateStr =
             tgNotifications.GetServiceState() == State.Enabled? 
-                "включены":
-                "отключены";
-        await client.SendMessage($"Уведомления о стримах теперь {stateStr}", chatMessage.Id);
+                _localization.GetStr(StrId.EnabledPlural) :
+                _localization.GetStr(StrId.DisabledPlural);
+        
+        var str = _localization.GetStr(StrId.TgNotificationsServiceStateChanged, stateStr);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task TgNotifyPrompt(ChatCmdArgs cmdArgs) {
@@ -2568,7 +2803,9 @@ public static class CommandsList {
         }
         
         tgNotifications.SetNotificationPrompt(prompt.ToString().Trim());
-        await client.SendMessage("Текст уведомлений успешно изменен.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.TgNotificationsPromptChanged);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task ListCustomCmds(ChatCmdArgs cmdArgs) {
@@ -2624,7 +2861,9 @@ public static class CommandsList {
                                         Restriction.Everyone);
         
         _chatCmds.AddChatCmd(cmd);
-        await client.SendMessage($"Новая команда '{cmd.Name}' добавлена успешно.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.CmdAdded, cmd.Name);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task RemoveCmd(ChatCmdArgs cmdArgs) {
@@ -2644,7 +2883,8 @@ public static class CommandsList {
             return;
         }
 
-        await client.SendMessage($"Команда '{cmd.Name}' успешно удалена.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.CmdRemoved, cmd.Name);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ChangeCmdDescription(ChatCmdArgs cmdArgs) {
@@ -2671,7 +2911,9 @@ public static class CommandsList {
         }
         
         cmd.SetDescription(args[1]);
-        await client.SendMessage($"Описание команды '{cmd.Name}' изменено на {cmd.Description}.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.CmdDescriptionChanged, cmd.Name, cmd.Description);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ChangeCmdOutput(ChatCmdArgs cmdArgs) {
@@ -2703,7 +2945,9 @@ public static class CommandsList {
         }
         
         cmd.SetOutput(args[1]);
-        await client.SendMessage($"Вывод команды '{cmd.Name}' изменено на {cmd.Output}.", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.CmdOutputChanged, cmd.Name, cmd.Output);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task ListChatAds(ChatCmdArgs cmdArgs) {
@@ -2747,7 +2991,8 @@ public static class CommandsList {
         var chatAd = new ChatAd(name, output, cooldown);
         chatAdsService.AddChatAd(chatAd);
 
-        await client.SendMessage($"Чат-реклама с названием {chatAd.GetName()} добавлена успешно.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.ChatAdAdded, chatAd.GetName());
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task RemoveChatAd(ChatCmdArgs cmdArgs) {
@@ -2766,11 +3011,12 @@ public static class CommandsList {
         var name = chatAdsService.Options.GetChatAds()[indexToRemove].GetName();
         var result = chatAdsService.RemoveChatAd(indexToRemove);
         if (!result) {
-            await client.SendMessage($"Не удалось удалить чат-рекламу с айди {indexToRemove+1}.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
         
-        await client.SendMessage($"Чат-р еклама с названием {name} удалена успешно.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.ChatAdRemoved, name);
+        await client.SendMessage(str, chatMessage.Id);
     }
 
     private static async Task ChangeChatAdName(ChatCmdArgs cmdArgs) {
@@ -2803,7 +3049,8 @@ public static class CommandsList {
         var oldName = chatAd.GetName();
         chatAd.SetName(args[1]);
         
-        await client.SendMessage($"Название чат-рекламы {oldName} изменено на {chatAd.GetName()}.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.ChatAdNameChanged, oldName, chatAd.GetName());
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ChangeChatAdOutput(ChatCmdArgs cmdArgs) {
@@ -2835,7 +3082,8 @@ public static class CommandsList {
         var chatAd = chatAds[index];
         chatAd.SetOutput(args[1]);
         
-        await client.SendMessage($"Вывод чат-рекламы {chatAd.GetName()} изменен на {chatAd.GetOutput()}.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.ChatAdOutputChanged, chatAd.GetName(), chatAd.GetOutput());
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ChangeChatAdCooldown(ChatCmdArgs cmdArgs) {
@@ -2868,7 +3116,8 @@ public static class CommandsList {
         var chatAd = chatAds[index];
         chatAd.SetCooldown(cooldown);
         
-        await client.SendMessage($"Перезарядка чат-рекламы {chatAd.GetName()} изменена на {chatAd.GetCooldown()}.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.ChatAdCooldownChanged, chatAd.GetName(), chatAd.GetCooldown());
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Gamble(ChatCmdArgs cmdArgs) {
@@ -2883,7 +3132,7 @@ public static class CommandsList {
         var casino = (CasinoService)Services.Get(ServiceId.Casino);
         var bank = (BankService)Services.Get(ServiceId.Bank);
 
-        var err = ParseIntArg(cmdArgs, out var quantity);
+        var err = ParseLongArg(cmdArgs, out var quantity);
         if (err != ErrorCode.None) {
             await ErrorHandler.ReplyWithError(err, chatMessage, client);
             return;
@@ -2941,7 +3190,7 @@ public static class CommandsList {
         }
 
         var userId = await _bot.Api.GetUserId(args[1], client.Credentials, (_, message) => {
-                                                                            _logger.Log(LogLevel.Error, message);
+                                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                         });
         if (userId == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
@@ -2954,7 +3203,8 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage($"Вы вызвали {args[1]} на дуэль со ставкой {args[0]} {Declensioner.Points(quantity)}.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.DuelChallenged, args[1], args[0], Declensioner.Points(quantity));
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task AcceptDuel(ChatCmdArgs cmdArgs) {
@@ -2972,7 +3222,7 @@ public static class CommandsList {
         var userId = string.Empty;
         if (args.Count > 0) {
             userId = await _bot.Api.GetUserId(args[0], client.Credentials,
-                                               (_, message) => { _logger.Log(LogLevel.Error, message); });
+                                               (_, message) => { ErrorHandler.LogMessage(LogLevel.Error, message); });
             if (userId == null) {
                 await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
                 return;
@@ -2983,45 +3233,42 @@ public static class CommandsList {
         if (!result.Ok) {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
-        } if (result.Value == null) {
+        } if (result.Value is not { Result: true, }) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
 
         var duelResult = result.Value.Value;
-        var winnerUsername = await _bot.Api.GetUserName(duelResult.UserId, client.Credentials, displayName: true,
+        var winnerUsername = await _bot.Api.GetUserName(duelResult.WinnerUserId, client.Credentials, displayName: true,
                                                (_, message) => {
-                                                   _logger.Log(LogLevel.Error, message);
+                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
                                                });
         if (winnerUsername == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
 
-        var looserId = duelResult.UserId.Equals(chatMessage.UserId)?
-                           userId :
-                           chatMessage.UserId;
-        var looserUsername = await _bot.Api.GetUserName(looserId, client.Credentials, displayName: true, 
-                                                     (_, message) => {
-                                                         _logger.Log(LogLevel.Error, message);
-                                                     });
+        var looserUsername = await _bot.Api.GetUserName(duelResult.LooserUserId, client.Credentials, displayName: true, 
+                                                        (_, message) => {
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                        });
         if (looserUsername == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
             return;
         }
         
         var random = Random.Shared.Next(0, 3);
         switch (random) {
             case 0: {
-                await client.SendMessage($"{winnerUsername} выигрывает в дуэли и получает {duelResult.Win} {Declensioner.Points(duelResult.Win)}");
+                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse0, winnerUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
                 break;
             }
             case 1: {
-                await client.SendMessage($"{winnerUsername} залутал {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse1, winnerUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
                 break;
             }
             default: {
-                await client.SendMessage($"{winnerUsername} заовнил {looserUsername} и выиграл {duelResult.Win} {Declensioner.Points(duelResult.Win)}", chatMessage.Id);
+                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse2, winnerUsername, looserUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
                 break;
             }
         }
@@ -3042,7 +3289,7 @@ public static class CommandsList {
         var userId = string.Empty;
         if (args.Count > 0) {
             userId = await _bot.Api.GetUserId(args[1], client.Credentials,
-                                           (_, message) => { _logger.Log(LogLevel.Error, message); });
+                                           (_, message) => { ErrorHandler.LogMessage(LogLevel.Error, message); });
             if (userId == null) {
                 await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
                 return;
@@ -3055,10 +3302,11 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage("Дуэль отменена.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.DuelDeclined);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
-    private static async Task RemoveDuels(ChatCmdArgs cmdArgs) {
+    private static async Task DeclineAllDuels(ChatCmdArgs cmdArgs) {
         if (await ErrorIfNotFullyAuthorized()) {
             return;
         }
@@ -3075,7 +3323,8 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage("Все ваши дуэли отменены.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.AllDuelsDeclined);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ListDuels(ChatCmdArgs cmdArgs) {
@@ -3105,7 +3354,7 @@ public static class CommandsList {
             var duel = duels[i];
             var username = await _bot.Api.GetUserName(duel.Subject, client.Credentials, displayName: true, 
                                                    (_, message) => {
-                                                       _logger.Log(LogLevel.Error, message);
+                                                       ErrorHandler.LogMessage(LogLevel.Error, message);
                                                    });
             if (username == null) {
                 await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
@@ -3135,7 +3384,8 @@ public static class CommandsList {
         }
 
         var arrow = account.Gain >= 0 ? "↑" : "↓";
-        await client.SendMessage($"Баланс: {account.Money} {Declensioner.Points(account.Money)} | За все время: {Math.Abs(account.Gain)}{arrow}.", chatMessage.Id);
+        var str = _localization.GetStr(StrId.Balance, account.Money, Declensioner.Points(account.Money), Math.Abs(account.Gain), arrow);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Shop(ChatCmdArgs cmdArgs) {
@@ -3146,8 +3396,7 @@ public static class CommandsList {
         var shop = (ShopService)Services.Get(ServiceId.Shop);
         var lots = shop.Lots;
 
-        var reply = lots.Select(
-                                (lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost}" +
+        var reply = lots.Select((lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost}" +
                                             $"{(lot.Buyers.TryGetValue(chatMessage.UserId, out var val)? $"({val})" : string.Empty)}" +
                                             $" {(i >= lots.Count - 1 ? string.Empty : "/")}")
                         .ToList();
@@ -3189,7 +3438,8 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage($"Успешно создан лот '{lotName}'", chatMessage.Id);
+        var str = _localization.GetStr(StrId.LotAdded, args[0]);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task ShopRemove(ChatCmdArgs cmdArgs) {
@@ -3215,7 +3465,8 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage($"Лот '{args[0]}' успешно удалён", chatMessage.Id);
+        var str = _localization.GetStr(StrId.LotRemoved, args[0]);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Buy(ChatCmdArgs cmdArgs) {
@@ -3253,7 +3504,8 @@ public static class CommandsList {
         }
 
         var lot = result.Value;
-        await client.SendMessage($"Куплено '{lot.Name}'. Всего: {lot.Buyers[chatMessage.UserId]}", chatMessage.Id);
+        var str = _localization.GetStr(StrId.LotBought, lot.Name, lot.Buyers[chatMessage.UserId]);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Use(ChatCmdArgs cmdArgs) {
@@ -3301,7 +3553,8 @@ public static class CommandsList {
             return;
         }
         
-        await client.SendMessage($"Использовано {lot.Name}", chatMessage.Id);
+        var str = _localization.GetStr(StrId.LotUsed, lot.Name);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Give(ChatCmdArgs cmdArgs) {
@@ -3335,10 +3588,10 @@ public static class CommandsList {
         var userId = await _bot.Api.GetUserId(username, client.Credentials, async void (_, message) => {
                                                                              try {
                                                                                  await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
-                                                                                 _logger.Log(LogLevel.Error, message);
+                                                                                 ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                              }
                                                                              catch (Exception e) {
-                                                                                 _logger.Log(LogLevel.Error, e.Message);
+                                                                                 ErrorHandler.LogMessage(LogLevel.Error, e.Message);
                                                                              }
                                                                          });
         if (string.IsNullOrEmpty(userId)) return;
@@ -3348,7 +3601,9 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
-        await client.SendMessage($"Успешно отправлено {money} {Declensioner.Points(money)} пользователю {username}", chatMessage.Id);
+        
+        var str = _localization.GetStr(StrId.GiveResult, money, Declensioner.Points(money), username);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Giveaway(ChatCmdArgs cmdArgs) {
@@ -3361,7 +3616,6 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var bank = (BankService)Services.Get(ServiceId.Bank);
-        var accounts = bank.Options.GetAccounts();
 
         if (!bank.GetAccount(chatMessage.UserId, out var account) || account == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
@@ -3374,79 +3628,29 @@ public static class CommandsList {
             money = account.Money;
         }
 
-        if (account.Money < money) {
-            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
-            return;
-        }
-        
-        var random = Random.Shared;
-        var amount = accounts.Count switch {
-                         > 1 => (int)random.NextInt64(2, Math.Min(money, accounts.Count)%int.MaxValue),
-                         _   => 0,
-                     };
-
-        if (amount <= 1) {
-            await client.SendMessage("Некому раздавать.", chatMessage.Id);
-            return;
-        }
-        if (amount > 6) amount = 6;
-        
-        var quantityPerEach = money / amount;
-        if (quantityPerEach <= 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
+        var result = bank.Giveaway(chatMessage.UserId, money);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
 
-        var map = new Dictionary<string, long>();
-        var left = money;
-        var retries = 0;
-        
-        for (var i = 0; i < amount; ++i) {
-            var index = random.Next(0, accounts.Count);
-            var (_, receiver) = accounts.ElementAt(index);
-
-            if (receiver.UserId.Equals(chatMessage.UserId)) {
-                if (index - 1 < 0 && index + 1 < accounts.Count) ++index;
-                else if (index - 1 >= 0) --index;
-                else {
-                    await client.SendMessage("Некому раздавать.", chatMessage.Id);
-                    return;
-                }
-                
-                (_, receiver) = accounts.ElementAt(index);
-            }
-            
-            var result = bank.Give(receiver.UserId, chatMessage.UserId, quantityPerEach);
-            if (!result.Ok) {
-                if (retries++ >= 3) break;
-                --i;
-                continue;
-            }
-
-            if (!map.TryAdd(receiver.UserId, quantityPerEach)) {
-                map[receiver.UserId] += quantityPerEach;
-            }
-
-            left -= quantityPerEach;
-            
-            var tempAmount = amount - (i + 1);
-            if (tempAmount < 1) tempAmount = 1;
-            
-            quantityPerEach = left / tempAmount;
-        }
+        var map = result.Value;
+        if (map == null) 
+            return;
         
         var sb = new StringBuilder();
         for (var i = 0; i < map.Count; ++i) {
             var (receiver, points) = map.ElementAt(i);
             var username = await _bot.Api.GetUserName(receiver, client.Credentials, true, (_, msg) => {
-                                                                                     ErrorHandler.LogMessage(LogLevel.Error, msg);
-                                                 });
+                                                          ErrorHandler.LogMessage(LogLevel.Error, msg);
+                                                      });
             if (username == null) continue;
             
             sb.Append($"{username} - {points} {(i >= map.Count-1? string.Empty : "/ ")}");
         }
         
-        await client.SendMessage($"Роздано: {money} {Declensioner.Points(money)} - {sb}", chatMessage.Id);
+        var str = _localization.GetStr(StrId.GiveawayResult, money, Declensioner.Points(money), sb);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task BankListRewards(ChatCmdArgs cmdArgs) {
@@ -3486,26 +3690,28 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(err, chatMessage, client);
             return;
         }
-
+        
         var rewardId = await _bot.Api.CreateChannelReward(
                                                        title: $"+{quantity}",
                                                        cost: quantity,
                                                        credentials: client.Credentials,
-                                                       prompt: $"Дает {quantity} фантиков.",
+                                                       prompt: _localization.GetStr(StrId.BankRewardDescription, quantity),
                                                        isEnabled: true,
                                                        userInputRequired: false,
                                                        skipQueue: false,
                                                        callback: (_, message) => {
-                                                                     _logger.Log(LogLevel.Error, message);
+                                                                     ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                  }
                                                        );
         if (rewardId == null) {
-            await client.SendMessage("Не удалось создать награду.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         
         bank.Options.AddReward(rewardId, quantity);
-        await client.SendMessage($"Награда создана успешно. ({rewardId})", chatMessage.Id);
+
+        var str = _localization.GetStr(StrId.RewardCreated, rewardId);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task BankDeleteReward(ChatCmdArgs cmdArgs) {
@@ -3536,16 +3742,18 @@ public static class CommandsList {
                                                         rewardId,
                                                         client.Credentials,
                                                         (_, message) => { 
-                                                            _logger.Log(LogLevel.Error, message);
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
                                                         }
                                                       );
         if (!result) {
-            await client.SendMessage("Не удалось удалить награду.", chatMessage.Id);
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
             return;
         }
         
         bank.Options.RemoveReward(rewardId);
-        await client.SendMessage("Награда удалена успешно.", chatMessage.Id);
+
+        var str = _localization.GetStr(StrId.RewardRemoved);
+        await client.SendMessage(str, chatMessage.Id);
     }
     
     private static async Task Evaluate(ChatCmdArgs cmdArgs) {
@@ -3600,8 +3808,9 @@ public static class CommandsList {
         var message = new StringBuilder();
         var pageTerminatorsCount = 0;
 
-        if (pages[^1] > 1) { 
-            message.Append($"Страница {page} из {pages[^1]} | ");
+        if (pages[^1] > 1) {
+            var str = _localization.GetStr(StrId.PageOutOf, page, pages[^1]);
+            message.Append($"{str} | ");
         }
         
         for (var i = 0; i < reply.Count; i++) {
@@ -3659,6 +3868,22 @@ public static class CommandsList {
                    ErrorCode.InvalidInput;
     }
 
+    private static ErrorCode ParseLongArg(ChatCmdArgs cmdArgs, out long value, int index = 0) {
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        value = -1;
+
+        if (index < 0) {
+            return ErrorCode.InvalidInput;
+        }
+        if (args.Count <= index) {
+            return ErrorCode.TooFewArgs;
+        }
+
+        return long.TryParse(args[index], out value)?
+                   ErrorCode.None :
+                   ErrorCode.InvalidInput;
+    }
+    
     private static int ParsePage(int high, ChatCmdArgs cmdArgs) {
         var args = cmdArgs.Parsed.ArgumentsAsList;
 
@@ -3693,36 +3918,6 @@ public static class CommandsList {
         
         parsed = sb.ToString().Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return ErrorCode.None;
-    }
-
-    // TODO: Move to a separate service
-    
-    private enum Emote {
-        Sad,
-        Wait,
-        Rizz,
-        Jail,
-        Laugh,
-        Aga,
-        Like,
-    }
-    
-    private static string Get7TvEmote(Emote emote) {
-        if (!_chatCmds.Options.Use7Tv) {
-            return string.Empty;
-        }
-
-        return emote switch {
-            Emote.Sad   => "Sadding",
-            Emote.Wait  => "Wait",
-            Emote.Rizz  => "RIZZ",
-            Emote.Jail  => "SillyJail",
-            Emote.Laugh => "GAGAGA",
-            Emote.Aga   => "waga",
-            Emote.Like  => "LIKE",
-            
-            _ => string.Empty,
-        };
     }
 
     private static async Task<bool> ErrorIfNotFullyAuthorized(ChatMessage? message = null) {

@@ -2,6 +2,7 @@
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.api;
 using TwitchAPI.client;
+using TwitchAPI.client.commands.data;
 using TwitchAPI.client.data;
 
 namespace ChatBot.bot.interfaces;
@@ -13,6 +14,7 @@ public abstract class Bot : Service {
     
     public abstract event EventHandler<RewardRedemption>? OnRewardRedeemed;
     public abstract event EventHandler<ChatMessage>? OnMessageReceived;
+    public abstract event EventHandler<Command>? OnCommandReceived;
 
 
     public abstract Task Start();

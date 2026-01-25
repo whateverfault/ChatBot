@@ -13,7 +13,7 @@ internal class SaveDataDto {
                                                                                                                     "Level Requests",
                                                                                                                     0,
                                                                                                                     600,
-                                                                                                                    "Реквесты только для випов и выше",
+                                                                                                                    "Requests are only allowed for VIPs and higher",
                                                                                                                     2,
                                                                                                                     Restriction.Vip,
                                                                                                                     isDefault: true,

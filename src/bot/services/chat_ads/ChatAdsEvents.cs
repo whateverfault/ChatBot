@@ -57,7 +57,7 @@ public class ChatAdsEvents : ServiceEvents {
     }
     
     private void ZeroChatAdsCounter(StreamState state, StreamData? data) {
-        if (state.WasOnline) return;
+        if (state.Online) return;
         
         var ads = _chatAds.GetChatAds();
         foreach (var ad in ads) {

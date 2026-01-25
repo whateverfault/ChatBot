@@ -26,11 +26,12 @@ public class StreamStateCheckerService : Service {
             var client = bot.GetClient();
             if (client?.Credentials == null) return; 
             
-            var lastCheckedWasOnline = Options.StreamState.WasOnline;
+            var lastCheckedWasOnline = Options.StreamState.Online;
             
-            var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Broadcaster.Login, client.Credentials, (_, message) => {
-                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                           });
+            var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Broadcaster.Login, client.Credentials,
+                                                                             (_, message) => { 
+                                                                                 ErrorHandler.LogMessage(LogLevel.Error, message); 
+                                                                             });
             if (streamResponse == null) {
                 if (lastCheckedWasOnline) {
                     OnStreamStateChangedAsync?.Invoke(Options.StreamState, null);

@@ -19,7 +19,7 @@ public class ChatCommandsService : Service {
     public event EventHandler<int>? OnChatCommandRemoved;
     
 
-    public async void HandleCommand(object? sender, Command parsedCommand) {
+    public async void HandleCommand(Command parsedCommand) {
         try {
             if (Options.ServiceState == State.Disabled) return;
             if (Client == null) return;
@@ -101,14 +101,6 @@ public class ChatCommandsService : Service {
         Options.SetSendWhisperIfPossibleState(value);
     }
     
-    public bool GetUse7Tv() {
-        return Options.Use7Tv;
-    }
-
-    public void SetUse7Tv(bool value) {
-        Options.SetUse7Tv(value);
-    }
-    
     public string GetBaseTitle() {
         return Options.BaseTitle;
     }
@@ -180,12 +172,10 @@ public class ChatCommandsService : Service {
         
         var lastUsed = cmd.CooldownPerUser ? -1 : cmd.LastUsed;
         if (cmd.CooldownPerUser) {
-            var index = cmd.CooldownUsers.FindIndex(x => x.UserId.Equals(chatMessage.UserId));
-            if (index >= 0) {
-                var user = cmd.CooldownUsers[index];
+            if (cmd.CooldownUsers.TryGetValue(chatMessage.UserId, out var user)) {
                 lastUsed = user.UsedAt;
                 
-                cmd.CooldownUsers.RemoveAt(index);
+                cmd.CooldownUsers.Remove(chatMessage.UserId);
             }
         }
         

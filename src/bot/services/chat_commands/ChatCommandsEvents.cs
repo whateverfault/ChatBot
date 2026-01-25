@@ -1,16 +1,20 @@
-﻿using ChatBot.bot.chat_bot;
-using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.services.interfaces;
+using ChatBot.bot.services.message_filter;
+using ChatBot.bot.services.Static;
+using TwitchAPI.client.commands.data;
 
 namespace ChatBot.bot.services.chat_commands;
 
 public class ChatCommandsEvents : ServiceEvents {
     private ChatCommandsService _chatCommands = null!;
+    private MessageFilterService _messageFilter = null!;
 
     public override bool Initialized { get; protected set; }
     
 
     public override void Init(Service service) {
         _chatCommands = (ChatCommandsService)service;
+        _messageFilter = (MessageFilterService)Services.Get(ServiceId.MessageFilter);
         
         base.Init(service);
     }
@@ -21,10 +25,7 @@ public class ChatCommandsEvents : ServiceEvents {
         }
         base.Subscribe();
 
-        var client = TwitchChatBot.Instance.GetClient();
-        if (client == null) return;
-
-        client.OnCommandReceived += _chatCommands.HandleCommand;
+        _messageFilter.OnCommandFiltered += HandleCommandWrapper;
     }
     
     protected override void UnSubscribe() {
@@ -33,9 +34,13 @@ public class ChatCommandsEvents : ServiceEvents {
         }
         base.UnSubscribe();
         
-        var client = TwitchChatBot.Instance.GetClient();
-        if (client == null) return;
-        
-        client.OnCommandReceived -= _chatCommands.HandleCommand;
+        _messageFilter.OnCommandFiltered -= HandleCommandWrapper;
+    }
+
+    private void HandleCommandWrapper(Command cmd, FilterStatus status, int filterIndex) {
+        if (status != FilterStatus.Ok)
+            return;
+
+        _chatCommands.HandleCommand(cmd);
     }
 }

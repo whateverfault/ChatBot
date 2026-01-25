@@ -27,7 +27,6 @@ public class ChatCommandsOptions : Options {
     public List<DefaultChatCommand> DefaultCmds => _defaultCmds;
     public string BaseTitle => _saveData!.BaseTitle;
     public bool SendWhisperIfPossible => _saveData!.SendWhisperIfPossible;
-    public bool Use7Tv => _saveData!.Use7Tv;
     
     
     public override void Load() {
@@ -93,11 +92,6 @@ public class ChatCommandsOptions : Options {
 
     public void SetSendWhisperIfPossibleState(bool value) {
         _saveData!.SendWhisperIfPossible = value;
-        Save();
-    }
-    
-    public void SetUse7Tv(bool value) {
-        _saveData!.Use7Tv = value;
         Save();
     }
     

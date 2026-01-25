@@ -19,30 +19,11 @@ public class StreamStateCheckerEvents : ServiceEvents {
         
         _cts = new CancellationTokenSource();
         _checkerService = (StreamStateCheckerService)service;
-        
-        base.Init(service);
-    }
-    
-    protected override void Subscribe() {
-        if (Subscribed) {
-            return;
-        }
-        base.Subscribe();
-        
-        TwitchChatBot.Instance.OnInitialized += () => {
-                                                    CheckStreamStateRoutine(_cts.Token);
-                                                };
+     
+        CheckStreamStateRoutine(_cts.Token);
     }
 
-    protected override void UnSubscribe() {
-        if (!Subscribed) {
-            return;
-        }
-        base.UnSubscribe();
-
-        _cts.Cancel();
-        _cts = new CancellationTokenSource();
-    }
+    public override void Kill() { }
     
     private async void CheckStreamStateRoutine(CancellationToken cancellationToken = default) {
         try {

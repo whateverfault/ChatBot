@@ -1,7 +1,9 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
+using ChatBot.bot.services.emotes.data;
 using ChatBot.bot.services.level_requests;
+using ChatBot.bot.services.localization.data;
 using ChatBot.bot.services.scopes;
 using ChatBot.bot.services.translator;
 using ChatBot.bot.shared.handlers;
@@ -12,6 +14,7 @@ using ChatBot.cli.data.CliNodes.Directories.ChatCommands;
 using ChatBot.cli.data.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.data.CliNodes.Directories.Moderation;
 using ChatBot.cli.data.CliNodes.Directories.Presets;
+using ChatBot.cli.data.CliNodes.Directories.Users;
 using TwitchAPI.client;
 
 namespace ChatBot.cli;
@@ -174,16 +177,48 @@ public class CliNodeSystem {
                                                                        ),
                                                     ]
                                                     );
+
+        var emotesDir = new CliNodeStaticDirectory(
+                                                   "Emotes",
+                                                   _state,
+                                                   true,
+                                                   []
+                                                   );
         
-        var defaultCmds = new CliNodeStaticDirectory(
+        foreach (var (_, emote) in _state.Data.Emotes.Options.Emotes) {
+            if (string.IsNullOrEmpty(emote.Text)) continue;
+            emotesDir.AddNode(
+                              new CliNodeStaticDirectory(
+                                                         emote.Id.ToString(),
+                                                         _state,
+                                                         true,
+                                                         [
+                                                             new CliNodeEnum(
+                                                                               "Type",
+                                                                               emote.GetIdAsInt,
+                                                                               typeof(EmoteId),
+                                                                               CliNodePermission.ReadOnly
+                                                                              ),
+                                                             new CliNodeString(
+                                                                               "Text",
+                                                                               emote.GetText,
+                                                                               CliNodePermission.Default,
+                                                                               emote.SetText
+                                                                              ),
+                                                         ])
+                             );
+        }
+        
+        var defaultCmdsDir = new CliNodeStaticDirectory(
                                                      "Default Commands",
                                                      _state,
                                                      true,
                                                      []
                                                      );
+        
         foreach (var cmd in _state.Data.ChatCommands.Options.DefaultCmds) {
             if (string.IsNullOrEmpty(cmd.Name)) continue;
-            defaultCmds.AddNode(
+            defaultCmdsDir.AddNode(
                                 new CliNodeStaticDirectory(
                                               cmd.Name,
                                               _state,
@@ -210,8 +245,7 @@ public class CliNodeSystem {
                                                   new CliNodeString(
                                                                     "Description",
                                                                     cmd.GetDescription,
-                                                                    CliNodePermission.Default,
-                                                                    cmd.SetDescription
+                                                                    CliNodePermission.ReadOnly
                                                                    ),
                                                   new CliNodeTime(
                                                                  "Cooldown",
@@ -254,7 +288,7 @@ public class CliNodeSystem {
                                                                           CliNodePermission.Default,
                                                                           _state.Data.ChatCommands.SetCommandIdentifier
                                                                           ), 
-                                                          defaultCmds,
+                                                          defaultCmdsDir,
                                                           new CliNodeDynamicChatCmdsDirectory(
                                                                                               "Custom Commands",
                                                                                               "Add Custom Command",
@@ -281,10 +315,11 @@ public class CliNodeSystem {
                                                                                             ),
                                                                                         new CliNodeBool(
                                                                                              "Use 7tv",
-                                                                                             _state.Data.ChatCommands.GetUse7Tv,
+                                                                                             _state.Data.Emotes.Options.GetUse7Tv,
                                                                                              CliNodePermission.Default,
-                                                                                             _state.Data.ChatCommands.SetUse7Tv
+                                                                                             _state.Data.Emotes.Options.SetUse7Tv
                                                                                             ),
+                                                                                        emotesDir,
                                                                                      ]
                                                                                      ),
                                                           new CliNodeEnum(
@@ -324,26 +359,33 @@ public class CliNodeSystem {
                                                        ]
                                                       );
         
-        var globalPatterns = new CliNodeMessageFilterDynamicDirectory(
+        var globalFiltersDir = new CliNodeMessageFilterDynamicDirectory(
                                                                       "Global Filters",
                                                                       "Add Filter",
                                                                       "Remove Filter",
                                                                       _state
                                                                      );
+
+        var bannedUsersDir = new CliNodeUsersDynamicDirectory(
+                                                              "Banned Users",
+                                                              _state,
+                                                              _state.Data.MessageFilter.Options.Save,
+                                                              value => {
+                                                                  _ = _state.Data.MessageFilter.AddBannedUser(value);
+                                                              },
+                                                              _state.Data.MessageFilter.RemoveBannedUser,
+                                                              _state.Data.MessageFilter.SubscribeToBannedUserAdded,
+                                                              _state.Data.MessageFilter.SubscribeToBannedUserRemoved,
+                                                              _state.Data.MessageFilter.GetBannedUsers()
+                                                              );
         
         var messageFilterDir = new CliNodeStaticDirectory(
                                                   "Message Filter",
                                                   _state,
                                                   true,
                                                   [
-                                                      globalPatterns,
-                                                      new CliNodeEnum(
-                                                                      "Service State",
-                                                                      _state.Data.MessageFilter.GetServiceStateAsInt,
-                                                                      typeof(State),
-                                                                      CliNodePermission.Default,
-                                                                      _state.Data.MessageFilter.ServiceStateNext
-                                                                     ),
+                                                      globalFiltersDir,
+                                                      bannedUsersDir,
                                                   ]);
 
         var loggerDir = new CliNodeStaticDirectory(
@@ -826,6 +868,32 @@ public class CliNodeSystem {
                                                                                 ),
                                                             ]
                                                             );
+
+        var botLifecycleDir = new CliNodeStaticDirectory(
+                                                         "Lifecycle",
+                                                         _state,
+                                                         true,
+                                                         [
+                                                             new CliNodeTime(
+                                                                             "Disconnect Timeout",
+                                                                             _state.Data.BotLifecycle.Options.GetDisconnectTimeout,
+                                                                             CliNodePermission.Default,
+                                                                             _state.Data.BotLifecycle.Options.SetDisconnectTimeout
+                                                                             ),
+                                                             new CliNodeBool(
+                                                                             "Active",
+                                                                             _state.Data.BotLifecycle.BotOnline,
+                                                                             CliNodePermission.ReadOnly
+                                                                            ),
+                                                             new CliNodeEnum(
+                                                                             "Service State",
+                                                                             _state.Data.BotLifecycle.GetServiceStateAsInt,
+                                                                             typeof(State),
+                                                                             CliNodePermission.Default,
+                                                                             _state.Data.BotLifecycle.ServiceStateNext
+                                                                            ),
+                                                         ]
+                                                         );
         
         var shopDir = new CliNodeStaticDirectory(
                                                  "Shop", 
@@ -877,6 +945,38 @@ public class CliNodeSystem {
                                                                  _state.Data.Bank.GetMoneySupply,
                                                                  CliNodePermission.ReadOnly
                                                                  ),
+                                                 new CliNodeStaticDirectory(
+                                                                            "Account Filtering",
+                                                                            _state,
+                                                                            true,
+                                                                            [
+                                                                                new CliNodeLong(
+                                                                                     "Minimum Stream Length",
+                                                                                     _state.Data.BankAccountFiltering.Options.GetMinStreamLength,
+                                                                                     CliNodePermission.Default,
+                                                                                     _state.Data.BankAccountFiltering.Options.SetMinStreamLength
+                                                                                     ),
+                                                                                new CliNodeLong(
+                                                                                     "Last Active Threshold",
+                                                                                     _state.Data.BankAccountFiltering.Options.GetLastActiveThreshold,
+                                                                                     CliNodePermission.Default,
+                                                                                     _state.Data.BankAccountFiltering.Options.SetLastActiveThreshold
+                                                                                    ),
+                                                                                new CliNodeLong(
+                                                                                     "Passed Streams Threshold",
+                                                                                     _state.Data.BankAccountFiltering.Options.GetPassedStreamsThreshold,
+                                                                                     CliNodePermission.Default,
+                                                                                     _state.Data.BankAccountFiltering.Options.SetPassedStreamsThreshold
+                                                                                    ),
+                                                                                new CliNodeEnum(
+                                                                                     "Service State",
+                                                                                     _state.Data.BankAccountFiltering.GetServiceStateAsInt,
+                                                                                     typeof(State),
+                                                                                     CliNodePermission.Default,
+                                                                                     _state.Data.BankAccountFiltering.ServiceStateNext
+                                                                                    ),
+                                                                            ]
+                                                                            ),
                                                  ]
                                                  );
         
@@ -985,6 +1085,7 @@ public class CliNodeSystem {
                                                                levelReqsDir,
                                                                gameReqsDir,
                                                                tgNotificationsDir,
+                                                               botLifecycleDir,
                                                            ]
                                                           );
         
@@ -1066,6 +1167,12 @@ public class CliNodeSystem {
                                                 _state,
                                                 true,
                                                 [
+                                                    new CliNodeEnum(
+                                                                    "Language",
+                                                                    _state.Data.Localization.GetLanguageAsInt,
+                                                                    typeof(Lang),
+                                                                    CliNodePermission.Default,
+                                                                    _state.Data.Localization.LanguageNext),
                                                     loginDir,
                                                     new CliNodeAction(
                                                                       "Initialize",

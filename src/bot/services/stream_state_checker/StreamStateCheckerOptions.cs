@@ -96,26 +96,26 @@ public class StreamStateCheckerOptions : Options {
     }
     
     private void SetOffline() {
-        if (!StreamState.WasOnline) return;
+        if (!StreamState.Online) return;
         
         StreamState.OfflineTime = 0;
         StreamState.OnlineTime = 0;
-        StreamState.WasOnline = false;
+        StreamState.Online = false;
         Save();
     }
     
     private void SetOnline() {
-        if (StreamState.WasOnline) return;
+        if (StreamState.Online) return;
         
         StreamState.OfflineTime = 0;
         StreamState.OnlineTime = 0;
-        StreamState.WasOnline = true;
+        StreamState.Online = true;
         StreamState.LastOnline = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Save();
     }
 
     private bool IsOnline() {
-        return StreamState.WasOnline;
+        return StreamState.Online;
     }
     
     private void SetSteamStart(long time) {

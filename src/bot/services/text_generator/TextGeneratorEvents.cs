@@ -37,7 +37,7 @@ public class TextGeneratorEvents : ServiceEvents {
     }
 
     private void TrainAiWrapper(StreamState streamState, StreamData? data) {
-        if (streamState.WasOnline) {
+        if (streamState.Online) {
             return;
         }
         

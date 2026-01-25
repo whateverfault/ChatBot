@@ -33,17 +33,15 @@ public class CliNodeDynamicPresetsDirectory : CliNodeDirectory {
                                               "Content",
                                               state,
                                               true, 
-                                              []
+                                              [
+                                                  new CliNodeText(
+                                                                  "-----------------------------------",
+                                                                  false,
+                                                                  true,
+                                                                  1
+                                                                 ),
+                                              ]
                                               );
-
-        _content.AddNode(
-                         new CliNodeText(
-                                         "-----------------------------------",
-                                         false,
-                                         true,
-                                         1
-                                        )
-                         );
 
         _moderation = (ModerationService)Services.Get(ServiceId.Moderation);
 

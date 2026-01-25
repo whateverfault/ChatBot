@@ -5,6 +5,7 @@ using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.api;
 using TwitchAPI.client;
+using TwitchAPI.client.commands.data;
 using TwitchAPI.client.credentials;
 using TwitchAPI.client.data;
 
@@ -24,8 +25,11 @@ public sealed class TwitchChatBot : Bot {
 
     public override ChatBotOptions Options { get; }
 
+    public bool Online { get; private set; }
+    
     public override event EventHandler<RewardRedemption>? OnRewardRedeemed;
     public override event EventHandler<ChatMessage>? OnMessageReceived;
+    public override event EventHandler<Command>? OnCommandReceived;
     public event NoArgs? OnInitialized;
 
     
@@ -86,6 +90,8 @@ public sealed class TwitchChatBot : Bot {
             lock (_startLock) {
                 _starting = false;
             }
+            
+            Online = true;
         }
     }
 
@@ -125,6 +131,8 @@ public sealed class TwitchChatBot : Bot {
         _initialized = false;
 
         ErrorHandler.LogMessage(LogLevel.Info, "Disconnected.");
+
+        Online = false;
     }
 
     private async Task InitConnectionAsync() {
@@ -159,6 +167,7 @@ public sealed class TwitchChatBot : Bot {
         
         Options.Client.OnRewardRedeemed += HandleRewardRedeemed;
         Options.Client.OnMessageReceived += HandleMessageReceived;
+        Options.Client.OnCommandReceived += HandleCommandReceived;
         
         Options.Client.OnError += HandleError;
         Options.Client.OnConnected += HandleConnected;
@@ -171,6 +180,7 @@ public sealed class TwitchChatBot : Bot {
 
         Options.Client.OnRewardRedeemed -= HandleRewardRedeemed;
         Options.Client.OnMessageReceived -= HandleMessageReceived;
+        Options.Client.OnCommandReceived -= HandleCommandReceived; 
         
         Options.Client.OnError -= HandleError;
         Options.Client.OnConnected -= HandleConnected;
@@ -190,6 +200,13 @@ public sealed class TwitchChatBot : Bot {
         }
     }
 
+    private void HandleCommandReceived(object? sender, Command cmd) {
+        var handler = OnCommandReceived;
+        if (handler != null) {
+            handler(sender, cmd);
+        }
+    }
+    
     private void HandleConnected(object? sender, EventArgs e) {
         ErrorHandler.LogMessage(
             LogLevel.Info,

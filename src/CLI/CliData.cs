@@ -1,13 +1,17 @@
 ﻿using ChatBot.bot.chat_bot;
 using ChatBot.bot.services.ai;
+using ChatBot.bot.services.bank_account_filtering;
 using ChatBot.bot.services.bank;
+using ChatBot.bot.services.bot_lifecycle;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
 using ChatBot.bot.services.chat_commands;
 using ChatBot.bot.services.chat_logs;
 using ChatBot.bot.services.demon_list;
+using ChatBot.bot.services.emotes;
 using ChatBot.bot.services.game_requests;
 using ChatBot.bot.services.level_requests;
+using ChatBot.bot.services.localization;
 using ChatBot.bot.services.logger;
 using ChatBot.bot.services.message_filter;
 using ChatBot.bot.services.message_randomizer;
@@ -40,9 +44,13 @@ public class CliData {
     public GameRequestsService GameRequests { get; } = (GameRequestsService)Services.Get(ServiceId.GameRequests);
     public StreamStateCheckerService StreamStateChecker { get; } = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
     public TgNotificationsService TgNotifications { get; } = (TgNotificationsService)Services.Get(ServiceId.TgNotifications);
+    public BotLifecycleService BotLifecycle { get; } = (BotLifecycleService)Services.Get(ServiceId.Lifecycle);
     public ChatAdsService ChatAds { get; } = (ChatAdsService)Services.Get(ServiceId.ChatAds);
     public CasinoService Casino { get; } = (CasinoService)Services.Get(ServiceId.Casino);
     public BankService Bank { get; } = (BankService)Services.Get(ServiceId.Bank);
+    public BankAccountFilteringService BankAccountFiltering { get; } = (BankAccountFilteringService)Services.Get(ServiceId.BankAccountFiltering);
+    public LocalizationService Localization { get; } = (LocalizationService)Services.Get(ServiceId.Localization);
     public ShopService Shop { get; } = (ShopService)Services.Get(ServiceId.Shop);
     public ScopesService Scopes { get; } = (ScopesService)Services.Get(ServiceId.Scopes);
+    public EmotesService Emotes { get; } = (EmotesService)Services.Get(ServiceId.Emotes);
 }

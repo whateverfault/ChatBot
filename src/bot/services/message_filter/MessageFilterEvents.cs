@@ -21,6 +21,7 @@ public class MessageFilterEvents : ServiceEvents {
         base.Subscribe();
         
         TwitchChatBot.Instance.OnMessageReceived += _messageFilter.HandleMessage;
+        TwitchChatBot.Instance.OnCommandReceived += _messageFilter.HandleCommand;
     }
 
     protected override void UnSubscribe() {
@@ -30,5 +31,6 @@ public class MessageFilterEvents : ServiceEvents {
         base.UnSubscribe();
         
         TwitchChatBot.Instance.OnMessageReceived -= _messageFilter.HandleMessage;
+        TwitchChatBot.Instance.OnCommandReceived -= _messageFilter.HandleCommand;
     }
 }

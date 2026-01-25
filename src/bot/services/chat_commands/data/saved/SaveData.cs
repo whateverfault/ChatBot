@@ -18,9 +18,6 @@ internal class SaveData {
 
     [JsonProperty("swip")]
     public bool SendWhisperIfPossible { get; set; }
-
-    [JsonProperty("use_7tv")]
-    public bool Use7Tv { get; set; }
     
 
     public SaveData() {
@@ -33,15 +30,13 @@ internal class SaveData {
         [JsonProperty("command_identifier")] char commandIdentifier,
         [JsonProperty("verbose_state")] State verboseState,
         [JsonProperty("base_title")] string baseTitle,
-        [JsonProperty("swip")] bool sendWhisperIfPossible,
-        [JsonProperty("use_7tv")] bool use7Tv) {
+        [JsonProperty("swip")] bool sendWhisperIfPossible) {
         var dto = new SaveDataDto(
                                   serviceState,
                                   commandIdentifier,
                                   verboseState,
                                   baseTitle,
-                                  sendWhisperIfPossible, 
-                                  use7Tv
+                                  sendWhisperIfPossible
                                   );
 
         FromDto(dto);
@@ -53,6 +48,5 @@ internal class SaveData {
         VerboseState = dto.VerboseState.Value;
         BaseTitle = dto.BaseTitle.Value;
         SendWhisperIfPossible = dto.SendWhisperIfPossible.Value;
-        Use7Tv = dto.Use7Tv.Value;
     }
 }

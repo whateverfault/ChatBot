@@ -28,7 +28,7 @@ public class TgNotificationsService : Service {
                                                                      });
 
             if (response is not { Ok: true, }) {
-                ErrorHandler.LogMessage(LogLevel.Error, $"Failed to send telegram notification.");
+                ErrorHandler.LogMessage(LogLevel.Error, "Failed to send telegram notification.");
                 return null;
             }
 
