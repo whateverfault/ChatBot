@@ -627,14 +627,14 @@ public static class LocalizationsList {
                                                                                  {
                                                                                      StrId.FakeUnBan,
                                                                                      new Localization(
-                                                                                          "{} отправлен в бан {} {} {}",
-                                                                                          "{} got banned {} {} {}"
+                                                                                          "{} вышел из бана {} {} {}",
+                                                                                          "{} got unbanned {} {} {}"
                                                                                          )
                                                                                  },
                                                                                  {
                                                                                      StrId.UnBanFromBot,
                                                                                      new Localization(
-                                                                                          "{} вышел из бана {} {} {}",
+                                                                                          "{} может сново пользоваться ботом {} {} {}",
                                                                                           "{} got unbanned from the bot {} {} {}"
                                                                                          )
                                                                                  },

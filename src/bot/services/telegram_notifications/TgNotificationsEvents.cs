@@ -43,16 +43,16 @@ public class TgNotificationsEvents : ServiceEvents {
         _streamStateChecker.OnStreamStateUpdateAsync -= DeleteNotificationWrapper;
     }
     
-    private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
+    private async Task SendNotificationWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
         lock (_lock) {
-            if (streamState.Online 
+            if (!streamStateNew.Online 
              || _tgNotifications.GetIsSent()) 
                 return;
             
             _tgNotifications.Options.SetIsSent(true);
             
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (now - streamState.LastOnline < _tgNotifications.GetCooldown()
+            if (now - streamStateOld.LastOnline < _tgNotifications.GetCooldown()
              || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
         }
         

@@ -29,7 +29,7 @@ public class ModerationEvents : ServiceEvents {
         base.Subscribe();
         
         _messageFilterService.OnMessageFiltered += _moderationService.HandleMessage;
-        _streamStateChecker.OnStreamStateChanged += ClearWarnsWrapper;
+        _streamStateChecker.OnStreamStateChanged += RemoveWarnsWrapper;
     }
 
     protected override void UnSubscribe() {
@@ -39,11 +39,11 @@ public class ModerationEvents : ServiceEvents {
         base.UnSubscribe();
         
         _messageFilterService.OnMessageFiltered -= _moderationService.HandleMessage;
-        _streamStateChecker.OnStreamStateChanged -= ClearWarnsWrapper;
+        _streamStateChecker.OnStreamStateChanged -= RemoveWarnsWrapper;
     }
     
-    private void ClearWarnsWrapper(StreamState streamState, StreamData? data) {
-        if (!streamState.Online) return;
+    private void RemoveWarnsWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        if (!streamStateNew.Online) return;
 
         var modActions = _moderationService.Options.ModerationActions;
         var warnedUsers = _moderationService.Options.WarnedUsers;

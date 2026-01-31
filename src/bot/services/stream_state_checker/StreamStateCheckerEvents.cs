@@ -1,5 +1,4 @@
-﻿using ChatBot.bot.chat_bot;
-using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 
@@ -16,6 +15,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
         if (Initialized) {
             return;
         }
+        base.Init(service);
         
         _cts = new CancellationTokenSource();
         _checkerService = (StreamStateCheckerService)service;

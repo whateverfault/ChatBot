@@ -17,7 +17,7 @@ public sealed class TwitchChatBot : Bot {
     private static TwitchChatBot? _instance;
     public static TwitchChatBot Instance => _instance ??= new TwitchChatBot();
     
-    private readonly object _startLock = new object();
+    private readonly object _sync = new object();
     private bool _starting;
     private bool _initialized;
 
@@ -68,7 +68,7 @@ public sealed class TwitchChatBot : Bot {
     }
     
     public override async Task Start() {
-        lock (_startLock) {
+        lock (_sync) {
             if (_starting) {
                 return;
             }
@@ -87,11 +87,10 @@ public sealed class TwitchChatBot : Bot {
             await InitConnectionAsync();
         }
         finally {
-            lock (_startLock) {
+            lock (_sync) {
                 _starting = false;
+                Online = true;
             }
-            
-            Online = true;
         }
     }
 
@@ -119,10 +118,14 @@ public sealed class TwitchChatBot : Bot {
     }
     
     private async Task StopInternal() {
+        lock (_sync) {
+            Online = false;
+        }
+        
         if (Options.Client == null || !_initialized) {
             return;
         }
-
+        
         Services.Kill();
 
         UnsubscribeFromEvents();
@@ -131,8 +134,6 @@ public sealed class TwitchChatBot : Bot {
         _initialized = false;
 
         ErrorHandler.LogMessage(LogLevel.Info, "Disconnected.");
-
-        Online = false;
     }
 
     private async Task InitConnectionAsync() {

@@ -26,6 +26,14 @@ public class StreamState {
         OnlineTime = 0;
         OfflineTime = 0;
     }
+
+    public StreamState(StreamState state) {
+        StreamStart = state.StreamStart;
+        LastOnline = state.LastOnline;
+        Online = state.Online;
+        OnlineTime = state.OnlineTime;
+        OfflineTime = state.OfflineTime;
+    }
     
     [JsonConstructor]
     public StreamState(
