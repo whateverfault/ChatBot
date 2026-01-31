@@ -10,9 +10,9 @@ public class BotLifecycleService : Service {
     public override BotLifecycleOptions Options { get; } = new BotLifecycleOptions();
 
 
-    public async Task BotStart(StreamState streamState, StreamData? streamData) {
+    public async Task BotStart(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
         if (Options.ServiceState == State.Disabled
-         || !streamState.Online 
+         || !streamStateNew.Online 
          || BotOnline()) {
             return;
         }

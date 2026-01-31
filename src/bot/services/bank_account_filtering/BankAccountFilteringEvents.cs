@@ -65,8 +65,8 @@ public class BankAccountFilteringEvents : ServiceEvents {
         _bank?.UpdateActivity(message.UserId);
     }
 
-    private void StreamStateChanged(StreamState streamState, StreamData? data) {
-        if (streamState.Online 
+    private void StreamStateChanged(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        if (!streamStateNew.Online 
          || _accountFiltering == null)
             return;
 

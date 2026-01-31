@@ -40,8 +40,8 @@ public class DemonListEvents : ServiceEvents {
         _streamStateChecker.OnStreamStateChanged -= ResetCacheWrapper;
     }
     
-    private void ResetCacheWrapper(StreamState streamState, StreamData? streamData) {
-        if (streamState.Online) return;
+    private void ResetCacheWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        if (!streamStateNew.Online) return;
         
         _demonList?.ResetCache();
     }

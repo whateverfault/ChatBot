@@ -43,8 +43,8 @@ public class ChatLogsEvents : ServiceEvents {
         _streamStateChecker.OnStreamStateChanged -= SaveLogsWrapper;
     }
 
-    private void SaveLogsWrapper(StreamState streamState, StreamData? data) {
-        if (streamState.Online) {
+    private void SaveLogsWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        if (streamStateNew.Online) {
             return;
         }
         

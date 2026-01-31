@@ -36,8 +36,8 @@ public class TextGeneratorEvents : ServiceEvents {
         _streamStateChecker.OnStreamStateChanged -= TrainAiWrapper;
     }
 
-    private void TrainAiWrapper(StreamState streamState, StreamData? data) {
-        if (streamState.Online) {
+    private void TrainAiWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        if (!streamStateNew.Online) {
             return;
         }
         

@@ -7,17 +7,20 @@ using TwitchAPI.api.data.requests;
 
 namespace ChatBot.bot.services.stream_state_checker;
 
+public delegate void StreamStateChangedHandler(StreamState streamStateNew, StreamState streamStateOld, StreamData? streamData);
+public delegate Task StreamStateChangedHandlerAsync(StreamState streamStateNew, StreamState streamStateOld, StreamData? streamData);
+    
+public delegate void StreamStateUpdatedHandler(StreamState streamState, StreamData? streamData);
+public delegate Task StreamStateHandlerUpdatedAsync(StreamState streamState, StreamData? streamData);
+
 public class StreamStateCheckerService : Service {
     public override StreamStateCheckerOptions Options { get; } = new StreamStateCheckerOptions();
-
-    public delegate void StreamStateHandler(StreamState streamState, StreamData? streamData);
-    public delegate Task StreamStateHandlerAsync(StreamState streamState, StreamData? streamData);
     
-    public event StreamStateHandler? OnStreamStateUpdate;
-    public event StreamStateHandlerAsync? OnStreamStateUpdateAsync;
+    public event StreamStateUpdatedHandler? OnStreamStateUpdate;
+    public event StreamStateHandlerUpdatedAsync? OnStreamStateUpdateAsync;
     
-    public event StreamStateHandler? OnStreamStateChanged;
-    public event StreamStateHandlerAsync? OnStreamStateChangedAsync;
+    public event StreamStateChangedHandler? OnStreamStateChanged;
+    public event StreamStateChangedHandlerAsync? OnStreamStateChangedAsync;
 
     
     public async Task CheckState() {
@@ -26,6 +29,7 @@ public class StreamStateCheckerService : Service {
             var client = bot.GetClient();
             if (client?.Credentials == null) return; 
             
+            var streamsStateOld = new StreamState(Options.StreamState);
             var lastCheckedWasOnline = Options.StreamState.Online;
             
             var streamResponse = await TwitchChatBot.Instance.Api.GetStreams(client.Credentials.Broadcaster.Login, client.Credentials,
@@ -33,24 +37,25 @@ public class StreamStateCheckerService : Service {
                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message); 
                                                                              });
             if (streamResponse == null) {
+                Options.AddOfflineTime();
                 if (lastCheckedWasOnline) {
-                    OnStreamStateChangedAsync?.Invoke(Options.StreamState, null);
-                    OnStreamStateChanged?.Invoke(Options.StreamState, null);
+                    OnStreamStateChangedAsync?.Invoke(Options.StreamState, streamsStateOld, null);
+                    OnStreamStateChanged?.Invoke(Options.StreamState, streamsStateOld, null);
                 }
                 
-                Options.AddOfflineTime();
                 OnStreamStateUpdateAsync?.Invoke(Options.StreamState, null);
                 OnStreamStateUpdate?.Invoke(Options.StreamState, null);
                 return;
             }
             
             var streamData = streamResponse.Data[0];
+            Options.AddOnlineTime();
+            
             if (!lastCheckedWasOnline) {
-                OnStreamStateChangedAsync?.Invoke(Options.StreamState, streamData);
-                OnStreamStateChanged?.Invoke(Options.StreamState, streamData);
+                OnStreamStateChangedAsync?.Invoke(Options.StreamState, streamsStateOld, streamData);
+                OnStreamStateChanged?.Invoke(Options.StreamState, streamsStateOld, streamData);
             }
             
-            Options.AddOnlineTime();
             OnStreamStateUpdateAsync?.Invoke(Options.StreamState, streamData);
             OnStreamStateUpdate?.Invoke(Options.StreamState, streamData);
         }
