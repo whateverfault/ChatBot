@@ -1,4 +1,5 @@
-﻿using ChatBot.bot.services.interfaces;
+﻿using ChatBot.bot.interfaces;
+using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.Static;
 using ChatBot.bot.services.stream_state_checker;
 using ChatBot.bot.services.stream_state_checker.Data;
@@ -8,7 +9,7 @@ namespace ChatBot.bot.services.telegram_notifications;
 
 #pragma warning disable InconsistentlySynchronizedField
 public class TgNotificationsEvents : ServiceEvents {
-    private static readonly object _lock = new object();
+    private static readonly object _sync = new object();
     
     private TgNotificationsService _tgNotifications = null!;
     private StreamStateCheckerService _streamStateChecker = null!;
@@ -17,72 +18,75 @@ public class TgNotificationsEvents : ServiceEvents {
     
 
     public override void Init(Service service) {
+        if (Initialized)
+            return;
+        base.Init(service);
+        
         _tgNotifications = (TgNotificationsService)service;
         _streamStateChecker = (StreamStateCheckerService)Services.Get(ServiceId.StreamStateChecker);
         
-        base.Init(service);
-    }
-    
-    protected override void Subscribe() {
-        if (Subscribed) {
-            return;
-        }
-        base.Subscribe();
-        
-        _streamStateChecker.OnStreamStateChangedAsync += SendNotificationWrapper;
+        _streamStateChecker.OnStreamStateChangedAsync += OnStreamStarted;
+        _streamStateChecker.OnStreamStateUpdateAsync += SendNotificationWrapper;
         _streamStateChecker.OnStreamStateUpdateAsync += DeleteNotificationWrapper;
     }
-
-    protected override void UnSubscribe() {
-        if (!Subscribed) {
-            return;
-        }
-        base.UnSubscribe();
-        
-        _streamStateChecker.OnStreamStateChangedAsync -= SendNotificationWrapper;
-        _streamStateChecker.OnStreamStateUpdateAsync -= DeleteNotificationWrapper;
-    }
     
-    private async Task SendNotificationWrapper(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
-        lock (_lock) {
-            if (!streamStateNew.Online 
-             || _tgNotifications.GetIsSent()) 
-                return;
-            
-            _tgNotifications.Options.SetIsSent(true);
+    private Task OnStreamStarted(StreamState streamStateNew, StreamState streamStateOld, StreamData? data) {
+        lock (_sync) {
+            if (!streamStateNew.Online
+             || _tgNotifications.Options.ServiceState == State.Disabled) 
+                return Task.CompletedTask;
             
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (now - streamStateOld.LastOnline < _tgNotifications.GetCooldown()
-             || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) return;
+             || now - (_tgNotifications.GetLastSentTime() ?? 0) < _tgNotifications.GetCooldown()) 
+                return Task.CompletedTask;
+            
+            _tgNotifications.Options.SetIsSent(false);
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private async Task SendNotificationWrapper(StreamState streamState, StreamData? data) {
+        lock (_sync) {
+            if (!streamState.Online 
+             || _tgNotifications.GetIsSent()
+             || _tgNotifications.Options.ServiceState == State.Disabled) 
+                return;
+            
+            _tgNotifications.Options.SetIsSent(true);
         }
         
         var messageId = await _tgNotifications.SendNotification(data);
 
-        lock (_lock) {
+        lock (_sync) {
             _tgNotifications.Options.SetLastSentTime();
-            _tgNotifications.Options.SetLastMessageId(messageId ?? -1);
+            if (messageId != null)
+                _tgNotifications.Options.SetLastMessageId(messageId.Value);
         }
     }
 
     private async Task DeleteNotificationWrapper(StreamState streamState, StreamData? data) {
-        long lastMessageId;
+        if (streamState.Online
+         || streamState.OfflineTime < _tgNotifications.GetCooldown())
+            return;
         
-        lock (_lock) {
-            if (streamState.Online
-             || streamState.OfflineTime < _tgNotifications.GetCooldown()
-             || !_tgNotifications.GetIsSent()) 
+        lock (_sync) {
+            if (!_tgNotifications.GetIsSent()) 
                 return;
             
             _tgNotifications.Options.SetIsSent(false);
-            
-            lastMessageId = _tgNotifications.Options.LastMessageId;
-            if (lastMessageId < 0) return;
         }
+        
+        var lastMessageId = _tgNotifications.Options.LastMessageId;
+        if (lastMessageId < 0) 
+            return;
         
         var result = await _tgNotifications.DeleteNotification(lastMessageId);
 
-        lock (_lock) {
-            if (result) _tgNotifications.Options.SetLastMessageId(-1);
+        lock (_sync) {
+            if (result) 
+                _tgNotifications.Options.SetLastMessageId(-1);
         }
     }
 #pragma warning restore InconsistentlySynchronizedField

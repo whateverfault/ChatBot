@@ -18,6 +18,7 @@ public sealed class TwitchChatBot : Bot {
     public static TwitchChatBot Instance => _instance ??= new TwitchChatBot();
     
     private readonly object _sync = new object();
+
     private bool _starting;
     private bool _initialized;
 
@@ -69,9 +70,11 @@ public sealed class TwitchChatBot : Bot {
     
     public override async Task Start() {
         lock (_sync) {
-            if (_starting) {
+            if (Online) 
+                ErrorHandler.PrintMessage(LogLevel.Error, "Stop the bot before initializing.");
+            
+            if (_starting) 
                 return;
-            }
 
             _starting = true;
         }
@@ -141,14 +144,13 @@ public sealed class TwitchChatBot : Bot {
             ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
             return;
         }
-
-        await StopInternal();
+        
         SubscribeToEvents();
 
         if (Options.Client == null) {
             return;
         }
-
+        
         await Options.Client.Initialize(Options.Credentials);
 
         if (Options.Client.Credentials == null) {

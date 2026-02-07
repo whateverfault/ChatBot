@@ -47,7 +47,7 @@ public static class ErrorHandler {
                                                              "Too Few Arguments.",
                                                              "Already exists.",
                                                              "Function is Disabled.",
-                                                             "Corrupted credentials.",
+                                                             "Your credentials got corrupted. You might want to update them.",
                                                              "Invalid data.",
                                                              "Not Initialized.",
                                                              "List is Empty.",
@@ -76,7 +76,7 @@ public static class ErrorHandler {
                                                             "Слишком мало аругментов.",
                                                             "Уже существует.",
                                                             "Функция отключена.",
-                                                            "Некорректные данные для подключения.",
+                                                            "Данные для подключения требуют обновления.",
                                                             "Некорректные данные.",
                                                             "Не инициализированно.",
                                                             "Пусто.",
@@ -158,6 +158,13 @@ public static class ErrorHandler {
     public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
         LogError(error);
 
+        IoHandler.Clear();
+        IoHandler.WriteLine(message);
+        IoHandler.ReadKey();
+        IoHandler.Clear();
+    }
+    
+    public static void PrintMessage(LogLevel logLevel, string message) {
         IoHandler.Clear();
         IoHandler.WriteLine(message);
         IoHandler.ReadKey();

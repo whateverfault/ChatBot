@@ -5,13 +5,10 @@ namespace ChatBot.api.aredl.responses;
 
 public class ListUserRecordsResponse {
     public readonly List<RecordInfo> Records;
-    public readonly List<RecordInfo> Verified;
 
 
     public ListUserRecordsResponse(
-        [JsonProperty("records")] List<RecordInfo>? records,
-        [JsonProperty("verified")] List<RecordInfo>? verified) {
+        [JsonProperty("records")] List<RecordInfo>? records) {
         Records = records ?? [];
-        Verified = verified ?? [];
     }
 }

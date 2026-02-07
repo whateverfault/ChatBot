@@ -89,17 +89,15 @@ public class DemonListService : Service {
         if (top <= 0) return null;
         
         try {
-            if (profile.User == null) return null;
-            
             var response = await _aredlClient.ListUserRecords(profile.User.Id, (_, message) => {
-                                                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                                              });
+                                                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                                               });
 
             if (response == null) {
                 return null;
             }
             
-            var records = response.Records.Concat(response.Verified).OrderBy(x => x.Level.Position).ToList();
+            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
 
             top = Math.Min(top, records.Count);
             
@@ -112,8 +110,7 @@ public class DemonListService : Service {
     
     public async Task<RecordInfo?> GetHardest(UserProfile profile) {
         try {
-            if (profile.Hardest == null
-             || profile.User == null) return null;
+            if (profile.Hardest == null) return null;
 
             var hardest = await _aredlClient.GetRecord(profile.Hardest.Id, profile.User.Id,
                                                        (_, message) => {
@@ -141,7 +138,7 @@ public class DemonListService : Service {
     }
 
     public async Task<List<RecordInfo>?> GetEasiests(UserProfile profile, int top) {
-        if (top <= 0 || profile.User == null) {
+        if (top <= 0) {
             return null;
         }
         
@@ -156,7 +153,7 @@ public class DemonListService : Service {
                 return null;
             }
             
-            var records = response.Records.Concat(response.Verified).OrderBy(x => x.Level.Position).ToList();
+            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
 
             if (records.Count <= 0) {
                 return null;
@@ -249,15 +246,17 @@ public class DemonListService : Service {
         }
     }
 
-    public async Task<ClanSubmissionInfo?>? GetRandomClanSubmission(string id) {
+    public async Task<ClanSubmissionInfo?> GetRandomClanSubmission(string id) {
         try {
             var clan = await _aredlClient.GetClanRecords(id, (_, message) => {
                                                                        ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                    });
-            var randomIndex = Random.Shared.Next(0, clan!.Records.Count+clan.Verified.Count);
-            return randomIndex < clan.Records.Count?
-                       clan.Records[randomIndex] :
-                       clan.Verified[randomIndex];
+
+            if (clan == null)
+                return null;
+            
+            var randomIndex = Random.Shared.Next(0, clan.Records.Count);
+            return clan.Records[randomIndex];
         } catch (Exception) {
             return null;
         }
@@ -351,17 +350,15 @@ public class DemonListService : Service {
         if (top <= 0) return null;
         
         try {
-            if (profile.User == null) return null;
-            
             var response = await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
-                                                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                                               });
+                                                                                             ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                                                         });
 
             if (response == null) {
                 return null;
             }
             
-            var records = response.Records.Concat(response.Verified).OrderBy(x => x.Level.Position).ToList();
+            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
 
             top = Math.Min(top, records.Count);
             
@@ -373,7 +370,7 @@ public class DemonListService : Service {
     }
     
     public async Task<List<RecordInfo>?> GetPlatformerEasiests(UserProfile profile, int top) {
-        if (top <= 0 || profile.User == null) {
+        if (top <= 0) {
             return null;
         }
         
@@ -387,7 +384,7 @@ public class DemonListService : Service {
                 return null;
             }
             
-            var records = response.Records.Concat(response.Verified).OrderBy(x => x.Level.Position).ToList();
+            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
 
             if (records.Count <= 0) {
                 return null;
@@ -463,10 +460,6 @@ public class DemonListService : Service {
     }
 
     public string FormatUserProfileInfo(UserProfile profile) {
-        if (profile.User == null) {
-            return string.Empty;
-        }
-        
         var formated = $"#{profile.Rank} {profile.User.GlobalName} | aredl.net/profile/user/{profile.User.UserName}";
         return formated;
     }

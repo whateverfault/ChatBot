@@ -250,21 +250,21 @@ public static class LocalizationsList {
                                                                                      StrId.AcceptDuelResponse0,
                                                                                      new Localization(
                                                                                           "{} выигрывает в дуэли и получает {} {}",
-                                                                                          "{} wins the duel and gets {} {}"
+                                                                                          "{} won the duel and got {} {}"
                                                                                          )
                                                                                  },
                                                                                  {
                                                                                      StrId.AcceptDuelResponse1,
                                                                                      new Localization(
-                                                                                          "{} получает {} {}",
-                                                                                          "{} gains {} {}"
+                                                                                          "{} залутал {} {}",
+                                                                                          "{} gained {} {}"
                                                                                          )
                                                                                  },
                                                                                  {
                                                                                      StrId.AcceptDuelResponse2,
                                                                                      new Localization(
-                                                                                          "{} овнит {} и выигрывает {} {}",
-                                                                                          "{} humbles {} and wins {} {}"
+                                                                                          "{} заовнил {} и выиграл {} {}",
+                                                                                          "{} humbled {} and won {} {}"
                                                                                          )
                                                                                  },
                                                                                  {

@@ -16,10 +16,10 @@ public class StreamStateCheckerEvents : ServiceEvents {
             return;
         }
         base.Init(service);
-        
+
         _cts = new CancellationTokenSource();
         _checkerService = (StreamStateCheckerService)service;
-     
+        
         CheckStreamStateRoutine(_cts.Token);
     }
 
@@ -42,7 +42,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
                         sleep = 0;
                     }
 
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(30, sleep)), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Min(30, sleep)), CancellationToken.None);
                     continue;
                 }
 
@@ -52,7 +52,7 @@ public class StreamStateCheckerEvents : ServiceEvents {
         }
         catch (TaskCanceledException) { }
         catch (Exception e) {
-            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while checking stream state: {e.Data}");
+            ErrorHandler.LogMessage(LogLevel.Error, $"Exception while checking stream state: {e.Message}");
         }
     }
 }

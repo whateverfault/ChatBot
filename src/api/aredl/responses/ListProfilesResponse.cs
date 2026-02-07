@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace ChatBot.api.aredl.responses;
 
 public class ListProfilesResponse {
-    public List<UserProfile> Data;
+    public readonly List<UserProfile> Data;
 
 
     public ListProfilesResponse(

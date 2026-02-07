@@ -326,15 +326,8 @@ public class AredlClient {
                                                     EventHandler<string>? errorCallback = null) {
         try {
             var levelRecords = await ListUserRecords(userId, errorCallback);
-            if (levelRecords?.Records.Count + levelRecords?.Verified.Count < 1) {
-                errorCallback?.Invoke(null, "Error while fetching user record data.");
+            if (levelRecords == null) 
                 return null;
-            }
-
-            foreach (var record in levelRecords?.Verified!) {
-                if (record.Level.Id != levelId) continue;
-                return record;
-            }
 
             foreach (var record in levelRecords.Records) {
                 if (record.Level.Id != levelId) continue;
@@ -377,18 +370,9 @@ public class AredlClient {
                                                        EventHandler<string>? errorCallback = null) {
         try {
             var levelRecords = await ListUserPlatformerRecords(userId, errorCallback);
-            if (levelRecords == null) return null;
-            
-            if (levelRecords.Records.Count + levelRecords.Verified.Count < 1) {
-                errorCallback?.Invoke(null, "Error while fetching user record data.");
+            if (levelRecords == null) 
                 return null;
-            }
-
-            foreach (var record in levelRecords.Verified) {
-                if (record.Level.Id != levelId) continue;
-                return record;
-            }
-
+            
             foreach (var record in levelRecords.Records) {
                 if (record.Level.Id != levelId) continue;
                 return record;

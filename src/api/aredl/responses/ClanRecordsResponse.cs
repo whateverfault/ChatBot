@@ -5,14 +5,11 @@ namespace ChatBot.api.aredl.responses;
 
 public class ClanRecordsResponse {
     public readonly List<ClanSubmissionInfo?> Records;
-    public readonly List<ClanSubmissionInfo?> Verified;
 
     
     [JsonConstructor]
     public ClanRecordsResponse(
-        [JsonProperty("records")] List<ClanSubmissionInfo?> records,
-        [JsonProperty("verified")] List<ClanSubmissionInfo?> verified) {
+        [JsonProperty("records")] List<ClanSubmissionInfo?> records){
         Records = records;
-        Verified = verified;
     }
 }
