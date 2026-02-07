@@ -43,8 +43,8 @@ public enum ServiceId {
     Translator, 
     GameRequests, 
     StreamStateChecker,
-    TgNotifications,
     Lifecycle,
+    TgNotifications,
     ChatAds,
     Casino,
     Bank,
@@ -176,17 +176,17 @@ public static class Services {
                                                                                     )
                                                                                 },
                                                                                 {
-                                                                                    ServiceId.TgNotifications,
-                                                                                    (
-                                                                                        new TgNotificationsService(),
-                                                                                        new TgNotificationsEvents()
-                                                                                    )
-                                                                                },
-                                                                                {
                                                                                     ServiceId.Lifecycle,
                                                                                     (
                                                                                         new BotLifecycleService(),
                                                                                         new BotLifecycleEvents()
+                                                                                    )
+                                                                                },
+                                                                                {
+                                                                                    ServiceId.TgNotifications,
+                                                                                    (
+                                                                                        new TgNotificationsService(),
+                                                                                        new TgNotificationsEvents()
                                                                                     )
                                                                                 },
                                                                                 {

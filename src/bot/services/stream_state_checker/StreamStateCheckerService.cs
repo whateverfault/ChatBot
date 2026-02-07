@@ -41,6 +41,8 @@ public class StreamStateCheckerService : Service {
                 if (lastCheckedWasOnline) {
                     OnStreamStateChangedAsync?.Invoke(Options.StreamState, streamsStateOld, null);
                     OnStreamStateChanged?.Invoke(Options.StreamState, streamsStateOld, null);
+                    
+                    ErrorHandler.LogMessage(LogLevel.Debug, $"{client.Credentials.Broadcaster.DisplayName} went offline");
                 }
                 
                 OnStreamStateUpdateAsync?.Invoke(Options.StreamState, null);
@@ -54,6 +56,8 @@ public class StreamStateCheckerService : Service {
             if (!lastCheckedWasOnline) {
                 OnStreamStateChangedAsync?.Invoke(Options.StreamState, streamsStateOld, streamData);
                 OnStreamStateChanged?.Invoke(Options.StreamState, streamsStateOld, streamData);
+                
+                ErrorHandler.LogMessage(LogLevel.Debug, $"{client.Credentials.Broadcaster.DisplayName} went online");
             }
             
             OnStreamStateUpdateAsync?.Invoke(Options.StreamState, streamData);

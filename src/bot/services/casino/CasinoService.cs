@@ -136,8 +136,8 @@ public class CasinoService : Service {
                                   duel.Object;
         
         result.LooserUserId = random == 0? 
-                                  duel.Subject : 
-                                  duel.Object;
+                                  duel.Object :
+                                  duel.Subject; 
 
         result.Win = duel.Quantity;
         result.Result = true;

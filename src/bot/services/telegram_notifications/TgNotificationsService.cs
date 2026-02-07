@@ -1,5 +1,6 @@
 ﻿using ChatBot.api.telegram;
 using ChatBot.bot.chat_bot;
+using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
@@ -18,8 +19,9 @@ public class TgNotificationsService : Service {
 
     public async Task<long?> SendNotification(StreamData? data) {
         try {
-            if (_botClient == null) {
-                return -1;
+            if (_botClient == null
+             || Options.ServiceState == State.Disabled) {
+                return null;
             }
             
             var processed = ProcessPrompt(Options.NotificationPrompt, data);
@@ -33,7 +35,7 @@ public class TgNotificationsService : Service {
             }
 
             var messageId = response.Result.MessageId;
-            ErrorHandler.LogMessage(LogLevel.Info, $"Telegram notification is sent. (id: {messageId})");
+            ErrorHandler.LogMessage(LogLevel.Debug, $"Telegram notification is sent. (id: {messageId})");
             return messageId;
         } catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, $"Exception while sending a telegram notification message: {e.Message}");
@@ -46,11 +48,15 @@ public class TgNotificationsService : Service {
             if (_botClient == null) {
                 return false;
             }
+
+            var result = await _botClient.DeleteMessageAsync(messageId,
+                                                             (_, message) => {
+                                                                 ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                             });
+            if (result)
+                ErrorHandler.LogMessage(LogLevel.Debug, $"Previous telegram notification message has been deleted. (id: {messageId})");
+            return result;
             
-            ErrorHandler.LogMessage(LogLevel.Info, $"Previous telegram notification message has been deleted. (id: {messageId})");
-            return await _botClient.DeleteMessageAsync(messageId, (_, message) => {
-                                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                                          });
         } catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, $"Exception while deleting a telegram message: {e.Message}");
         }
