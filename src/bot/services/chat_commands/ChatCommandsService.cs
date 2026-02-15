@@ -2,6 +2,9 @@
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.chat_commands.data;
 using ChatBot.bot.services.interfaces;
+using ChatBot.bot.services.localization;
+using ChatBot.bot.services.localization.data;
+using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.commands.data;
@@ -12,6 +15,7 @@ namespace ChatBot.bot.services.chat_commands;
 public class ChatCommandsService : Service {
     private static TwitchChatBot Bot => TwitchChatBot.Instance;
     private static ITwitchClient? Client => Bot.GetClient();
+    private static readonly LocalizationService _localization = (LocalizationService)Services.Get(ServiceId.Localization);
     
     public override ChatCommandsOptions Options { get; } = new ChatCommandsOptions();
 
@@ -39,11 +43,19 @@ public class ChatCommandsService : Service {
             found = await TryActivateCommand(cmdName, customCmds, chatArgs);
             if (found) return;
 
+            if (Options.AiOnMention && !string.IsNullOrEmpty(parsedCommand.ChatMessage.Mention)) {
+                var cmd = Options.DefaultCmds.FirstOrDefault(x => x.Id == Options.MentionCmdId);
+            
+                if (cmd is { State: State.Enabled, }) {
+                    await cmd.Action.Invoke(chatArgs);
+                }
+            }
+            
             if (Options.VerboseState == State.Enabled) {
                 await Client.SendMessage($"Unknown command: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
             }
         } catch (Exception e) {
-            var msg = $"Failed to handle a command: {Options.CommandIdentifier}{parsedCommand.CommandText}.";
+            var msg = _localization.GetStr(StrId.FailedToHandleCommand, Options.CommandIdentifier, parsedCommand.CommandText);;
             ErrorHandler.LogMessage(LogLevel.Error, $"{msg} {e.Message}");
             
             if (Client == null) return;

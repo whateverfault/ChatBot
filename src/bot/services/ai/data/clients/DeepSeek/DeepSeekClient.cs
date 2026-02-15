@@ -14,8 +14,13 @@ public class DeepSeekClient : AiClient {
                                                  };
 
         foreach (var message in chatHistory.Messages) {
-            messages.Add(new DeepSeekMessage("user", message.UserPrompt));
-            messages.Add(new DeepSeekMessage("assistant", message.AiResponse));
+            if (!string.IsNullOrEmpty(message.UserPrompt)) {
+                messages.Add(new DeepSeekMessage("user", message.UserPrompt));
+            }
+
+            if (!string.IsNullOrEmpty(message.AiResponse)) {
+                messages.Add(new DeepSeekMessage("assistant", message.AiResponse));
+            }
         }
         
         messages.Add(new DeepSeekMessage("user", prompt));

@@ -16,8 +16,13 @@ public class VertexAiClient : AiClient {
                                                  };
 
         foreach (var message in chatHistory.Messages) {
-            messages.Add(new VertexAiMessage("user", [message.UserPrompt,]));
-            messages.Add(new VertexAiMessage("model", [message.AiResponse,]));
+            if (!string.IsNullOrEmpty(message.UserPrompt)) {
+                messages.Add(new VertexAiMessage("user", [message.UserPrompt,]));
+            }
+
+            if (!string.IsNullOrEmpty(message.AiResponse)) {
+                messages.Add(new VertexAiMessage("model", [message.AiResponse,]));
+            }
         }
         
         messages.Add(new VertexAiMessage("user", [prompt,]));

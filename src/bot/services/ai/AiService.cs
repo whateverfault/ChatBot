@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ChatBot.bot.interfaces;
+using ChatBot.bot.services.ai.data;
 using ChatBot.bot.services.ai.data.clients.DeepSeek;
 using ChatBot.bot.services.ai.data.clients.Google;
 using ChatBot.bot.services.ai.data.clients.HuggingFace;
@@ -71,15 +72,21 @@ public class AiService : Service {
         return new Result<string?, ErrorCode?>(responseSb.ToString(), null);
     }
 
+    public AiChatHistory CreateChat(params AiMessage[] messages) {
+        var chat = Options.CreateChat();
+        chat.AddMessages(messages);
+        return chat;
+    }
+    
     private void RemoveUnusedChats(string? id = null) {
         var chats = Options.Chats;
         var now = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         
-        for (var i = 0; i < chats.Count; i++) {
-            if (!string.IsNullOrEmpty(id) && chats[i].Id.Equals(id)) continue;
-            if (now.Subtract(chats[i].LastUsed) <= TimeSpan.FromSeconds(Options.RemoveChatAfter)) continue;
+        foreach (var chat in chats) {
+            if (!string.IsNullOrEmpty(id) && chat.Id.Equals(id)) continue;
+            if (now.Subtract(chat.LastUsed) <= TimeSpan.FromSeconds(Options.RemoveChatAfter)) continue;
             
-            Options.RemoveChat(chats[i].Id);
+            Options.RemoveChat(chat.Id);
         }
     }
     
@@ -121,18 +128,6 @@ public class AiService : Service {
     public void SetHfModel(string model) {
         Options.AiData[(int)AiKind.HuggingFace].Model = model;
         Options.Save();
-    }
-    
-    public void SetHfProvider(string provider) {
-        var aiIndex = (int)AiKind.HuggingFace;
-        
-        Options.AiData[aiIndex].Provider = provider;
-        Options.AiData[aiIndex].Endpoint = $"https://router.huggingface.co/{provider}/v1/chat/completions";
-        Options.Save();
-    }
-    
-    public string GetHfProvider() {
-        return Options.AiData[(int)AiKind.HuggingFace].Provider;
     }
     
     public void SetHfToken(string apiKey) {

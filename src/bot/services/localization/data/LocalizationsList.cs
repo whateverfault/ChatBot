@@ -80,6 +80,7 @@ public enum StrId {
     When5,
     Usage,
     BankRewardDescription,
+    FailedToHandleCommand,
     Cmd0Desc,
     Cmd1Desc,
     Cmd2Desc,
@@ -648,7 +649,7 @@ public static class LocalizationsList {
                                                                                  {
                                                                                      StrId.When1,
                                                                                      new Localization(
-                                                                                          "{} на этой недели! {} {} {}",
+                                                                                          "{} на этой неделе! {} {} {}",
                                                                                           "{} this week! {} {} {}"
                                                                                          )
                                                                                  },
@@ -692,6 +693,13 @@ public static class LocalizationsList {
                                                                                      new Localization(
                                                                                           "Дает {} фантиков",
                                                                                           "Gives {} points"
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.FailedToHandleCommand,
+                                                                                     new Localization(
+                                                                                          "Не удалось обработать команду: {}{}",
+                                                                                          "Failed to handle a command: {}{}"
                                                                                          )
                                                                                  },
                                                                                  {

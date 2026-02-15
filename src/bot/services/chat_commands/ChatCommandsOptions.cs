@@ -27,6 +27,8 @@ public class ChatCommandsOptions : Options {
     public List<DefaultChatCommand> DefaultCmds => _defaultCmds;
     public string BaseTitle => _saveData!.BaseTitle;
     public bool SendWhisperIfPossible => _saveData!.SendWhisperIfPossible;
+    public bool AiOnMention => _saveData!.AiOnMention;
+    public int MentionCmdId => _saveData!.MentionCmdId;
     
     
     public override void Load() {
@@ -131,6 +133,15 @@ public class ChatCommandsOptions : Options {
         Json.CreateOld(DefaultCmdsPath);
         
         _defaultCmds = cmds;
+        Save();
+    }
+
+    public bool GetAiOnMention() {
+        return AiOnMention;
+    }
+    
+    public void SetAiOnMention(bool value) {
+        _saveData!.AiOnMention = value;
         Save();
     }
 }

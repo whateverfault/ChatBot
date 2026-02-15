@@ -22,7 +22,7 @@ internal class SaveDataDto {
                                                                                                    "Empty",
                                                                                                    "Empty",
                                                                                                    "Empty",
-                                                                                                   "https://router.huggingface.co/Empty/v1/chat/completions",
+                                                                                                   "https://router.huggingface.co/v1/chat/completions",
                                                                                                    "Empty",
                                                                                                    new AiFallback(State.Disabled, ai.AiKind.Ollama)
                                                                                                   ),

@@ -319,6 +319,12 @@ public class CliNodeSystem {
                                                                                              CliNodePermission.Default,
                                                                                              _state.Data.Emotes.Options.SetUse7Tv
                                                                                             ),
+                                                                                        new CliNodeBool(
+                                                                                             "Use Ai On Mentioned",
+                                                                                             _state.Data.ChatCommands.Options.GetAiOnMention,
+                                                                                             CliNodePermission.Default,
+                                                                                             _state.Data.ChatCommands.Options.SetAiOnMention
+                                                                                            ),
                                                                                         emotesDir,
                                                                                      ]
                                                                                      ),
@@ -524,12 +530,6 @@ public class CliNodeSystem {
                                                                                        _state.Data.Ai.GetHfModel,
                                                                                        CliNodePermission.Default,
                                                                                        _state.Data.Ai.SetHfModel
-                                                                                      ),
-                                                                                  new CliNodeString(
-                                                                                       "Provider",
-                                                                                       _state.Data.Ai.GetHfProvider,
-                                                                                       CliNodePermission.Default,
-                                                                                       _state.Data.Ai.SetHfProvider
                                                                                       ),
                                                                                   new CliNodeString(
                                                                                        "Prompt",

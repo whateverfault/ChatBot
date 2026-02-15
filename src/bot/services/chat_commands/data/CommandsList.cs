@@ -2,6 +2,7 @@
 using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.ai;
+using ChatBot.bot.services.ai.data;
 using ChatBot.bot.services.bank;
 using ChatBot.bot.services.casino;
 using ChatBot.bot.services.chat_ads;
@@ -919,7 +920,7 @@ public static class CommandsList {
         }
         
         
-        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
     
     private static async Task More(ChatCmdArgs cmdArgs) {
@@ -962,7 +963,7 @@ public static class CommandsList {
             index++;
         }
         
-        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(cmds, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
     
     private static async Task Help(ChatCmdArgs cmdArgs) {
@@ -1236,7 +1237,7 @@ public static class CommandsList {
     
     private static async Task Ai(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
-        if (client == null) return;
+        if (client?.Credentials == null) return;
         
         var shop = (ShopService)Services.Get(ServiceId.Shop);
         var ai = (AiService)Services.Get(ServiceId.Ai);
@@ -1247,9 +1248,20 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
             return;
         }
-
+        
         var prompt = new StringBuilder();
         string? id = null;
+        
+        if (chatMessage.Reply?.UserId == client.Credentials.Bot.UserId) {
+            var text = chatMessage.Reply.Text;
+            for (var i = text.Length - 1; i >= 0; --i) {
+                if (!char.IsWhiteSpace(text[i])) continue;
+                if (i + 2 >= text.Length) break;
+
+                id = text[(i+2)..text.Length];
+                break;
+            }
+        }
         
         foreach (var word in args) {
             if (prompt.Length <= 0
@@ -1262,6 +1274,13 @@ public static class CommandsList {
             prompt.Append($"{word} ");
         }
 
+        if (id == null
+         && chatMessage.Reply != null 
+         && chatMessage.Reply?.UserId == client.Credentials.Bot.UserId) {
+            var chat = ai.CreateChat(new AiMessage(string.Empty, chatMessage.Reply.Text));
+            id = chat.Id;
+        }
+        
         var lot = shop.Get(0);
         if (lot == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
@@ -1544,22 +1563,38 @@ public static class CommandsList {
             await client.SendMessage(result, chatMessage.Id);
             return;
         }
-        var years =
-            followage.Value.Days/365 == 0 ?
-                "" :
-                $"{followage.Value.Days/365} {Declensioner.Years(followage.Value.Days/365)}";
-        var months =
-            followage.Value.Days%365/30 == 0 ?
-                "" :
-                $"{followage.Value.Days%365/30} {Declensioner.Months(followage.Value.Days%365/30)}";
-        var days =
-            followage.Value.Days%365%30 == 0 ?
-                "" :
-                $"{followage.Value.Days%365%30} {Declensioner.Days(followage.Value.Days%365%30)}";
-        result =
-            args.Count > 0
-                ? _localization.GetStr(StrId.UserFollowedFor, username, chatMessage.Channel, years, months, days)
-                : _localization.GetStr(StrId.YouFollowedFor, chatMessage.Channel, years, months, days);
+
+        var startDate = DateTime.UtcNow.Subtract(followage.Value);
+        var endDate = DateTime.UtcNow;
+    
+        var years = endDate.Year - startDate.Year;
+        var months = endDate.Month - startDate.Month;
+        var days = endDate.Day - startDate.Day;
+        
+        if (days < 0) {
+            months--;
+            var previousMonth = endDate.AddMonths(-1);
+            days += DateTime.DaysInMonth(previousMonth.Year, previousMonth.Month);
+        }
+    
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+        
+        var yearsStr = years == 0 
+                           ? string.Empty 
+                           : $"{years} {Declensioner.Years(years)}";
+        var monthsStr = months == 0 
+                            ? string.Empty 
+                            : $"{months} {Declensioner.Months(months)}";
+        var daysStr = days == 0 
+                          ? string.Empty 
+                          : $"{days} {Declensioner.Days(days)}";
+    
+        result = args.Count > 0
+                     ? _localization.GetStr(StrId.UserFollowedFor, username, chatMessage.Channel, yearsStr, monthsStr, daysStr)
+                     : _localization.GetStr(StrId.YouFollowedFor, chatMessage.Channel, yearsStr, monthsStr, daysStr);
         
         await client.SendMessage(result, chatMessage.Id);
     }
@@ -1900,7 +1935,7 @@ public static class CommandsList {
             return;
         }
         
-        var page = ParsePage(levelsInfo.Count, cmdArgs);
+        var page = ParsePage(levelsInfo.Count, cmdArgs, true);
         var levelInfo = levelsInfo[page];
         
         var pages = 
@@ -1975,7 +2010,7 @@ public static class CommandsList {
             return;
         }
 
-        var page = ParsePage(levelsInfo.Count, cmdArgs);
+        var page = ParsePage(levelsInfo.Count, cmdArgs, true);
         var levelInfo = levelsInfo[page];
         
         var pages = 
@@ -2526,7 +2561,7 @@ public static class CommandsList {
             return;
         }
         
-        var clanSubmissionInfo = await demonList.GetRandomClanSubmission(clanInfo.Clan.Id)!;
+        var clanSubmissionInfo = await demonList.GetRandomClanSubmission(clanInfo.Clan.Id);
         if (clanSubmissionInfo?.Level == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -2572,7 +2607,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {gameRequest.GameName} -> {username} {separator}");
         }
 
-        await SendPagedReply(reply, cmdArgs);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
 
     private static async Task AddGameRequestsReward(ChatCmdArgs cmdArgs) {
@@ -2821,7 +2856,7 @@ public static class CommandsList {
         }
         
         var list = cmds.Select((cmd, i) => $"{i + 1}. {cmd.Name} (id: {cmd.Id}) ").ToList();
-        await SendPagedReply(list, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(list, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
     
     private static async Task AddCmd(ChatCmdArgs cmdArgs) {
@@ -2960,7 +2995,7 @@ public static class CommandsList {
             output.Add($"{i+1}. {chatAd.GetName()} (cooldown: {chatAd.GetCooldown()}) ");
         }
 
-        await SendPagedReply(output, cmdArgs);
+        await SendPagedReply(output, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
 
     private static async Task AddChatAd(ChatCmdArgs cmdArgs) {
@@ -3364,7 +3399,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {username} - {duel.Quantity} {(i >= duels.Count - 1? string.Empty : "\\")} ");
         }
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
     
     private static async Task Balance(ChatCmdArgs cmdArgs) {
@@ -3401,7 +3436,7 @@ public static class CommandsList {
                                             $" {(i >= lots.Count - 1 ? string.Empty : "/")}")
                         .ToList();
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
 
     private static async Task ShopAdd(ChatCmdArgs cmdArgs) {
@@ -3671,7 +3706,7 @@ public static class CommandsList {
             reply.Add($"{i+1}. {id} - {quantity} {(i >= rewards.Count - 1? string.Empty : "\\")} ");
         }
 
-        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible);
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
     }
     
     private static async Task BankCreateReward(ChatCmdArgs cmdArgs) {
@@ -3785,7 +3820,7 @@ public static class CommandsList {
         return Task.CompletedTask;
     }
     
-    private static async Task SendPagedReply(List<string> reply, ChatCmdArgs cmdArgs, bool whisper = false) {
+    private static async Task SendPagedReply(List<string> reply, ChatCmdArgs cmdArgs, bool whisper, bool explicitPageFlag) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
 
@@ -3796,7 +3831,7 @@ public static class CommandsList {
             return;
         }
 
-        var page = ParsePage(int.MaxValue, cmdArgs);
+        var page = ParsePage(int.MaxValue, cmdArgs, explicitPageFlag);
         var pages = Page.CalculatePages(reply);
 
         if (page < pages[0]) {
@@ -3884,7 +3919,7 @@ public static class CommandsList {
                    ErrorCode.InvalidInput;
     }
     
-    private static int ParsePage(int high, ChatCmdArgs cmdArgs) {
+    private static int ParsePage(int high, ChatCmdArgs cmdArgs, bool explicitFlag) {
         var args = cmdArgs.Parsed.ArgumentsAsList;
 
         var found = GetIntArg(cmdArgs, "--page", out var page);
@@ -3893,6 +3928,7 @@ public static class CommandsList {
         
         if (args.Count > 0 
          && !found
+         && !explicitFlag
          && int.TryParse(args[0], out var tempPage)) {
             page = tempPage;
         }

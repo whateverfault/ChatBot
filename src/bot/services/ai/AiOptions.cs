@@ -57,8 +57,17 @@ public class AiOptions : Options {
     }
 
     public AiChatHistory CreateChat() {
-        var generatedId = Random.Shared.NextInt64(0, 65536);
-        var id = generatedId.ToString("X4");
+        string id;
+        var atts = 3;
+
+        do {
+            var generatedId = Random.Shared.NextInt64(0, 65536);
+            id = generatedId.ToString("X4");
+            if (Chats.All(x => x.Id != id))
+                break;
+            --atts;
+        } while (atts > 0);
+
         RemoveChat(id);
 
         var chat = new AiChatHistory(id);
