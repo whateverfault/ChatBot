@@ -10,7 +10,7 @@ public class AiData {
     public string Model { get; set;  }
     
     [JsonProperty("base_prompt")]
-    public string BasePrompt { get; set;  }
+    public string BasePrompt { get; set; }
     
     [JsonProperty("endpoint")]
     public string Endpoint { get; set; }

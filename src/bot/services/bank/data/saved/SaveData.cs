@@ -11,10 +11,10 @@ internal class SaveData {
     public Dictionary<string, Account> Accounts { get; set; } = null!;
 
     [JsonProperty("rewards")]
-    public Dictionary<string, long> Rewards { get; set; } = null!;
+    public Dictionary<string, double> Rewards { get; set; } = null!;
 
     [JsonProperty("supply")]
-    public long MoneySupply { get; set; }
+    public double MoneySupply { get; set; }
     
 
     public SaveData() {
@@ -25,8 +25,8 @@ internal class SaveData {
     public SaveData(
         [JsonProperty("service_state")] State state,
         [JsonProperty("accounts")] Dictionary<string, Account> accounts,
-        [JsonProperty("rewards")] Dictionary<string, long> rewards,
-        [JsonProperty("supply")] long supply) {
+        [JsonProperty("rewards")] Dictionary<string, double> rewards,
+        [JsonProperty("supply")] double supply) {
         var dto = new SaveDataDto(
                                   state,
                                   accounts,

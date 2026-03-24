@@ -3,11 +3,17 @@
 namespace ChatBot.api.aredl.data;
 
 public class RecordInfo {
-    public readonly string Id;
-    public readonly string VideoUrl;
-    public readonly bool IsVerification;
+    [JsonProperty("id")]
+    public string Id { get; private set; }
     
-    public readonly RecordLevelInfo Level;
+    [JsonProperty("video_url")]
+    public string VideoUrl { get; private set; }
+    
+    [JsonProperty("is_verification")]
+    public bool IsVerification { get; private set; }
+    
+    [JsonProperty("level")]
+    public RecordLevelInfo Level { get; private set; }
 
     
     [JsonConstructor]

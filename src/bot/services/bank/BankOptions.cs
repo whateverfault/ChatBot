@@ -1,4 +1,5 @@
 ﻿using ChatBot.api.json;
+using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.bank.data;
 using ChatBot.bot.services.bank.data.saved;
@@ -15,10 +16,12 @@ public class BankOptions : Options {
     private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    public long MoneySupply => _saveData!.MoneySupply;
+    public double MoneySupply => _saveData!.MoneySupply;
     
     private Dictionary<string, Account> Accounts => _saveData!.Accounts; 
-    private Dictionary<string, long> Rewards => _saveData!.Rewards;
+    private Dictionary<string, double> Rewards => _saveData!.Rewards;
+
+    private TwitchChatBot Bot => TwitchChatBot.Instance;
     
     
     public override void Load() {
@@ -43,7 +46,7 @@ public class BankOptions : Options {
         Save();
     }
     
-    private bool BankAdd(string userId, long quantity, bool gain) {
+    private bool BankAdd(string userId, double quantity, bool gain) {
         if (string.IsNullOrEmpty(userId)) 
             return false;
 
@@ -55,7 +58,7 @@ public class BankOptions : Options {
         return BankAdd(account, quantity, gain);
     }
     
-    private bool BankAdd(Account? account, long quantity, bool gain) {
+    private bool BankAdd(Account? account, double quantity, bool gain) {
         if (account != null) {
             if (account.Money + quantity < 0) 
                 return false;
@@ -70,27 +73,27 @@ public class BankOptions : Options {
         return true;
     }
     
-    public bool Deposit(string userId, long quantity, bool gain = true) {
+    public bool Deposit(string userId, double quantity, bool gain = true) {
         if (quantity == 0) return true;
         return quantity > 0 && BankAdd(userId, quantity, gain);
     }
 
-    public bool Deposit(Account? account, long quantity, bool gain = true) {
+    public bool Deposit(Account? account, double quantity, bool gain = true) {
         if (quantity == 0) return true;
         return quantity > 0 && BankAdd(account, quantity, gain);
     }
     
-    public bool TakeOut(string userId, long quantity, bool gain = true) {
+    public bool TakeOut(string userId, double quantity, bool gain = true) {
         if (quantity == 0) return false;
         return quantity > 0 && BankAdd(userId, -quantity, gain);
     }
 
-    public bool TakeOut(Account? account, long quantity, bool gain = true) {
+    public bool TakeOut(Account? account, double quantity, bool gain = true) {
         if (quantity == 0) return false;
         return quantity > 0 && BankAdd(account, -quantity, gain);
     }
     
-    public bool GetBalance(string userId, out long balance) {
+    public bool GetBalance(string userId, out double balance) {
         balance = -1;
         if (!GetAccount(userId, out var gambler) || gambler == null) 
             return false;
@@ -107,6 +110,11 @@ public class BankOptions : Options {
     }
     
     public bool GetAccount(string userId, out Account? account) {
+        if (userId.Equals(Bot.GetClient()?.Credentials?.Broadcaster.UserId)) {
+            account = new Account(userId, double.PositiveInfinity);
+            return true;
+        }
+        
         return Accounts.TryGetValue(userId, out account);
     }
 
@@ -114,7 +122,7 @@ public class BankOptions : Options {
         return Accounts;
     }
     
-    public bool AddReward(string rewardId, long quantity) {
+    public bool AddReward(string rewardId, double quantity) {
         return Rewards.TryAdd(rewardId, quantity);
     }
     
@@ -122,17 +130,17 @@ public class BankOptions : Options {
         return Rewards.Remove(rewardId);
     }
 
-    public bool GetReward(string rewardId, out long quantity) {
+    public bool GetReward(string rewardId, out double quantity) {
         return Rewards.TryGetValue(rewardId, out quantity);
     }
     
-    public (string, long) GetReward(int index) {
+    public (string, double) GetReward(int index) {
         var reward = Rewards.ElementAtOrDefault(index);
         reward.Deconstruct(out var key, out var value);
         return (key, value);
     }
     
-    public Dictionary<string, long> GetRewards() {
+    public Dictionary<string, double> GetRewards() {
         return Rewards;
     }
 

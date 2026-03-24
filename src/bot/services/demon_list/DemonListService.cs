@@ -4,6 +4,7 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
+using Range = ChatBot.api.basic.Range;
 
 namespace ChatBot.bot.services.demon_list;
 
@@ -11,18 +12,18 @@ public class DemonListService : Service {
     private readonly AredlClient _aredlClient = new AredlClient(true, Network.HttpClient);
     
     public override DemonListOptions Options { get; } = new DemonListOptions();
-
-
-    public async Task<int> GetLevelsCount() {
-        return await _aredlClient.GetLevelsCount();
-    }
     
-    public async Task<int> GetPlatformerLevelsCount() {
-        return await _aredlClient.GetPlatformerLevelsCount();
-    }
     
     public void ResetCache() {
         _aredlClient.ResetCache();
+    }
+
+    public async Task<List<LevelInfo>> ListLevels(EventHandler<string>? errorCallback = null) {
+        return await _aredlClient.ListLevels(errorCallback) ?? [];
+    }
+    
+    public async Task<List<LevelInfo>> ListPlatformerLevels(EventHandler<string>? errorCallback = null) {
+        return await _aredlClient.ListPlatformerLevels(errorCallback) ?? [];
     }
     
     public async Task<LevelInfo?> GetLevelByPlacement(int placement) {
@@ -84,64 +85,71 @@ public class DemonListService : Service {
             return null;
         }
     }
-    
-    public async Task<List<RecordInfo>?> GetHardests(UserProfile profile, int top) {
-        if (top <= 0) return null;
+
+    public List<T> GetHardests<T>(List<T> records, Range top) {
+        var exceed = top.End - records.Count;
+        if (exceed < 0) exceed = 0;
         
+        var end = Math.Max(top.End - exceed, 0);
+        end = Math.Min(end, records.Count);
+        top.SetEnd(end);
+        
+        return records[top.Start..top.End];
+    }
+    
+    public List<RecordInfo> GetHardests(List<RecordInfo> records, Range top) {
+        return GetHardests<RecordInfo>(records.OrderBy(x => x.Level.Position).ToList(), top);
+    }
+    
+    public List<LevelInfo> GetHardests(List<LevelInfo> records, Range top) {
+        return GetHardests<LevelInfo>(records.OrderBy(x => x.Position).ToList(), top);
+    }
+    
+    public RecordInfo GetHardest(List<RecordInfo> records) {
+        return GetHardests(records, new Range(0, 1))[0];
+    }
+    
+    public List<T> GetEasiests<T>(List<T> records, Range top) {
+        var exceed = top.End - records.Count;
+        if (exceed < 0) exceed = 0;
+        
+        var end = Math.Max(top.End - exceed, 0);
+        
+        end = Math.Min(end, records.Count - 1);
+        
+        top.SetEnd(end);
+        
+        return records[top.Start..top.End];
+    }
+    
+    public List<RecordInfo> GetEasiests(List<RecordInfo> records, Range top) {
+        return GetEasiests<RecordInfo>(records.OrderByDescending(x => x.Level.Position).ToList(), top);
+    }
+    
+    public List<LevelInfo> GetEasiests(List<LevelInfo> records, Range top) {
+        return GetEasiests<LevelInfo>(records.OrderByDescending(x => x.Position).ToList(), top);
+    }
+    
+    public RecordInfo GetEasiest(List<RecordInfo> records) {
+        return GetEasiests(records, new Range(0, 1))[0];
+    }
+    
+    public async Task<List<RecordInfo>?> GetHardests(UserProfile profile, Range top) {
         try {
             var response = await _aredlClient.ListUserRecords(profile.User.Id, (_, message) => {
                                                                                    ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                                });
 
-            if (response == null) {
-                return null;
-            }
-            
-            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
-
-            top = Math.Min(top, records.Count);
-            
-            return records[0..top];
+            return response == null 
+                       ? null
+                       : GetHardests(response.Records, top);
         }
         catch (Exception) {
             return null;
         }
     }
     
-    public async Task<RecordInfo?> GetHardest(UserProfile profile) {
-        try {
-            if (profile.Hardest == null) return null;
-
-            var hardest = await _aredlClient.GetRecord(profile.Hardest.Id, profile.User.Id,
-                                                       (_, message) => {
-                                                           ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                       });
-            return hardest;
-        }
-        catch (Exception) {
-            return null;
-        }
-    }
-
-    public async Task<LevelInfo?> GetHardest() {
-        try {
-            var levels = await _aredlClient.ListLevels();
-            if (levels?.Data == null || levels.Data.Count < 1) {
-                return null;
-            }
-
-            return levels.Data[0];
-        }
-        catch (Exception) {
-            return null;
-        }
-    }
-
-    public async Task<List<RecordInfo>?> GetEasiests(UserProfile profile, int top) {
-        if (top <= 0) {
-            return null;
-        }
-        
+    public async Task<List<RecordInfo>?> GetEasiests(UserProfile profile, Range top) {
         try {
             var response =
                 await _aredlClient.ListUserRecords(profile.User.Id,
@@ -155,15 +163,9 @@ public class DemonListService : Service {
             
             var records = response.Records.OrderBy(x => x.Level.Position).ToList();
 
-            if (records.Count <= 0) {
-                return null;
-            }
-
-            top = Math.Min(top, records.Count);
-            var easiests = records[^top..records.Count];
-            easiests.Reverse();
-            
-            return easiests;
+            return records.Count <= 0 ?
+                       null :
+                       GetEasiests(records, top);
         }
         catch (Exception) {
             return null;
@@ -199,17 +201,16 @@ public class DemonListService : Service {
         try {
             if (from < 1) from = 1;
             
-            var levelList = await _aredlClient.ListLevels((_, message) => { 
-                                                       ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                   });
-            if (levelList == null) return null;
+            var levelList = await ListLevels((_, message) => {
+                                                 ErrorHandler.LogMessage(LogLevel.Error, message);
+                                             });
             
-            if (to < from || to > levelList.Data.Count) {
-                to = levelList.Data.Count;
-            }
+            if (to < from || to > levelList.Count)
+                to = levelList.Count;
             if (from > to) from = 1;
+            
             var randomIndex = Random.Shared.Next(from-1, to);
-            return levelList.Data[randomIndex];
+            return levelList[randomIndex];
         } catch (Exception) {
             return null;
         }
@@ -218,24 +219,24 @@ public class DemonListService : Service {
     public async Task<LevelInfo?> GetRandomPlatformerLevel(int from = -1, int to = -1) {
         try {
             if (from < 1) from = 1;
+
+            var levelList = await ListPlatformerLevels((_, message) => {
+                                                           ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                       });
             
-            var levelList = await _aredlClient.ListPlatformerLevels((_, message) => { 
-                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                          });
-            if (levelList == null) return null;
-            
-            if (to < from || to > levelList.Data.Count) {
-                to = levelList.Data.Count;
+            if (to < from || to > levelList.Count) {
+                to = levelList.Count;
             }
             if (from > to) from = 1;
+            
             var randomIndex = Random.Shared.Next(from-1, to);
-            return levelList.Data[randomIndex];
+            return levelList[randomIndex];
         } catch (Exception) {
             return null;
         }
     }
     
-    public async Task<ClanInfo?> GetClanInfo(string tag) {
+    public async Task<ClanDetails?> GetClan(string tag) {
         try {
             var clan = await _aredlClient.GetClan(tag, (_, message) => {
                                                                        ErrorHandler.LogMessage(LogLevel.Error, message);
@@ -246,9 +247,9 @@ public class DemonListService : Service {
         }
     }
 
-    public async Task<ClanSubmissionInfo?> GetRandomClanSubmission(string id) {
+    public async Task<RecordInfo?> GetClanRandomSubmission(string id) {
         try {
-            var clan = await _aredlClient.GetClanRecords(id, (_, message) => {
+            var clan = await _aredlClient.GetClan(id, (_, message) => {
                                                                        ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                    });
 
@@ -346,55 +347,31 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<List<RecordInfo>?> GetPlatformerHardests(UserProfile profile, int top) {
-        if (top <= 0) return null;
-        
+    public async Task<List<RecordInfo>?> GetPlatformerHardests(UserProfile profile, Range top) {
         try {
             var response = await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
                                                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                                          });
 
-            if (response == null) {
-                return null;
-            }
-            
-            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
-
-            top = Math.Min(top, records.Count);
-            
-            return records[0..top];
+            return response == null 
+                       ? null 
+                       : GetHardests(response.Records, top);
         }
         catch (Exception) {
             return null;
         }
     }
     
-    public async Task<List<RecordInfo>?> GetPlatformerEasiests(UserProfile profile, int top) {
-        if (top <= 0) {
-            return null;
-        }
-        
+    public async Task<List<RecordInfo>?> GetPlatformerEasiests(UserProfile profile, Range top) {
         try {
             var response =
                 await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
                                                                                   ErrorHandler.LogMessage(LogLevel.Error, message);
                                                                               });
 
-            if (response == null) {
-                return null;
-            }
-            
-            var records = response.Records.OrderBy(x => x.Level.Position).ToList();
-
-            if (records.Count <= 0) {
-                return null;
-            }
-
-            top = Math.Min(top, records.Count);
-            var easiests = records[^top..records.Count];
-            easiests.Reverse();
-            
-            return easiests;
+            return response == null 
+                       ? null 
+                       : GetEasiests(response.Records, top);
         }
         catch (Exception) {
             return null;
@@ -454,8 +431,8 @@ public class DemonListService : Service {
         return formated;
     }
     
-    public string FormatClanInfo(ClanInfo clanInfo) {
-        var formated = $"#{clanInfo.Rank} [{clanInfo.Clan.Tag}] {clanInfo.Clan.GlobalName} | aredl.net/profile/clan/{clanInfo.Clan.Id}";
+    public string FormatClanDetails(ClanDetails clan) {
+        var formated = $"#{clan.Rank.Rank} [{clan.Clan.Tag}] {clan.Clan.GlobalName} | aredl.net/profile/clan/{clan.Clan.Id}";
         return formated;
     }
 

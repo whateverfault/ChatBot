@@ -4,6 +4,7 @@ namespace ChatBot.bot.services.ai.data;
 
 public class AiChatHistory {
     private static readonly AiService _ai = (AiService)Services.Get(ServiceId.Ai);
+    private readonly object _sync = new object();
     
     public TimeSpan LastUsed;
     public readonly string Id;
@@ -17,20 +18,24 @@ public class AiChatHistory {
     }
     
     public void AddMessage(string prompt, string response) {
-        var message = new AiMessage(prompt, response);
-        Messages.Add(message);
-        
-        LastUsed = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-        _ai.Options.Save();
+        lock (_sync) {
+            var message = new AiMessage(prompt, response);
+            Messages.Add(message);
+
+            LastUsed = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            _ai.Options.Save();
+        }
     }
     
     public void AddMessages(params AiMessage[] messages) {
-        foreach (var msg in messages){
-            var message = new AiMessage(msg.UserPrompt, msg.AiResponse);
-            Messages.Add(message);
+        lock (_sync) {
+            foreach (var msg in messages) {
+                var message = new AiMessage(msg.UserPrompt, msg.AiResponse);
+                Messages.Add(message);
+            }
+
+            LastUsed = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            _ai.Options.Save();
         }
-        
-        LastUsed = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-        _ai.Options.Save();
     }
 }

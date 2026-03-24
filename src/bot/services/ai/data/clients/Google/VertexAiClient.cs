@@ -49,7 +49,7 @@ public class VertexAiClient : AiClient {
             var responseContent = await response.Content.ReadAsStringAsync();
         
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(this , $"API request failed: {response.StatusCode} - {responseContent}");
+                callback?.Invoke(this , $"Vertex API request failed. Status: {response.StatusCode}. Response: {responseContent}");
                 return null;
             }
         

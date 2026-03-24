@@ -21,7 +21,10 @@ public class AiOptions : Options {
 
     public long RemoveChatAfter => _saveData!.RemoveChatIn;
     
-    public List<AiChatHistory> Chats = [];
+    public readonly List<AiChatHistory> Chats = [];
+
+    public readonly int ChatIdLength = 4;
+    public readonly string ChatIdIdentifier = "#";
     
     
     public override void Load() {
@@ -61,8 +64,8 @@ public class AiOptions : Options {
         var atts = 3;
 
         do {
-            var generatedId = Random.Shared.NextInt64(0, 65536);
-            id = generatedId.ToString("X4");
+            var generatedId = Random.Shared.NextInt64(0, (long)Math.Pow(2, ChatIdLength * 4));
+            id = generatedId.ToString($"X{ChatIdLength}");
             if (Chats.All(x => x.Id != id))
                 break;
             --atts;

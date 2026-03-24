@@ -10,7 +10,7 @@ namespace ChatBot.bot.services.casino;
 
 public struct GambleResult {
     public bool Ok;
-    public long Win;
+    public double Win;
     public string WinnerUserId;
     public string LooserUserId;
     public double Multiplier;
@@ -23,11 +23,11 @@ public class CasinoService : Service {
     public override CasinoOptions Options { get; } = new CasinoOptions();
 
 
-    private (float chance, float multiplier) CalculateChances(long betAmount, long userBalance, long moneySupply) {
+    private (double chance, double multiplier) CalculateChances(double betAmount, double userBalance, double moneySupply) {
         if (moneySupply <= 0) moneySupply = 1;
         var riskFactor = Math.Clamp(betAmount / (moneySupply * 0.1f), 0.1f, 2f);
         var multiplier = Options.BaseMultiplier + Options.RandomValue * Options.AdditionalMultiplier * riskFactor;
-        var chance = 1f / (multiplier*1.5f);
+        var chance = 1f / (multiplier*1.35f);
         var wealthPenalty = 1f - Math.Min(0.3f, userBalance / (moneySupply * 2f));
         
         chance *= wealthPenalty;
@@ -36,18 +36,20 @@ public class CasinoService : Service {
         return (chance, multiplier);
     }
     
-    public Result<GambleResult?, ErrorCode?> Gamble(string userId, long quantity) {
+    public Result<GambleResult?, ErrorCode?> Gamble(string userId, double quantity) {
         if (Options.ServiceState == State.Disabled) {
             return new Result<GambleResult?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }
         
         var result = new GambleResult { Ok = true, Result = false, Win = -quantity, WinnerUserId = userId, };
-        var takeOutResult = Bank.TakeOut(userId, quantity, gain: true);
         
         if (!Bank.GetBalance(userId, out var balance)){
             result.Ok = false;
             return new Result<GambleResult?, ErrorCode?>(result, ErrorCode.AccountNotFound);
-        } if (!takeOutResult.Ok) {
+        }
+        
+        var takeOutResult = Bank.TakeOut(userId, quantity, gain: true);
+        if (!takeOutResult.Ok) {
             result.Ok = false;
             return new Result<GambleResult?, ErrorCode?>(result, takeOutResult.Error);
         }
@@ -59,11 +61,11 @@ public class CasinoService : Service {
         return new Result<GambleResult?, ErrorCode?>(result, null);
     }
 
-    private GambleResult CalculateGambleResult(long quantity, long balance) {
+    private GambleResult CalculateGambleResult(double quantity, double balance) {
         var result = new GambleResult { Ok = true, Result = false, Win = -quantity, };
         
         var (chances, multiplier) = CalculateChances(quantity, balance, Bank.MoneySupply);
-        var potentialWin = (long)Math.Ceiling(quantity * multiplier);
+        var potentialWin = Math.Ceiling(quantity * multiplier);
         
         var random = Random.Shared.NextSingle();
         if (random <= chances) {
@@ -76,7 +78,7 @@ public class CasinoService : Service {
         return result;
     }
     
-    public Result<bool?, ErrorCode?> CreateDuel(string subjectId, string objectId, long quantity) {
+    public Result<bool?, ErrorCode?> CreateDuel(string subjectId, string objectId, double quantity) {
         if (Options.ServiceState == State.Disabled) {
             return new Result<bool?, ErrorCode?>(null, ErrorCode.ServiceDisabled);
         }

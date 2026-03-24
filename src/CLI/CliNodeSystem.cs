@@ -942,7 +942,7 @@ public class CliNodeSystem {
                                                  [
                                                  new CliNodeLong(
                                                                  "Money Supply",
-                                                                 _state.Data.Bank.GetMoneySupply,
+                                                                 _state.Data.Bank.GetMoneySupplyLong,
                                                                  CliNodePermission.ReadOnly
                                                                  ),
                                                  new CliNodeStaticDirectory(

@@ -1,18 +1,19 @@
-﻿using ChatBot.api.aredl.responses;
+﻿using ChatBot.api.aredl.data;
+using ChatBot.api.aredl.responses;
 
 namespace ChatBot.api.aredl;
 
 public class AredlCache {
-    public ListLevelsResponse? Levels { get; private set; }
-    public ListLevelsResponse? PlatformerLevels { get; private set; }
+    public List<LevelInfo>? Levels { get; private set; }
+    public List<LevelInfo>? PlatformerLevels { get; private set; }
     public ListClansResponse? Clans { get; private set; }
 
 
-    public void CacheLevelsList(ListLevelsResponse levels) {
+    public void CacheLevelsList(List<LevelInfo> levels) {
         Levels = levels;
     }
 
-    public void CachePlatformerLevelsList(ListLevelsResponse platformerLevels) {
+    public void CachePlatformerLevelsList(List<LevelInfo> platformerLevels) {
         PlatformerLevels = platformerLevels;
     }
 

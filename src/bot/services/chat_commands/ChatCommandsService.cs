@@ -24,9 +24,11 @@ public class ChatCommandsService : Service {
     
 
     public async void HandleCommand(Command parsedCommand) {
+        var cmdId = parsedCommand.CommandIdentifier;
+        
         try {
             if (Options.ServiceState == State.Disabled) return;
-            if (Client == null) return;
+            if (Client?.Credentials == null) return;
 
             bool found;
             var cmdName = parsedCommand.CommandText;
@@ -43,7 +45,9 @@ public class ChatCommandsService : Service {
             found = await TryActivateCommand(cmdName, customCmds, chatArgs);
             if (found) return;
 
-            if (Options.AiOnMention && !string.IsNullOrEmpty(parsedCommand.ChatMessage.Mention)) {
+            if (Options.AiOnMention 
+             && !string.IsNullOrEmpty(parsedCommand.ChatMessage.Mention)
+             && parsedCommand.ChatMessage.Mention.Equals(Client.Credentials.Bot.Login, StringComparison.OrdinalIgnoreCase)) {
                 var cmd = Options.DefaultCmds.FirstOrDefault(x => x.Id == Options.MentionCmdId);
             
                 if (cmd is { State: State.Enabled, }) {
@@ -52,10 +56,10 @@ public class ChatCommandsService : Service {
             }
             
             if (Options.VerboseState == State.Enabled) {
-                await Client.SendMessage($"Unknown command: {Options.CommandIdentifier}{parsedCommand.CommandText}", chatMessage.Id);
+                await Client.SendMessage($"Unknown command: {cmdId}{parsedCommand.CommandText}", chatMessage.Id);
             }
         } catch (Exception e) {
-            var msg = _localization.GetStr(StrId.FailedToHandleCommand, Options.CommandIdentifier, parsedCommand.CommandText);;
+            var msg = _localization.GetStr(StrId.FailedToHandleCommand, cmdId, parsedCommand.CommandText);
             ErrorHandler.LogMessage(LogLevel.Error, $"{msg} {e.Message}");
             
             if (Client == null) return;

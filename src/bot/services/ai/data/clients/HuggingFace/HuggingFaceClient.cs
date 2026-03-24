@@ -42,10 +42,24 @@ public class HuggingFaceClient : AiClient {
             
             var response = await _httpClient.PostAsync(aiData.Endpoint, content);
             var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode) {
+                callback?.Invoke(this,  $"HuggingFace API request failed. Status: {response.StatusCode}. Response: {responseContent}");
+                return null;
+            }
+            
             var message = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseContent);
-            return message?.Choices?.Count < 1?
+            
+            if (message?.Choices == null || message.Choices.Count == 0) {
+                callback?.Invoke(this,  "HuggingFace API request failed.");
+                return null;
+            }
+            
+            return message.Choices.Count < 1?
                        null :
-                       message?.Choices?[0].Message?.Content;
+                       message.Choices[0].Message == null
+                           ? string.Empty
+                           : message.Choices[0].Message?.Content;
         }
         catch (Exception e) {
             callback?.Invoke(this, e.ToString());

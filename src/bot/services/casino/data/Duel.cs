@@ -10,14 +10,14 @@ public class Duel {
     public string Object { get; private set; }
     
     [JsonProperty("money")]
-    public long Quantity { get; private set; }
+    public double Quantity { get; private set; }
     
     
     [JsonConstructor]
     public Duel(
         [JsonProperty("subject")] string subject,
         [JsonProperty("object")] string obj,
-        [JsonProperty("money")] long quantity) {
+        [JsonProperty("money")] double quantity) {
         Subject = subject;
         Object = obj;
         Quantity = quantity;

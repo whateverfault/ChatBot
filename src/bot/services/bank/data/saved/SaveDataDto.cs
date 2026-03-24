@@ -8,9 +8,9 @@ internal class SaveDataDto {
 
     public readonly SafeField<Dictionary<string, Account>> Accounts = new SafeField<Dictionary<string, Account>>([]);
 
-    public readonly SafeField<Dictionary<string, long>> Rewards = new SafeField<Dictionary<string, long>>([]);
+    public readonly SafeField<Dictionary<string, double>> Rewards = new SafeField<Dictionary<string, double>>([]);
 
-    public readonly SafeField<long> MoneySupply = new SafeField<long>(0);
+    public readonly SafeField<double> MoneySupply = new SafeField<double>(0);
 
 
     public SaveDataDto() { }
@@ -18,8 +18,8 @@ internal class SaveDataDto {
     public SaveDataDto(
         State state,
         Dictionary<string, Account> accounts,
-        Dictionary<string, long> rewards,
-        long supply) {
+        Dictionary<string, double> rewards,
+        double supply) {
         ServiceState.Value = state;
         Accounts.Value = accounts;
         Rewards.Value = rewards;

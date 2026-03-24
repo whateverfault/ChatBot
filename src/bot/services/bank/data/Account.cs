@@ -7,16 +7,16 @@ public class Account {
     public string UserId { get; private set; }
     
     [JsonProperty("money")]
-    public long Money { get; private set; }
+    public double Money { get; private set; }
     
     [JsonProperty("gain")]
-    public long Gain { get; private set; }
+    public double Gain { get; private set; }
 
     [JsonProperty("last_active")]
     public long LastActive { get; private set; }
     
     
-    public Account(string userId, long money = 0) {
+    public Account(string userId, double money = 0) {
         UserId = userId;
         Money = money;
         UpdateActivity();
@@ -25,8 +25,8 @@ public class Account {
     [JsonConstructor]
     public Account(
         [JsonProperty("user_id")] string userId,
-        [JsonProperty("money")] long money,
-        [JsonProperty("gain")] long gain,
+        [JsonProperty("money")] double money,
+        [JsonProperty("gain")] double gain,
         [JsonProperty("last_active")] long lastActive) {
         UserId = userId;
         Money = money;
@@ -34,7 +34,7 @@ public class Account {
         LastActive = lastActive;
     }
     
-    public void AddMoney(long quantity, bool gain = false) {
+    public void AddMoney(double quantity, bool gain = false) {
         Money += quantity;
         if (gain) Gain += quantity;
     }

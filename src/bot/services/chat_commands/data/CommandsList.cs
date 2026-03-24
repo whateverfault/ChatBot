@@ -28,6 +28,7 @@ using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
 using TwitchAPI.shared;
+using Range = ChatBot.api.basic.Range;
 using MessageState = ChatBot.bot.services.message_randomizer.MessageState;
 
 namespace ChatBot.bot.services.chat_commands.data;
@@ -298,7 +299,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       28,
                                                       "hardest",
-                                                      "[username] [--top <number>]",
+                                                      "[username] [--top <range>]",
                                                       string.Empty,
                                                       Hardest,
                                                       Restriction.Everyone
@@ -306,7 +307,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       29,
                                                       "easiest",
-                                                      "[username] [--top <number>]",
+                                                      "[username] [--top <range>]",
                                                       string.Empty,
                                                       Easiest,
                                                       Restriction.Everyone,
@@ -331,7 +332,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       27,
                                                       "roulette",
-                                                      "<number> <number>",
+                                                      "[range]",
                                                       string.Empty,
                                                       Roulette,
                                                       Restriction.Everyone,
@@ -348,7 +349,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       59,
                                                       "phardest",
-                                                      "[username] [--top <number>]",
+                                                      "[username] [--top <range>]",
                                                       string.Empty,
                                                       PHardest,
                                                       Restriction.Everyone
@@ -356,7 +357,7 @@ public static class CommandsList {
                                new DefaultChatCommand(
                                                       60,
                                                       "peasiest",
-                                                      "[username] [--top <number>]",
+                                                      "[username] [--top <range>]",
                                                       string.Empty,
                                                       PEasiest,
                                                       Restriction.Everyone,
@@ -438,52 +439,57 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       36,
-                                                      "games",
+                                                      "queue",
                                                       "[--page <number>]",
                                                       string.Empty,
                                                       Games,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["games", "q",]
                                                      ),
                                new DefaultChatCommand(
                                                       37,
-                                                      "add-game",
-                                                      "<game_name> [--position <number>] [--user <username>]",
+                                                      "queue-add",
+                                                      "<name> [--position <number>] [--user <username>]",
                                                       string.Empty,
                                                       AddGame,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["add-game", "queue-append", "append-queue",]
                                                      ),
                                new DefaultChatCommand(
                                                       38,
-                                                      "complete",
-                                                      "<game_index>",
+                                                      "queue-remove",
+                                                      "<queue_index>",
                                                       string.Empty,
                                                       CompleteGame,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["remove-from-queue", "complete",]
                                                      ),
                                new DefaultChatCommand(
                                                       39,
-                                                      "reset-games",
+                                                      "reset-queue",
                                                       string.Empty,
                                                       string.Empty,
                                                       ResetGames,
                                                       Restriction.DevBroad,
-                                                      aliases: ["nuke-games",]
+                                                      aliases: ["reset-games", "clear-queue", "wipe-queue",]
                                                      ),
                                new DefaultChatCommand(
                                                       40,
-                                                      "add-game-reqs-reward",
+                                                      "add-queue-reward",
                                                       string.Empty,
                                                       string.Empty,
                                                       AddGameRequestsReward,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["add-game-reqs-reward",]
                                                       ),
                                new DefaultChatCommand(
                                                       41,
-                                                      "reset-game-reqs-rewards",
+                                                      "reset-queue-rewards",
                                                       string.Empty,
                                                       string.Empty,
                                                       ResetGameRequestsRewards,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["reset-game-reqs-rewards",]
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -507,7 +513,8 @@ public static class CommandsList {
                                                       "<reward_id>",
                                                       string.Empty,
                                                       RemoveReward,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["remove-reward",]
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -567,11 +574,12 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       50,
-                                                      "remove-cmd",
+                                                      "delete-cmd",
                                                       "<id>",
                                                       string.Empty,
                                                       RemoveCmd,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["remove-cmd",]
                                                      ),
                                new DefaultChatCommand(
                                                       51,
@@ -615,11 +623,12 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       55,
-                                                      "remove-chat-ad",
+                                                      "delete-chat-ad",
                                                       "<id>",
                                                       string.Empty,
                                                       RemoveChatAd,
-                                                      Restriction.DevBroad
+                                                      Restriction.DevBroad,
+                                                      aliases: ["remove-chat-ad",]
                                                      ),
                                new DefaultChatCommand(
                                                       56,
@@ -1255,14 +1264,21 @@ public static class CommandsList {
         if (chatMessage.Reply?.UserId == client.Credentials.Bot.UserId) {
             var text = chatMessage.Reply.Text;
             for (var i = text.Length - 1; i >= 0; --i) {
-                if (!char.IsWhiteSpace(text[i])) continue;
-                if (i + 2 >= text.Length) break;
+                if (!char.IsWhiteSpace(text[i])) 
+                    continue;
+                
+                if (i + ai.ChatIdIdentifier.Length + ai.ChatIdLength >= text.Length)
+                    continue;
+                
+                var chatIdentifier = text[i + 1].ToString();
+                if (chatIdentifier != ai.ChatIdIdentifier) 
+                     continue;
 
                 id = text[(i+2)..text.Length];
                 break;
             }
         }
-        
+         
         foreach (var word in args) {
             if (prompt.Length <= 0
              && word.Length > 0
@@ -1273,15 +1289,16 @@ public static class CommandsList {
             
             prompt.Append($"{word} ");
         }
-
+        
         if (id == null
-         && chatMessage.Reply != null 
-         && chatMessage.Reply?.UserId == client.Credentials.Bot.UserId) {
-            var chat = ai.CreateChat(new AiMessage(string.Empty, chatMessage.Reply.Text));
+         && chatMessage.Reply != null) {
+            var chat = chatMessage.Reply.UserId == client.Credentials.Bot.UserId
+                           ? ai.CreateChat(new AiMessage(string.Empty, chatMessage.Reply.Text))
+                           : ai.CreateChat(new AiMessage(chatMessage.Reply.Text, string.Empty));
             id = chat.Id;
         }
         
-        var lot = shop.Get(0);
+        var lot = shop.Get(Lot.Ai);
         if (lot == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -2035,12 +2052,21 @@ public static class CommandsList {
             return;
         }
 
-        if (!GetIntArg(cmdArgs, "--top", out var top)) {
-            top = 1;
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
         }
-
-        if (top <= 0) top = 1;
-        if (top > 10) top = 10;
+        else {
+            top = new Range(0, 1);
+        }
         
         var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
@@ -2066,16 +2092,13 @@ public static class CommandsList {
         }
         
         if (string.IsNullOrEmpty(username)) {
-            for (var i = 1; i <= top; ++i) {
-                var levelInfo = await demonList.GetLevelByPlacement(i);
-                if (levelInfo == null) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                    return;
-                }
+            var levels = await demonList.ListLevels();
+            var listHardests = demonList.GetHardests(levels, top);
+            
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listHardests[i], top.Length <= 1)}");
 
-                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
-
-                if (i < top - 1) {
+                if (i < top.Length - 1) {
                     formatedOutput.Append(" / ");
                 }
             }
@@ -2096,14 +2119,12 @@ public static class CommandsList {
             return;
         }
 
-        top = Math.Min(top, hardests.Count);
-        
-        for (var i = 0; i < top; ++i) {
+        for (var i = 0; i < top.Length; ++i) {
             var record = hardests[i];
             
-            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+            formatedOutput.Append($"{(top.Length > 1? $"{i + top.Start + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top.Length <= 1)}");
 
-            if (i < top - 1) {
+            if (i < hardests.Count - 1) {
                 formatedOutput.Append(" / ");
             }
         }
@@ -2124,12 +2145,21 @@ public static class CommandsList {
             return;
         }
 
-        if (!GetIntArg(cmdArgs, "--top", out var top)) {
-            top = 1;
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
         }
-
-        if (top <= 0) top = 1;
-        if (top > 10) top = 10;
+        else {
+            top = new Range(0, 1);
+        }
         
         var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
@@ -2155,16 +2185,13 @@ public static class CommandsList {
         }
         
         if (string.IsNullOrEmpty(username)) {
-            for (var i = 1; i <= top; ++i) {
-                var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
-                if (levelInfo == null) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                    return;
-                }
+            var levels = await demonList.ListPlatformerLevels();
+            var listHardests = demonList.GetHardests(levels, top);
+            
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listHardests[i], top.Length <= 1)}");
 
-                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
-
-                if (i < top - 1) {
+                if (i < top.Length - 1) {
                     formatedOutput.Append(" / ");
                 }
             }
@@ -2173,7 +2200,7 @@ public static class CommandsList {
             return;
         }
         
-        var profile = await demonList.GetProfile(username);
+        var profile = await demonList.GetPlatformerProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -2184,15 +2211,13 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
-
-        top = Math.Min(top, hardests.Count);
         
-        for (var i = 0; i < top; ++i) {
+        for (var i = 0; i < hardests.Count; ++i) {
             var record = hardests[i];
             
-            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+            formatedOutput.Append($"{(top.Length > 1? $"{i + top.Start + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top.Length <= 1)}");
 
-            if (i < top - 1) {
+            if (i < hardests.Count - 1) {
                 formatedOutput.Append(" / ");
             }
         }
@@ -2213,12 +2238,21 @@ public static class CommandsList {
             return;
         }
 
-        if (!GetIntArg(cmdArgs, "--top", out var top)) {
-            top = 1;
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
         }
-
-        if (top <= 0) top = 1;
-        if (top > 10) top = 10;
+        else {
+            top = new Range(0, 1);
+        }
         
         var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
@@ -2244,18 +2278,13 @@ public static class CommandsList {
         }
         
         if (string.IsNullOrEmpty(username)) {
-            var levelsCount = await demonList.GetLevelsCount();
+            var levels = await demonList.ListLevels();
+            var listEasiests = demonList.GetEasiests(levels, top);
             
-            for (var i = levelsCount; i > levelsCount - top; --i) {
-                var levelInfo = await demonList.GetLevelByPlacement(i);
-                if (levelInfo == null) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                    return;
-                }
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listEasiests[i], top.Length <= 1)}");
 
-                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
-
-                if (i < top - 1) {
+                if (i < top.Length - 1) {
                     formatedOutput.Append(" / ");
                 }
             }
@@ -2276,14 +2305,12 @@ public static class CommandsList {
             return;
         }
 
-        top = Math.Min(top, easiests.Count);
-        
-        for (var i = 0; i < top; ++i) {
+        for (var i = 0; i < easiests.Count; ++i) {
             var record = easiests[i];
             
-            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+            formatedOutput.Append($"{(top.Length > 1? $"{i + top.Start + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top.Length <= 1)}");
 
-            if (i < top - 1) {
+            if (i < easiests.Count - 1) {
                 formatedOutput.Append(" / ");
             }
         }
@@ -2304,12 +2331,21 @@ public static class CommandsList {
             return;
         }
 
-        if (!GetIntArg(cmdArgs, "--top", out var top)) {
-            top = 1;
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
         }
-
-        if (top <= 0) top = 1;
-        if (top > 10) top = 10;
+        else {
+            top = new Range(0, 1);
+        }
         
         var usernameSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
@@ -2329,24 +2365,18 @@ public static class CommandsList {
         var username = usernameSb.ToString();
 
         if (string.IsNullOrEmpty(username)) {
-            if (demonList.GetDefaultUserName(out var t)) {
+            if (demonList.GetDefaultUserName(out var t))
                 username = t;
-            }
         }
         
         if (string.IsNullOrEmpty(username)) {
-            var levelsCount = await demonList.GetPlatformerLevelsCount();
+            var levels = await demonList.ListPlatformerLevels();
+            var listEasiests = demonList.GetEasiests(levels, top);
             
-            for (var i = levelsCount; i > levelsCount - top; --i) {
-                var levelInfo = await demonList.GetPlatformerLevelByPlacement(i);
-                if (levelInfo == null) {
-                    await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
-                    return;
-                }
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listEasiests[i], top.Length <= 1)}");
 
-                formatedOutput.Append($"{(top > 1 ? $"{i}." : string.Empty)} {await demonList.FormatLevelInfo(levelInfo, top == 1)}");
-
-                if (i < top - 1) {
+                if (i < top.Length - 1) {
                     formatedOutput.Append(" / ");
                 }
             }
@@ -2366,15 +2396,13 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
-
-        top = Math.Min(top, easiests.Count);
         
-        for (var i = 0; i < top; ++i) {
+        for (var i = 0; i < easiests.Count; ++i) {
             var record = easiests[i];
             
-            formatedOutput.Append($"{(top > 1? $"{i + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top == 1)}");
+            formatedOutput.Append($"{(top.Length > 1? $"{i + top.Start + 1}." : string.Empty)} {demonList.FormatRecordInfo(record, top.Length <= 1)}");
 
-            if (i < top - 1) {
+            if (i < easiests.Count - 1) {
                 formatedOutput.Append(" / ");
             }
         }
@@ -2424,13 +2452,24 @@ public static class CommandsList {
             return;
         }
 
-        if (args.Count > 0) {
-            from = int.Parse(args[0]);
-            if (args.Count > 1) {
-                to = int.Parse(args[1]);
-            }
+        switch (args.Count) {
+            case 1
+                when ParseRange(args[0], out var range):
+                from = range.HasStart 
+                           ? range.Start
+                           : -1;
+                to = range.HasEnd
+                         ? range.End
+                         : -1;
+                break;
+            case > 1
+                when int.TryParse(args[0], out var fromValue)
+                  && int.TryParse(args[1], out var toValue):
+                from = fromValue;
+                to = toValue;
+                break;
         }
-                        
+
         var levelInfo = await demonList.GetRandomLevel(from, to);
         if (levelInfo == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
@@ -2457,13 +2496,24 @@ public static class CommandsList {
             return;
         }
 
-        if (args.Count > 0) {
-            from = int.Parse(args[0]);
-            if (args.Count > 1) {
-                to = int.Parse(args[1]);
-            }
+        switch (args.Count) {
+            case 1
+                when ParseRange(args[0], out var range):
+                from = range.HasStart 
+                           ? range.Start
+                           : -1;
+                to = range.HasEnd
+                         ? range.End
+                         : -1;
+                break;
+            case > 1
+                when int.TryParse(args[0], out var fromValue)
+                  && int.TryParse(args[1], out var toValue):
+                from = fromValue;
+                to = toValue;
+                break;
         }
-                        
+
         var levelInfo = await demonList.GetRandomPlatformerLevel(from, to);
         if (levelInfo == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
@@ -2491,15 +2541,28 @@ public static class CommandsList {
             return;
         }
 
-        var clanName = args[0];
+        var clanNameSb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            clanNameSb.Append($"{arg}");
+            if (i < args.Count - 1) {
+                clanNameSb.Append(' ');
+            }
+        }
+
+        var clanName = clanNameSb.ToString();
         
-        var clanInfo = await demonList.GetClanInfo(clanName);
-        if (clanInfo == null) {
+        var clan = await demonList.GetClan(clanName);
+        if (clan == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
 
-        var formatedOutput = demonList.FormatClanInfo(clanInfo);
+        var formatedOutput = demonList.FormatClanDetails(clan);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
     
@@ -2521,19 +2584,15 @@ public static class CommandsList {
             return;
         }
                     
-        var clanInfo = await demonList.GetClanInfo(args[0]);
-        if (clanInfo == null) {
+        var clan = await demonList.GetClan(args[0]);
+        if (clan == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
+
+        var hardest = demonList.GetHardest(clan.Records);
         
-        var hardest = await demonList.GetLevelDetails(clanInfo.Hardest.Id);
-        if (hardest == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
-            return;
-        }
-        
-        var formatedOutput = demonList.FormatLevelDetails(hardest);
+        var formatedOutput = demonList.FormatRecordInfo(hardest);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
 
@@ -2555,25 +2614,19 @@ public static class CommandsList {
             return;
         }
 
-        var clanInfo = await demonList.GetClanInfo(args[0]);
+        var clanInfo = await demonList.GetClan(args[0]);
         if (clanInfo == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
         
-        var clanSubmissionInfo = await demonList.GetRandomClanSubmission(clanInfo.Clan.Id);
+        var clanSubmissionInfo = await demonList.GetClanRandomSubmission(clanInfo.Clan.Id);
         if (clanSubmissionInfo?.Level == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
         }
-
-        var levelsInfo = await demonList.ClanSubmissionInfoToLevelInfo(clanSubmissionInfo);
-        if (levelsInfo == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
-            return;
-        }
         
-        var formatedOutput = await demonList.FormatLevelInfo(levelsInfo);
+        var formatedOutput = demonList.FormatRecordInfo(clanSubmissionInfo);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
 
@@ -2593,7 +2646,7 @@ public static class CommandsList {
         }
         
         var reply = new List<string>();
-        for (var i = 0; i < gameRequests?.Count; i++) {
+        for (var i = 0; i < gameRequests?.Count; ++i) {
             var gameRequest = gameRequests[i];
             var separator = "/";
             
@@ -2828,7 +2881,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
 
         if (args.Count <= 0) {
-            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            await client.SendMessage(tgNotifications.Options.NotificationPrompt, chatMessage.Id);
             return;
         }
         
@@ -3173,17 +3226,18 @@ public static class CommandsList {
             return;
         }
 
-        if (!bank.GetBalance(chatMessage.UserId, out var balance)) {
+        if (!bank.GetFormatedBalance(chatMessage.UserId, out var balance)) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
+        
         var result = casino.Gamble(chatMessage.UserId, quantity);
         if (!result.Ok) {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
         
-        if (!bank.GetBalance(chatMessage.UserId, out var newBalance)) {
+        if (!bank.GetFormatedBalance(chatMessage.UserId, out var newBalance)) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
@@ -3252,6 +3306,7 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var args = cmdArgs.Parsed.ArgumentsAsList;
+        var bank = (BankService)Services.Get(ServiceId.Bank);
         var casino = (CasinoService)Services.Get(ServiceId.Casino);
 
         var userId = string.Empty;
@@ -3295,15 +3350,32 @@ public static class CommandsList {
         var random = Random.Shared.Next(0, 3);
         switch (random) {
             case 0: {
-                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse0, winnerUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
+                await client.SendMessage(
+                                         _localization.GetStr(StrId.AcceptDuelResponse0,
+                                                              winnerUsername,
+                                                              bank.FormatMoney(duelResult.Win),
+                                                              Declensioner.Points((long)duelResult.Win)),
+                                         chatMessage.Id);
                 break;
             }
             case 1: {
-                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse1, winnerUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
+                await client.SendMessage(
+                                         _localization.GetStr(StrId.AcceptDuelResponse1,
+                                                              winnerUsername,
+                                                              bank.FormatMoney(duelResult.Win),
+                                                              Declensioner.Points((long)duelResult.Win)),
+                                         chatMessage.Id);
                 break;
             }
             default: {
-                await client.SendMessage(_localization.GetStr(StrId.AcceptDuelResponse2, winnerUsername, looserUsername, duelResult.Win, Declensioner.Points(duelResult.Win)), chatMessage.Id);
+                await client.SendMessage(
+                                         _localization.GetStr(StrId.AcceptDuelResponse2,
+                                                              winnerUsername,
+                                                              looserUsername,
+                                                              bank.FormatMoney(duelResult.Win),
+                                                              Declensioner.Points((long)duelResult.Win)),
+                                         chatMessage.Id
+                                         );
                 break;
             }
         }
@@ -3371,6 +3443,7 @@ public static class CommandsList {
         if (client?.Credentials == null) return;
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)Services.Get(ServiceId.Bank);
         var casino = (CasinoService)Services.Get(ServiceId.Casino);
 
         var result = casino.ListDuels(chatMessage.UserId);
@@ -3396,7 +3469,7 @@ public static class CommandsList {
                 return;
             }
             
-            reply.Add($"{i+1}. {username} - {duel.Quantity} {(i >= duels.Count - 1? string.Empty : "\\")} ");
+            reply.Add($"{i+1}. {username} - {bank.FormatMoney(duel.Quantity)} {(i >= duels.Count - 1? string.Empty : "\\")} ");
         }
 
         await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
@@ -3419,7 +3492,7 @@ public static class CommandsList {
         }
 
         var arrow = account.Gain >= 0 ? "↑" : "↓";
-        var str = _localization.GetStr(StrId.Balance, account.Money, Declensioner.Points(account.Money), Math.Abs(account.Gain), arrow);
+        var str = _localization.GetStr(StrId.Balance, bank.FormatMoney(account.Money), Declensioner.Points((long)account.Money), bank.FormatMoney(Math.Abs(account.Gain)), arrow);
         await client.SendMessage(str, chatMessage.Id);
     }
     
@@ -3637,7 +3710,7 @@ public static class CommandsList {
             return;
         }
         
-        var str = _localization.GetStr(StrId.GiveResult, money, Declensioner.Points(money), username);
+        var str = _localization.GetStr(StrId.GiveResult, bank.FormatMoney(money), Declensioner.Points(money), username);
         await client.SendMessage(str, chatMessage.Id);
     }
     
@@ -3657,8 +3730,8 @@ public static class CommandsList {
             return;
         }
         
-        var err = ParseIntArg(cmdArgs, out var temp);
-        long money = temp;
+        var err = ParseLongArg(cmdArgs, out var temp);
+        double money = temp;
         if (err != ErrorCode.None) {
             money = account.Money;
         }
@@ -3674,17 +3747,18 @@ public static class CommandsList {
             return;
         
         var sb = new StringBuilder();
-        for (var i = 0; i < map.Count; ++i) {
-            var (receiver, points) = map.ElementAt(i);
+        var receivers = map.ToDictionary();
+        for (var i = 0; i < receivers.Count; ++i) {
+            var (receiver, points) = receivers.ElementAt(i);
             var username = await _bot.Api.GetUserName(receiver, client.Credentials, true, (_, msg) => {
                                                           ErrorHandler.LogMessage(LogLevel.Error, msg);
                                                       });
             if (username == null) continue;
             
-            sb.Append($"{username} - {points} {(i >= map.Count-1? string.Empty : "/ ")}");
+            sb.Append($"{username} - {bank.FormatMoney(points)} {(i >= receivers.Count - 1? string.Empty : "/ ")}");
         }
         
-        var str = _localization.GetStr(StrId.GiveawayResult, money, Declensioner.Points(money), sb);
+        var str = _localization.GetStr(StrId.GiveawayResult, bank.FormatMoney(money), Declensioner.Points((long)money), sb);
         await client.SendMessage(str, chatMessage.Id);
     }
     
@@ -3703,7 +3777,7 @@ public static class CommandsList {
         
         for (var i = 0; i < rewards.Count; ++i) {
             var (id, quantity) = rewards.ElementAt(i);
-            reply.Add($"{i+1}. {id} - {quantity} {(i >= rewards.Count - 1? string.Empty : "\\")} ");
+            reply.Add($"{i+1}. {id} - {bank.FormatMoney(quantity)} {(i >= rewards.Count - 1? string.Empty : "\\")} ");
         }
 
         await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
@@ -3720,7 +3794,7 @@ public static class CommandsList {
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var bank = (BankService)Services.Get(ServiceId.Bank);
 
-        var err = ParseIntArg(cmdArgs, out var quantity);
+        var err = ParseLongArg(cmdArgs, out var quantity);
         if (err != ErrorCode.None) {
             await ErrorHandler.ReplyWithError(err, chatMessage, client);
             return;
@@ -3876,14 +3950,61 @@ public static class CommandsList {
         var args = cmdArgs.Parsed.ArgumentsAsList;
         
         var index = args.IndexOf(name);
-        if (index < 0 || index >= args.Count) {
+        if (index < 0 || index >= args.Count - 1) {
             return false;
         }
         
-        if (index - 1 < args.Count) {
-            value = int.Parse(args[index + 1]);
+        value = int.Parse(args[index + 1]);
+        return true;
+    }
+
+    private static bool GetRangeArg(ChatCmdArgs cmdArgs, string name, out Range value) {
+        value = new Range();
+        
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        
+        var index = args.IndexOf(name);
+        if (index < 0 || index >= args.Count - 1) {
+            return false;
         }
 
+        return ParseRange(args[index + 1], out value);
+    }
+    
+    private static bool ParseRange(string s, out Range range) {
+        range = new Range();
+        
+        string[] separators = [" ", "-", "..",];
+        
+        var startSb = new StringBuilder();
+        var separatorSb = new StringBuilder();
+        var endSb = new StringBuilder();
+
+        var index = 0;
+        while (index < s.Length && char.IsDigit(s[index])) {
+            startSb.Append(s[index++]);
+        }
+        
+        while (index < s.Length && !char.IsDigit(s[index])) {
+            separatorSb.Append(s[index++]);
+        }
+
+        if (separators.All(x => x != separatorSb.ToString())) {
+            return false;
+        }
+        
+        while (index < s.Length && char.IsDigit(s[index])) {
+            endSb.Append(s[index++]);
+        }
+
+        if (startSb.Length > 0 && int.TryParse(startSb.ToString(), out var startVal)) {
+            range.SetStart(startVal);
+        }
+        
+        if (endSb.Length > 0 && int.TryParse(endSb.ToString(), out var endVal)) {
+            range.SetEnd(endVal);
+        }
+        
         return true;
     }
     

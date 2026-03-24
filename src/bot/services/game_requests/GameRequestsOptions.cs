@@ -25,7 +25,7 @@ public class GameRequestsOptions : Options {
     public override void Load() {
         if (!Json.TryRead(OptionsPath, out _saveData!)) {
             SetDefaults();
-        } if (!Json.TryRead(GameRequestsPath, out _gameRequests!)) {
+        } if (!Json.TryRead(GameRequestsPath, out _gameRequests)) {
             SetDefaults();
         }
     }

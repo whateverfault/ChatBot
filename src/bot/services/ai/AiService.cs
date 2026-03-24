@@ -21,10 +21,14 @@ public enum AiKind {
 }
 
 public class AiService : Service {
+    private readonly object _sync = new object();
     private readonly List<AiClient> _aiClients = [];
     
     public override AiOptions Options { get; } = new AiOptions();
 
+    public int ChatIdLength => Options.ChatIdLength;
+    public string ChatIdIdentifier => Options.ChatIdIdentifier;
+    
     
     public async Task<Result<string?, ErrorCode?>> GetResponse(string prompt, string? id = null) {
         if (Options.ServiceState == State.Disabled) {
@@ -34,22 +38,25 @@ public class AiService : Service {
         var aiIndex = (int)Options.AiKind;
         var aiClient = _aiClients[aiIndex];
         var aiData = Options.AiData[aiIndex];
-        var chat = Options.GetChat(id) ?? Options.CreateChat();
 
+        var chat = Options.GetChat(id) ?? Options.CreateChat();
         RemoveUnusedChats(id);
         
-        var responseSb = new StringBuilder();
-        responseSb.Append(await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
-                                                                               ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                                           }));
+        var response = await aiClient.GetResponse(prompt, chat, aiData, (_, message) => {
+                                                                            ErrorHandler.LogMessage(LogLevel.Error,
+                                                                                message);
+                                                                        });
         
-        if (aiData.Fallback.FallbackState != State.Enabled) {
+        var responseSb = new StringBuilder();
+        responseSb.Append(response);
+        
+        if (responseSb.Length > 0 || aiData.Fallback.FallbackState != State.Enabled) {
             if (responseSb.Length <= 0) {
                 return new Result<string?, ErrorCode?>(null, ErrorCode.RequestFailed);
             }
             
             chat.AddMessage(prompt, responseSb.ToString());
-            responseSb.Append($" #{chat.Id}");
+            responseSb.Append($" {ChatIdIdentifier}{chat.Id}");
             return new Result<string?, ErrorCode?>(responseSb.ToString(), null);
         }
 
@@ -68,25 +75,29 @@ public class AiService : Service {
         }
         
         chat.AddMessage(prompt, responseSb.ToString());
-        responseSb.Append($" #{chat.Id}");
+        responseSb.Append($" {ChatIdIdentifier}{chat.Id}");
         return new Result<string?, ErrorCode?>(responseSb.ToString(), null);
     }
 
     public AiChatHistory CreateChat(params AiMessage[] messages) {
-        var chat = Options.CreateChat();
-        chat.AddMessages(messages);
-        return chat;
+        lock (_sync) {
+            var chat = Options.CreateChat();
+            chat.AddMessages(messages);
+            return chat;
+        }
     }
     
     private void RemoveUnusedChats(string? id = null) {
-        var chats = Options.Chats;
-        var now = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-        
-        foreach (var chat in chats) {
-            if (!string.IsNullOrEmpty(id) && chat.Id.Equals(id)) continue;
-            if (now.Subtract(chat.LastUsed) <= TimeSpan.FromSeconds(Options.RemoveChatAfter)) continue;
-            
-            Options.RemoveChat(chat.Id);
+        lock (_sync) {
+            var chats = Options.Chats;
+            var now = DateTimeOffset.UtcNow;
+
+            foreach (var chat in chats.ToList()) {
+                if (!string.IsNullOrEmpty(id) && chat.Id == id) continue;
+                if ((now - chat.LastUsed).ToUnixTimeSeconds() <= Options.RemoveChatAfter) continue;
+
+                Options.RemoveChat(chat.Id);
+            }
         }
     }
     

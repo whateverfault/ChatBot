@@ -3,6 +3,9 @@ using ChatBot.bot.chat_bot;
 using ChatBot.bot.interfaces;
 using ChatBot.bot.services.game_requests.data;
 using ChatBot.bot.services.interfaces;
+using ChatBot.bot.services.localization;
+using ChatBot.bot.services.localization.data;
+using ChatBot.bot.services.Static;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
@@ -10,6 +13,7 @@ using TwitchAPI.client.data;
 namespace ChatBot.bot.services.game_requests;
 
 public class GameRequestsService : Service {
+    private static LocalizationService _localization = (LocalizationService)Services.Get(ServiceId.Localization);
     private static ITwitchClient? Client => TwitchChatBot.Instance.GetClient();
     
     public override GameRequestsOptions Options { get; } = new GameRequestsOptions();
@@ -35,6 +39,7 @@ public class GameRequestsService : Service {
     public async Task AddGameRequest(List<string> args, ChatMessage chatMessage) {
         try {
             if (Client?.Credentials == null) return;
+            if (Options.GameRequests == null) return;
 
             var gameNameSb = new StringBuilder();
 
@@ -70,8 +75,8 @@ public class GameRequestsService : Service {
                 }
             }
             
-            if (position <= 0 || position > Options.GameRequests!.Count + 1) {
-                position = Options.GameRequests!.Count + 1;
+            if (position <= 0 || position > Options.GameRequests.Count + 1) {
+                position = Options.GameRequests.Count + 1;
             }
 
             var gameName = gameNameSb.ToString().Trim();
@@ -88,7 +93,9 @@ public class GameRequestsService : Service {
                                              );
 
             Options.AddRequest(gameRequest, position - 1);
-            await Client.SendMessage($"Игра {gameName} добавлена в очередь на {position} позицию.", chatMessage.Id);
+            
+            var message = _localization.GetStr(StrId.QueueAppended, gameName, position);
+            await Client.SendMessage(message, chatMessage.Id);
         }
         catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, $"Exception while adding a game request: {e.Data}");

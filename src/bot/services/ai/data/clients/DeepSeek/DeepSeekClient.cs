@@ -43,7 +43,7 @@ public class DeepSeekClient : AiClient {
             var responseJson = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                callback?.Invoke(this,  $"Status: {response.StatusCode}. Response: {responseJson}");
+                callback?.Invoke(this,  $"DeepSeek API request failed. Status: {response.StatusCode}. Response: {responseJson}");
                 return null;
             }
             

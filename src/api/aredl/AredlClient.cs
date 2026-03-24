@@ -28,26 +28,6 @@ public class AredlClient {
             _cache = new AredlCache();
         }
     }
-
-    public async Task<int> GetLevelsCount() {
-        try {
-            await ListLevels();
-            return _cache?.Levels?.Data.Count ?? 0;
-        }
-        catch {
-            return 0;
-        }
-    }
-    
-    public async Task<int> GetPlatformerLevelsCount() {
-        try {
-            await ListPlatformerLevels();
-            return _cache?.PlatformerLevels?.Data.Count ?? 0;
-        }
-        catch {
-            return 0;
-        }
-    }
     
     public void ResetCache() {
         _cache?.ResetCache();
@@ -81,7 +61,7 @@ public class AredlClient {
         }
     }
     
-    public async Task<ListLevelsResponse?> ListLevels(EventHandler<string>? errorCallback = null) {
+    public async Task<List<LevelInfo>?> ListLevels(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { Levels: not null, }) {
                 return _cache.Levels;
@@ -102,7 +82,7 @@ public class AredlClient {
             var deserialized = JsonConvert.DeserializeObject<List<LevelInfo>>(content);
             if (deserialized == null) return null;
                 
-            var result = new ListLevelsResponse(deserialized);
+            var result = new ListLevelsResponse(deserialized).Data;
             _cache?.CacheLevelsList(result); 
             return result;
         }
@@ -115,10 +95,9 @@ public class AredlClient {
     public async Task<List<LevelInfo>?> GetLevelsByName(string name, EventHandler<string>? errorCallback = null) {
         try {
             var levels = await ListLevels(errorCallback);
-            var result = levels?.Data.AsParallel()
-                                .Where(levelInfo =>
-                                           levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
-                                              .Equals(name, StringComparison.OrdinalIgnoreCase));
+            var result = levels?.AsParallel()
+                                .Where(levelInfo => levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
+                                                       .Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (result != null) {
                 return result.ToList();
@@ -139,8 +118,8 @@ public class AredlClient {
         try {
             var levels = await ListLevels(errorCallback);
 
-            var result = levels?.Data.AsParallel()
-                                .Where(levelInfo =>
+            var result = levels?.AsParallel()
+                                .Where(levelInfo => 
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
                                               .Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
@@ -185,8 +164,8 @@ public class AredlClient {
 
             var levels = await ListLevels(errorCallback);
 
-            if (placement <= levels?.Data.Count) {
-                return levels.Data[placement - 1];
+            if (placement <= levels?.Count) {
+                return levels[placement - 1];
             }
 
             errorCallback?.Invoke(null, "Given an invalid placement");
@@ -199,7 +178,7 @@ public class AredlClient {
         }
     }
 
-    public async Task<ListLevelsResponse?> ListPlatformerLevels(EventHandler<string>? errorCallback = null) {
+    public async Task<List<LevelInfo>?> ListPlatformerLevels(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { PlatformerLevels: not null, }) {
                 return _cache.PlatformerLevels;
@@ -224,7 +203,7 @@ public class AredlClient {
                                                x.Platformer = true;
                                            });
             
-            var result = new ListLevelsResponse(deserialized);
+            var result = new ListLevelsResponse(deserialized).Data;
             _cache?.CachePlatformerLevelsList(result);
             return result;
         }
@@ -239,8 +218,8 @@ public class AredlClient {
         try {
             var levels = await ListPlatformerLevels(errorCallback);
 
-            var result = levels?.Data.AsParallel()
-                                .Where(levelInfo =>
+            var result = levels?.AsParallel()
+                                .Where(levelInfo => 
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
                                               .Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
@@ -262,8 +241,8 @@ public class AredlClient {
         try {
             var levels = await ListPlatformerLevels(errorCallback);
 
-            var result = levels?.Data.AsParallel()
-                                .Where(levelInfo =>
+            var result = levels?.AsParallel()
+                                .Where(levelInfo => 
                                            levelInfo.Name.Length >= name.Length && levelInfo.Name[..name.Length]
                                               .Equals(name, StringComparison.CurrentCultureIgnoreCase));
             if (result == null) {
@@ -309,8 +288,8 @@ public class AredlClient {
 
             var levels = await ListPlatformerLevels(errorCallback);
 
-            if (placement < levels?.Data.Count) {
-                return levels.Data[placement - 1];
+            if (placement < levels?.Count) {
+                return levels[placement - 1];
             }
 
             errorCallback?.Invoke(null, "Given an invalid placement");
@@ -493,23 +472,23 @@ public class AredlClient {
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode) {
-                errorCallback?.Invoke(null,
-                                 $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
+                errorCallback?.Invoke(null, $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
                 return null;
             }
 
             var deserialized = JsonConvert.DeserializeObject<ListClansResponse>(content);
-            if (deserialized == null) return null;
+            if (deserialized == null) {
+                errorCallback?.Invoke(null, $"Failed to fetch clans info. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
             
             if (deserialized.Data.Count >= 1) {
                 _cache?.CacheClansList(deserialized);
                 return deserialized;
             }
 
-            errorCallback?.Invoke(null,
-                             $"Error while fetching clan info. Status: {response.StatusCode}. Response: {content}");
+            errorCallback?.Invoke(null, $"Error while fetching clans info. Status: {response.StatusCode}. Response: {content}");
             return null;
-
         }
         catch (Exception e) {
             errorCallback?.Invoke(null, $"Error while listing clans info: {e.Message}");
@@ -517,7 +496,34 @@ public class AredlClient {
         }
     }
 
-    public async Task<ClanInfo?> GetClan(string tag, EventHandler<string>? errorCallback = null) {
+    public async Task<ClanDetails?> GetClanDetails(string clanId, EventHandler<string>? errorCallback = null) {
+        try {
+            using var requestMessage =
+                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/clan/{clanId}");
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode) {
+                errorCallback?.Invoke(null, $"Error while fetching clan details. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+
+            var deserialized = JsonConvert.DeserializeObject<ClanDetails>(content);
+            if (deserialized == null) {
+                errorCallback?.Invoke(null, $"Error while fetching clan details. Status: {response.StatusCode}. Response: {content}");
+                return null;
+            }
+
+            return deserialized;
+        }
+        catch (Exception ex) {
+            errorCallback?.Invoke(null, $"Error while fetching clan details: {ex.Message}");
+            return null;
+        }
+    }
+    
+    public async Task<ClanDetails?> GetClan(string tag, EventHandler<string>? errorCallback = null) {
         try {
             var clans = await ListClans(errorCallback);
             if (clans == null) {
@@ -527,38 +533,15 @@ public class AredlClient {
 
             var filtered = clans.Data
                                 .AsParallel()
-                                .Where(clanData => clanData.Clan.Tag.Equals(tag,
-                                                                            StringComparison.CurrentCultureIgnoreCase));
-            var filteredList = filtered.ToList();
-            if (filteredList.Count >= 1) {
-                return filteredList[0];
-            }
-
-            errorCallback?.Invoke(null, "Such clan does not exist");
-            return null;
-        }
-        catch (Exception e) {
-            errorCallback?.Invoke(null, $"Error while fetching clan info: {e.Message}");
-            return null;
-        }
-    }
-
-    public async Task<ClanRecordsResponse?> GetClanRecords(string id, EventHandler<string>? errorCallback = null) {
-        try {
-            using var requestMessage =
-                new HttpRequestMessage(HttpMethod.Get, $"https://api.aredl.net/v2/api/aredl/clan/{id}");
-
-            var response = await _httpClient.SendAsync(requestMessage);
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode) {
-                errorCallback?.Invoke(null,
-                                 $"Error while listing clans info. Status: {response.StatusCode}. Response: {content}");
+                                .FirstOrDefault(clanData => clanData.Clan.Tag.Equals(tag, StringComparison.CurrentCultureIgnoreCase));
+            
+            if (filtered == null) {
+                errorCallback?.Invoke(null, "Such clan does not exist");
                 return null;
             }
 
-            var result = JsonConvert.DeserializeObject<ClanRecordsResponse>(content);
-            return result;
+            var details = await GetClanDetails(filtered.Clan.Id, errorCallback);
+            return details;
         }
         catch (Exception e) {
             errorCallback?.Invoke(null, $"Error while fetching clan info: {e.Message}");

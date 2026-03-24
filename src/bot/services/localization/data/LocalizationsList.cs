@@ -63,6 +63,7 @@ public enum StrId {
     ClipCreated,
     RequestsRewardSet,
     RequestsStateChanged,
+    QueueAppended,
     Mute0,
     Mute1,
     Mute2,
@@ -383,8 +384,8 @@ public static class LocalizationsList {
                                                                                  {
                                                                                      StrId.GameRequestsReset,
                                                                                      new Localization(
-                                                                                          "Список заказов очищен",
-                                                                                          "Game requests have been reset"
+                                                                                          "Очередь была очищена",
+                                                                                          "Queue has been wiped"
                                                                                          )
                                                                                  },
                                                                                  {
@@ -574,6 +575,13 @@ public static class LocalizationsList {
                                                                                      new Localization(
                                                                                           "Реквесты теперь {}",
                                                                                           "Requests are now {}"
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.QueueAppended,
+                                                                                     new Localization(
+                                                                                          "{} добавлен(-а) в очередь на {} позицию.",
+                                                                                          "Queue has been appended with {} at position {}"
                                                                                          )
                                                                                  },
                                                                                  {

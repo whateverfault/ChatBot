@@ -51,7 +51,7 @@ public class CasinoOptions : Options{
         Save();
     }
 
-    public bool AddDuel(string subject, string obj, long quantity) {
+    public bool AddDuel(string subject, string obj, double quantity) {
         if (ContainsDuel(subject, obj)) return false;
         Duels.Add(new Duel(subject, obj, quantity));
         

@@ -28,8 +28,8 @@ public class BankAccountFilteringService : Service {
         
         var accounts = Bank.Options.GetAccounts();
         var accountsToDelete = new List<Account>();
-        var accountsToGivePoints = new Dictionary<string, long>();
-        var money = 0L;
+        var accountsToGivePoints = new Dictionary<string, double>();
+        var money = 0.0;
 
         foreach (var (_, account) in accounts) {
             if (account.LastActive >= Options.GetLastActiveThreshold())
@@ -76,9 +76,9 @@ public class BankAccountFilteringService : Service {
                                                      });
             if (username == null) continue;
             
-            sb.Append($"{username} - {points} {(i >= accountsToGivePoints.Count-1? string.Empty : "/ ")}");
+            sb.Append($"{username} - {points:F0} {(i >= accountsToGivePoints.Count-1? string.Empty : "/ ")}");
         }
         
-        await client.SendMessage($"Удалено {accountsToDelete.Count} {Declensioner.Accounts(accountsToDelete.Count)} и роздано {money} {Declensioner.Points(money)}: {sb}");
+        await client.SendMessage($"Удалено {accountsToDelete.Count} {Declensioner.Accounts(accountsToDelete.Count)} и роздано {money:F0} {Declensioner.Points((long)money)}: {sb}");
     }
 }

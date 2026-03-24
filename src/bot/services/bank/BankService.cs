@@ -9,10 +9,10 @@ namespace ChatBot.bot.services.bank;
 public class BankService : Service {
     public override BankOptions Options { get; } = new BankOptions();
 
-    public long MoneySupply => Options.MoneySupply;
+    public double MoneySupply => Options.MoneySupply;
 
 
-    public Result<bool, ErrorCode?> Give(string distUserId, string srcUserId, long quantity) {
+    public Result<bool, ErrorCode?> Give(string distUserId, string srcUserId, double quantity) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
@@ -30,7 +30,7 @@ public class BankService : Service {
         return new Result<bool, ErrorCode?>(takeResult.Value && giveResult, null);
     }
 
-    public Result<bool, ErrorCode?> Give(Account dist, Account src, long quantity) {
+    public Result<bool, ErrorCode?> Give(Account dist, Account src, double quantity) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
@@ -43,7 +43,7 @@ public class BankService : Service {
         return new Result<bool, ErrorCode?>(takeResult.Value && giveResult, null);
     }
     
-    public Result<bool, ErrorCode?> TakeOut(string userId, long quantity, bool gain = true) {
+    public Result<bool, ErrorCode?> TakeOut(string userId, double quantity, bool gain = true) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
@@ -55,7 +55,7 @@ public class BankService : Service {
                    : new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
     }
 
-    public Result<bool, ErrorCode?> TakeOut(Account? account, long quantity, bool gain = true) {
+    public Result<bool, ErrorCode?> TakeOut(Account? account, double quantity, bool gain = true) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
@@ -65,54 +65,53 @@ public class BankService : Service {
                    : new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
     }
     
-    public Result<bool, ErrorCode?> Deposit(string userId, long quantity, bool gain = true) {
+    public Result<bool, ErrorCode?> Deposit(string userId, double quantity, bool gain = true) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
         if (userId.Equals(client.Credentials.Broadcaster.UserId))
-            return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
+            return new Result<bool, ErrorCode?>(false, ErrorCode.RequestFailed);
         return new Result<bool, ErrorCode?>(Options.Deposit(userId, quantity, gain), null);
     }
 
-    public bool GetBalance(string userId, out long balance) {
-        balance = long.MaxValue;
-
-        var client = TwitchChatBot.Instance.GetClient();
-        if (client?.Credentials == null) return false;
-
-        return userId.Equals(client.Credentials.Broadcaster.UserId) || Options.GetBalance(userId, out balance);
+    public bool GetBalance(string userId, out double balance) {
+        balance = double.PositiveInfinity;
+        return Options.GetBalance(userId, out balance);
     }
 
-    public Result<Dictionary<string, long>?, ErrorCode?> Giveaway(string userId, long money) {
+    public Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?> Giveaway(string userId, double money) {
         if (!GetAccount(userId, out var account) || account == null)
-            return new Result<Dictionary<string, long>?, ErrorCode?>(null, ErrorCode.AccountNotFound);
+            return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.AccountNotFound);
 
         return Giveaway(account, money);
     }
 
-    public Result<Dictionary<string, long>?, ErrorCode?> Giveaway(Account account, long money) {
+    public Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?> Giveaway(Account account, double money) {
         var accounts = Options.GetAccounts();
 
         if (account.Money < money) 
-            return new Result<Dictionary<string, long>?, ErrorCode?>(null, ErrorCode.TooFewPoints);
+            return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.TooFewPoints);
+        
+        if (money >= double.PositiveInfinity)
+            return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.InvalidInput);
         
         var random = Random.Shared;
         var amount = accounts.Count switch {
-                         >= 1 => (int)random.NextInt64(1, Math.Min(money, accounts.Count)%int.MaxValue),
-                         _   => 0,
+                         >= 1 => (long)((random.NextDouble() + 1) * Math.Min(money, accounts.Count)),
+                         _    => 0,
                      };
 
         if (amount < 1) 
-            return new Result<Dictionary<string, long>?, ErrorCode?>(null, ErrorCode.TooFewAccounts);
+            return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.TooFewAccounts);
         
         if (amount > 10) amount = 10;
         
         var quantityPerEach = money / amount;
         if (quantityPerEach <= 0) {
-            return new Result<Dictionary<string, long>?, ErrorCode?>(null, ErrorCode.TooFewPoints);
+            return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.TooFewPoints);
         }
 
-        var map = new Dictionary<string, long>();
+        var map = new Dictionary<string, double>();
         var left = money;
         var retries = 0;
         
@@ -123,7 +122,7 @@ public class BankService : Service {
             if (receiver.UserId.Equals(account.UserId)) {
                 if (index - 1 < 0 && index + 1 < accounts.Count) ++index;
                 else if (index - 1 >= 0) --index;
-                else return new Result<Dictionary<string, long>?, ErrorCode?>(null, ErrorCode.TooFewAccounts);
+                else return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(null, ErrorCode.TooFewAccounts);
                 
                 (_, receiver) = accounts.ElementAt(index);
             }
@@ -141,13 +140,14 @@ public class BankService : Service {
 
             left -= quantityPerEach;
             
-            var tempAmount = amount - (i + 1);
+            var tempAmount = amount - i + 1;
             if (tempAmount < 1) tempAmount = 1;
             
             quantityPerEach = left / tempAmount;
         }
 
-        return new Result<Dictionary<string, long>?, ErrorCode?>(map, null);
+        var ordererMap = map.OrderBy(x => x.Value).AsEnumerable();
+        return new Result<IEnumerable<KeyValuePair<string, double>>?, ErrorCode?>(ordererMap, null);
     }
 
     public bool DeleteAccount(string userId) {
@@ -162,7 +162,21 @@ public class BankService : Service {
         Options.UpdateActivity(userId);
     }
     
-    public long GetMoneySupply() {
+    public double GetMoneySupply() {
         return MoneySupply;
+    }
+    
+    public long GetMoneySupplyLong() {
+        return (long)MoneySupply;
+    }
+
+    public string FormatMoney(double money) {
+        return Math.Floor(money).ToString("F0");
+    }
+    
+    public bool GetFormatedBalance(string userId, out string formatedBalance) {
+        var result = GetBalance(userId, out var balance);
+        formatedBalance = FormatMoney(balance);
+        return result;
     }
 }
