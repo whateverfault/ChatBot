@@ -1,7 +1,9 @@
 ﻿using ChatBot.bot.interfaces;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.message_filter;
+using ChatBot.bot.services.stream_state_checker.Data;
 using ChatBot.bot.shared.handlers;
+using TwitchAPI.api.data.requests;
 using TwitchAPI.client;
 using TwitchAPI.client.data;
 
@@ -36,6 +38,14 @@ public class LevelRequestsService : Service {
         }
     }
 
+    public void OnStreamStarted(StreamState streamStateNew, StreamState streamStateOld, StreamData? streamData) {
+        if (!streamStateNew.Online || Options.EnableOnStreamStart != State.Enabled) {
+            return;
+        }
+
+        Options.SetReqState(ReqState.On);
+    }
+    
     public int GetPatternIndex() {
         return Options.PatternIndex;
     }

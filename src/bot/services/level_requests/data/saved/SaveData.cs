@@ -17,6 +17,9 @@ internal class SaveData {
     [JsonProperty("req_state")]
     public ReqState ReqState { get; set; }
     
+    [JsonProperty("enable_on_stream_start")]
+    public State EnableOnStreamStart { get; set; }
+    
     [JsonProperty("reward_id")]
     public string RewardId { get; set; } = null!;
 
@@ -31,12 +34,14 @@ internal class SaveData {
         [JsonProperty("pattern_index")] int patternIndex,
         [JsonProperty("restriction")] Restriction restriction,
         [JsonProperty("req_state")] ReqState reqState,
+        [JsonProperty("enable_on_stream_start")] State enableOnStreamStart,
         [JsonProperty("reward_id")] string rewardId) {
         var dto = new SaveDataDto(
                                   serviceState,
                                   patternIndex,
                                   restriction,
                                   reqState,
+                                  enableOnStreamStart,
                                   rewardId
                                   );
         FromDto(dto);
@@ -47,6 +52,7 @@ internal class SaveData {
         PatternIndex = dto.PatternIndex.Value;
         Restriction = dto.Restriction.Value;
         ReqState = dto.ReqState.Value;
+        EnableOnStreamStart = dto.EnableOnStreamStart.Value;
         RewardId = dto.RewardId.Value;
     }
 }

@@ -668,7 +668,8 @@ public static class CommandsList {
                                                       "[--page number]",
                                                       string.Empty,
                                                       Shop,
-                                                      Restriction.Everyone
+                                                      Restriction.Everyone,
+                                                      aliases: ["lots",]
                                                      ),
                                new DefaultChatCommand(
                                                       77,
@@ -867,12 +868,12 @@ public static class CommandsList {
                                                      ),
                                new DefaultChatCommand(
                                                       69,
-                                                      "evaluate",
+                                                      "run",
                                                       "<expression>",
                                                       string.Empty,
                                                       Evaluate,
                                                       Restriction.DevBroad,
-                                                      aliases: ["eval", "e",]
+                                                      aliases: ["r",]
                                                      ),
                                
                            ];
@@ -2541,22 +2542,22 @@ public static class CommandsList {
             return;
         }
 
-        var clanNameSb = new StringBuilder();
+        var clanTagSb = new StringBuilder();
         for (var i = 0; i < args.Count; i++) {
             var arg = args[i];
             if (arg.Length > 1 && arg[0..2] is "--") {
                 break;
             }
 
-            clanNameSb.Append($"{arg}");
+            clanTagSb.Append($"{arg}");
             if (i < args.Count - 1) {
-                clanNameSb.Append(' ');
+                clanTagSb.Append(' ');
             }
         }
 
-        var clanName = clanNameSb.ToString();
+        var clanTag = clanTagSb.ToString();
         
-        var clan = await demonList.GetClan(clanName);
+        var clan = await demonList.GetClan(clanTag);
         if (clan == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -2584,7 +2585,22 @@ public static class CommandsList {
             return;
         }
                     
-        var clan = await demonList.GetClan(args[0]);
+        var clanTagSb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            clanTagSb.Append($"{arg}");
+            if (i < args.Count - 1) {
+                clanTagSb.Append(' ');
+            }
+        }
+
+        var clanTag = clanTagSb.ToString();
+        
+        var clan = await demonList.GetClan(clanTag);
         if (clan == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -2614,13 +2630,22 @@ public static class CommandsList {
             return;
         }
 
-        var clanInfo = await demonList.GetClan(args[0]);
-        if (clanInfo == null) {
-            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
-            return;
+        var clanTagSb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            clanTagSb.Append($"{arg}");
+            if (i < args.Count - 1) {
+                clanTagSb.Append(' ');
+            }
         }
+
+        var clanTag = clanTagSb.ToString();
         
-        var clanSubmissionInfo = await demonList.GetClanRandomSubmission(clanInfo.Clan.Id);
+        var clanSubmissionInfo = await demonList.GetClanRandomSubmission(clanTag);
         if (clanSubmissionInfo?.Level == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
             return;
@@ -3263,6 +3288,7 @@ public static class CommandsList {
         
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var casino = (CasinoService)Services.Get(ServiceId.Casino);
+        var bank = (BankService)Services.Get(ServiceId.Bank);
 
         var err = ParseSemicolonSeparatedArgs(cmdArgs, out var args);
         if (err != ErrorCode.None) {
@@ -3292,7 +3318,7 @@ public static class CommandsList {
             return;
         }
         
-        var str = _localization.GetStr(StrId.DuelChallenged, args[1], args[0], Declensioner.Points(quantity));
+        var str = _localization.GetStr(StrId.DuelChallenged, args[1], bank.FormatMoney(args[0]), Declensioner.Points(quantity));
         await client.SendMessage(str, chatMessage.Id);
     }
     
@@ -3502,10 +3528,11 @@ public static class CommandsList {
 
         var chatMessage = cmdArgs.Parsed.ChatMessage;
         var shop = (ShopService)Services.Get(ServiceId.Shop);
+        var bank = (BankService)Services.Get(ServiceId.Bank);
         var lots = shop.Lots;
 
-        var reply = lots.Select((lot, i) => $"{i + 1}. {lot.Name} - {lot.Cost}" +
-                                            $"{(lot.Buyers.TryGetValue(chatMessage.UserId, out var val)? $"({val})" : string.Empty)}" +
+        var reply = lots.Select((lot, i) => $"{i + 1}. {lot.Name} - {bank.FormatMoney(lot.Cost)}" +
+                                            $"{((lot.Buyers.TryGetValue(chatMessage.UserId, out var val) && val > 0)? $"({val})" : string.Empty)}" +
                                             $" {(i >= lots.Count - 1 ? string.Empty : "/")}")
                         .ToList();
 
@@ -3801,7 +3828,7 @@ public static class CommandsList {
         }
         
         var rewardId = await _bot.Api.CreateChannelReward(
-                                                       title: $"+{quantity}",
+                                                       title: _localization.GetStr(StrId.BankRewardTitle, quantity),
                                                        cost: quantity,
                                                        credentials: client.Credentials,
                                                        prompt: _localization.GetStr(StrId.BankRewardDescription, quantity),

@@ -22,6 +22,7 @@ public class LevelRequestsOptions : Options {
     public int PatternIndex => _saveData!.PatternIndex;
     public string RewardId => _saveData!.RewardId;
     public ReqState ReqState => _saveData!.ReqState;
+    public State EnableOnStreamStart => _saveData!.EnableOnStreamStart;
     public Restriction Restriction => _saveData!.Restriction;
     
 

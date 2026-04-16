@@ -81,6 +81,7 @@ public enum StrId {
     When5,
     Usage,
     BankRewardDescription,
+    BankRewardTitle,
     FailedToHandleCommand,
     Cmd0Desc,
     Cmd1Desc,
@@ -699,8 +700,15 @@ public static class LocalizationsList {
                                                                                  {
                                                                                      StrId.BankRewardDescription,
                                                                                      new Localization(
-                                                                                          "Дает {} фантиков",
-                                                                                          "Gives {} points"
+                                                                                          "Дает {} фантиков. Можешь поговорить с ии написав в чат: !ai. Замутить кого-то !mute. Купить защиту от мута !antimute. Еще есть рулетка !gamble. В !shop можно посмотреть цены. Проверить баланс !balance",
+                                                                                          "Gives {} points. You can chat with the AI by typing !ai in the chat. Mute someone with !mute. Buy protection from mutes with !antimute. There’s also a roulette game with !gamble. You can check prices in !shop. Check your balance with !balance."
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.BankRewardTitle,
+                                                                                     new Localization(
+                                                                                          "+{} фантиков",
+                                                                                          "+{} points"
                                                                                          )
                                                                                  },
                                                                                  {

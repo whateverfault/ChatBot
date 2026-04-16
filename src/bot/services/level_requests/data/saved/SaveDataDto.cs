@@ -12,6 +12,8 @@ internal class SaveDataDto {
     public readonly SafeField<Restriction> Restriction = new SafeField<Restriction>(shared.handlers.Restriction.Vip);
 
     public readonly SafeField<ReqState> ReqState = new SafeField<ReqState>(level_requests.ReqState.Off);
+    
+    public readonly SafeField<State> EnableOnStreamStart = new SafeField<State>(State.Disabled);
 
     public readonly SafeField<string> RewardId = new SafeField<string>(string.Empty);
 
@@ -23,11 +25,13 @@ internal class SaveDataDto {
         int patternIndex,
         Restriction restriction,
         ReqState reqState,
+        State enableOnStreamStart,
         string rewardId) {
         ServiceState.Value = serviceState;
         PatternIndex.Value = patternIndex;
         Restriction.Value = restriction;
         ReqState.Value = reqState;
+        EnableOnStreamStart.Value = enableOnStreamStart;
         RewardId.Value = rewardId;
     }
 }

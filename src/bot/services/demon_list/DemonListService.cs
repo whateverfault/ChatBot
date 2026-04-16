@@ -247,11 +247,9 @@ public class DemonListService : Service {
         }
     }
 
-    public async Task<RecordInfo?> GetClanRandomSubmission(string id) {
+    public async Task<RecordInfo?> GetClanRandomSubmission(string tag) {
         try {
-            var clan = await _aredlClient.GetClan(id, (_, message) => {
-                                                                       ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                                   });
+            var clan = await GetClan(tag);
 
             if (clan == null)
                 return null;
@@ -432,7 +430,7 @@ public class DemonListService : Service {
     }
     
     public string FormatClanDetails(ClanDetails clan) {
-        var formated = $"#{clan.Rank.Rank} [{clan.Clan.Tag}] {clan.Clan.GlobalName} | aredl.net/profile/clan/{clan.Clan.Id}";
+        var formated = $"#{clan.Rank?.Rank} [{clan.Clan.Tag}] {clan.Clan.GlobalName} | aredl.net/profile/clan/{clan.Clan.Id}";
         return formated;
     }
 

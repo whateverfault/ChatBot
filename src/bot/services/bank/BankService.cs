@@ -174,6 +174,14 @@ public class BankService : Service {
         return Math.Floor(money).ToString("F0");
     }
     
+    public string FormatMoney(string moneyStr) {
+        if (!double.TryParse(moneyStr, out var money)) {
+            return moneyStr;
+        }
+        
+        return Math.Floor(money).ToString("F0");
+    }
+    
     public bool GetFormatedBalance(string userId, out string formatedBalance) {
         var result = GetBalance(userId, out var balance);
         formatedBalance = FormatMoney(balance);
