@@ -10,7 +10,7 @@ public class CliNodeLong : CliNode {
     private readonly LongSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeLong(string text, LongGetter getter, CliNodePermission permission, LongSetter? setter = null) {

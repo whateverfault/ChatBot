@@ -5,7 +5,7 @@ public delegate void ActionHandler();
 public class CliNodeAction : CliNode {
     private readonly ActionHandler _action;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeAction(string text, ActionHandler action) {

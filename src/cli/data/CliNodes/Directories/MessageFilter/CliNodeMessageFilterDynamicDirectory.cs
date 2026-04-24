@@ -8,7 +8,7 @@ public class CliNodeMessageFilterDynamicDirectory : CliNodeDirectory {
 
     private readonly CliState _state;
 
-    protected override string Text { get; }
+    public override string Text { get; }
 
     public override List<CliNode> Nodes { get; }
     public override bool HasBackOption => true;

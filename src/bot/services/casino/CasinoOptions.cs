@@ -6,7 +6,7 @@ using ChatBot.bot.shared;
 
 namespace ChatBot.bot.services.casino;
 
-public class CasinoOptions : Options{
+public class CasinoOptions : Options {
     private readonly object _fileLock = new object();
     
     private SaveData? _saveData;
@@ -16,11 +16,17 @@ public class CasinoOptions : Options{
     
     public override State ServiceState => _saveData!.ServiceState;
     
-    public float RandomValue => _saveData!.RandomValue;
-    public float BaseMultiplier => _saveData!.BaseMultiplier;
-    public float AdditionalMultiplier => _saveData!.AdditionalMultiplier;
+    public double RandomValue => _saveData!.RandomValue;
+    public float BaseCoefficient => _saveData!.BaseCoefficient;
+    public float AdditionalCoefficient => _saveData!.AdditionalCoefficient;
 
+    public IReadOnlyList<GambleEmote> Emotes => _saveData!.Emotes;
+    public int EmoteSlots => _saveData!.EmoteSlots;
+    
     private List<Duel> Duels => _saveData!.Duels;
+
+    public event EventHandler<GambleEmote>? OnEmoteAdded;
+    public event EventHandler<string>? OnEmoteRemoved;
     
     
     public override void Load() {
@@ -47,7 +53,7 @@ public class CasinoOptions : Options{
     }
     
     public void NewRandomValue() {
-        _saveData!.RandomValue = Random.Shared.NextSingle();
+        _saveData!.RandomValue = Random.Shared.NextDouble();
         Save();
     }
 
@@ -71,7 +77,7 @@ public class CasinoOptions : Options{
                 return true;
             }
             
-            if (!(duel.Object.Equals(obj) && duel.Subject.Equals(subject))) continue;
+            if (duel.Object != obj || duel.Subject != subject) continue;
             
             Duels.RemoveAt(i);
             Save();
@@ -101,8 +107,65 @@ public class CasinoOptions : Options{
     public List<Duel> GetDuels(string obj) {
         return Duels.Where(duel => duel.Object.Equals(obj)).ToList();
     }
+
+    public int GetEmoteSlots() {
+        return EmoteSlots;
+    }
+    
+    public void SetEmoteSlots(int value) {
+        _saveData!.EmoteSlots = value;
+        Save();
+    }
+
+    public float GetBaseCoefficient() {
+        return BaseCoefficient;
+    }
+    
+    public void SetBaseCoefficient(float value) {
+        _saveData!.BaseCoefficient = value;
+        Save();
+    }
+    
+    public float GetAdditionalCoefficient() {
+        return AdditionalCoefficient;
+    }
+    
+    public void SetAdditionalCoefficient(float value) {
+        _saveData!.AdditionalCoefficient = value;
+        Save();
+    }
+
+    public bool AddEmote(string name) {
+        if (Emotes.Any(x => x.Name == name)) {
+            return false;
+        }
+
+        var emote = new GambleEmote(name);
+        _saveData!.Emotes.Add(emote);
+        Save();
+
+        OnEmoteAdded?.Invoke(this, emote);
+        return true;
+    }
+
+    public bool RemoveEmote(string name) {
+        for (var i = 0; i < Emotes.Count; ++i) {
+            var emote = Emotes[i];
+            if (emote.Name != name) {
+                continue;
+            }
+
+            _saveData!.Emotes.RemoveAt(i);
+            Save();
+            
+            OnEmoteRemoved?.Invoke(this, name);
+            return true;
+        }
+        
+        return false;
+    }
     
     private bool ContainsDuel(string subject, string obj) {
-        return Duels.Any(duel => duel.Subject.Equals(subject) && duel.Object.Equals(obj));
+        return Duels.Any(duel => duel.Subject == subject && duel.Object == obj);
     }
 }

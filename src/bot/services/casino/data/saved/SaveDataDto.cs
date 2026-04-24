@@ -12,6 +12,15 @@ internal class SaveDataDto {
 
     public readonly SafeField<float> AdditionalMultiplier = new SafeField<float>(1.3f);
 
+    public readonly SafeField<List<GambleEmote>> Emotes = new SafeField<List<GambleEmote>>([
+        new GambleEmote("💣", 25, 0.6, -0.1, 2),
+        new GambleEmote("😊", 30, 0.6, 0.1, 2),
+        new GambleEmote("😁", 20, 1.6, 0.2, 2),
+        new GambleEmote("💎", 15, 1.8, 0.3, 3),
+    ]);
+    
+    public readonly SafeField<int> EmoteSlots = new SafeField<int>(3);
+    
     public readonly SafeField<List<Duel>> Duels = new SafeField<List<Duel>>([]);
 
 
@@ -22,11 +31,15 @@ internal class SaveDataDto {
         float randomValue,
         float baseMultiplier,
         float additional,
+        List<GambleEmote> emotes,
+        int emoteSlots,
         List<Duel> duels) {
         ServiceState.Value = state;
         RandomValue.Value = randomValue;
         BaseMultiplier.Value = baseMultiplier;
         AdditionalMultiplier.Value = additional;
+        Emotes.Value = emotes;
+        EmoteSlots.Value = emoteSlots;
         Duels.Value = duels;
     }
 }

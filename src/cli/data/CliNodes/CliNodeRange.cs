@@ -11,8 +11,7 @@ public class CliNodeRange : CliNode {
     private readonly RangeSetter _setter = null!;
     private readonly CliNodePermission _permission;
 
-
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeRange(string text, RangeGetter getter, CliNodePermission permission, RangeSetter? setter = null) {

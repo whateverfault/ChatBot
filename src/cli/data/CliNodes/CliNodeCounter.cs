@@ -6,7 +6,7 @@ public class CliNodeCounter : CliNode {
     private readonly ActionHandler _increase;
     private readonly IntGetter _getter;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeCounter(string text, IntGetter getter, ActionHandler increase) {

@@ -8,7 +8,7 @@ public enum CliNodePermission {
 }
 
 public abstract class CliNode {
-    protected abstract string Text { get; }
+    public abstract string Text { get; }
 
     public virtual bool ShouldSkip => false;
 

@@ -151,4 +151,22 @@ public static class Declensioner {
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
+    
+    public static string Emotes(long amount) {
+        var lastTwoDigits = amount%100;
+        var lastDigit = amount%10;
+
+        return _localization.Language switch {
+            Lang.Ru => lastDigit switch {
+                1 when lastTwoDigits != 11                                     => "эмоут",
+                > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "эмоута",
+                _                                                              => "эмоутов",
+            },
+            Lang.Eng => lastDigit switch {
+                1 => "emote",
+                _ => "emotes",
+            },
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+    }
 }

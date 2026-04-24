@@ -6,7 +6,7 @@ public class CliNodeText : CliNode {
     private readonly bool _hasIndex;
     private readonly int _decrease;
 
-    protected override string Text { get; }
+    public override string Text { get; }
     
     public override bool ShouldSkip { get; }
     

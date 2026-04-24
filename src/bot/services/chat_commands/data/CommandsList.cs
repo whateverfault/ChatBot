@@ -712,14 +712,6 @@ public static class CommandsList {
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
-                                                      63,
-                                                      "gamble",
-                                                      "<money>",
-                                                      string.Empty,
-                                                      Gamble,
-                                                      Restriction.Everyone
-                                                     ),
-                               new DefaultChatCommand(
                                                       61,
                                                       "balance",
                                                       string.Empty,
@@ -742,6 +734,38 @@ public static class CommandsList {
                                                       "[money]",
                                                       string.Empty,
                                                       Giveaway,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      PAGE_TERMINATOR_CMD_ID,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      63,
+                                                      "gamble",
+                                                      "<money>",
+                                                      string.Empty,
+                                                      Gamble,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      83,
+                                                      "slots",
+                                                      "<money>",
+                                                      string.Empty,
+                                                      Slots,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      84,
+                                                      "slots-info",
+                                                      "[page]",
+                                                      string.Empty,
+                                                      SlotsInfo,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -824,6 +848,22 @@ public static class CommandsList {
                                                       "<id>",
                                                       string.Empty,
                                                       BankDeleteReward,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      85,
+                                                      "bank-create-buyback-reward",
+                                                      "<money>",
+                                                      string.Empty,
+                                                      BankCreateBuyBackReward,
+                                                      Restriction.DevBroad
+                                                     ),
+                               new DefaultChatCommand(
+                                                      86,
+                                                      "bank-delete-buyback-reward",
+                                                      "<money>",
+                                                      string.Empty,
+                                                      BankDeleteBuyBackReward,
                                                       Restriction.DevBroad
                                                      ),
                                new DefaultChatCommand(
@@ -3245,6 +3285,11 @@ public static class CommandsList {
         var casino = (CasinoService)Services.Get(ServiceId.Casino);
         var bank = (BankService)Services.Get(ServiceId.Bank);
 
+        if (casino.GetServiceState() != State.Enabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+        
         var err = ParseLongArg(cmdArgs, out var quantity);
         if (err != ErrorCode.None) {
             await ErrorHandler.ReplyWithError(err, chatMessage, client);
@@ -3261,23 +3306,125 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
             return;
         }
-        
+
+        if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+    
         if (!bank.GetFormatedBalance(chatMessage.UserId, out var newBalance)) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;
         }
 
         var gambleResult = result.Value;
-        if (gambleResult is not { Ok: true, }) {
-            await ErrorHandler.ReplyWithError(ErrorCode.TooFewPoints, chatMessage, client);
+        var arrow = gambleResult.Value.Result ? "↑" : "↓";
+    
+        await client.SendMessage($"{balance} -> {newBalance} | x{gambleResult.Value.Multiplier:F}{arrow}", chatMessage.Id);
+    }
+
+    private static async Task Slots(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
             return;
         }
         
-        var arrow = gambleResult.Value.Result ? "↑" : "↓";
+        var client = _bot.GetClient();
+        if (client == null) return;
         
-        await client.SendMessage($"{balance} -> {newBalance} | x{gambleResult.Value.Multiplier:F}{arrow}", chatMessage.Id);
-    }
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)Services.Get(ServiceId.Casino);
+        var bank = (BankService)Services.Get(ServiceId.Bank);
+
+        if (casino.GetServiceState() != State.Enabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+        
+        var err = ParseLongArg(cmdArgs, out var quantity);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        if (!bank.GetFormatedBalance(chatMessage.UserId, out var balance)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+        
+        var result = casino.GambleWithEmotes(chatMessage.UserId, quantity);
+        if (!result.Ok) {
+            await ErrorHandler.ReplyWithError(result.Error, chatMessage, client);
+            return;
+        }
+
+        if (result.Value == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
     
+        if (!bank.GetFormatedBalance(chatMessage.UserId, out var newBalance)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
+            return;
+        }
+
+        var gambleResult = result.Value.Value;
+        var sign = gambleResult.Multiplier >= 0 ? "" : "-";
+
+        var emotesSb = new StringBuilder();
+
+        for (var i = 0; i < gambleResult.Emotes.Length; ++i) {
+            emotesSb.Append(gambleResult.Emotes[i].Name);
+
+            if (i < gambleResult.Emotes.Length - 1) {
+                emotesSb.Append(' ');
+            }
+        }
+            
+        await client.SendMessage($"{emotesSb} | {balance} -> {newBalance} | {sign}x{Math.Abs(gambleResult.Multiplier):F}", chatMessage.Id);
+    }
+
+    private static async Task SlotsInfo(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+
+        var client = _bot.GetClient();
+        if (client == null) return;
+
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var casino = (CasinoService)Services.Get(ServiceId.Casino);
+
+        if (casino.GetServiceState() != State.Enabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+        
+        var emotes = casino.Options.Emotes;
+        var reply = new List<string>(emotes.Count);
+        var partsSum = emotes.Sum(x => x.Part);
+
+        var sb = new StringBuilder();
+        
+        for (var i = 0; i < emotes.Count; ++i) {
+            var emote = emotes[i];
+            var chance = emote.Part / partsSum * 100;
+            var comboSign = emote.ComboCoefficient >= 0
+                                ? ""
+                                : "-";
+            
+            sb.Append($"{emote.Name} — {chance:F0}% | {comboSign}x{Math.Abs(emote.ComboCoefficient)}");
+
+            if (i < emotes.Count - 1) {
+                sb.Append(" /// ");
+            }
+
+            reply.Add(sb.ToString());
+            sb.Clear();
+        }
+
+        await SendPagedReply(reply, cmdArgs, _chatCmds.Options.SendWhisperIfPossible, false);
+    }
+
     private static async Task Duel(ChatCmdArgs cmdArgs) {
         if (await ErrorIfNotFullyAuthorized()) {
             return;
@@ -3718,6 +3865,7 @@ public static class CommandsList {
             await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
             return;
         }
+        
         var username = parsed[1];
 
         var userId = await _bot.Api.GetUserId(username, client.Credentials, async void (_, message) => {
@@ -3873,6 +4021,10 @@ public static class CommandsList {
         }
 
         var (rewardId, _) = bank.Options.GetReward(index-1);
+        if (string.IsNullOrEmpty(rewardId)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
         
         var result = await _bot.Api.DeleteChannelReward(
                                                         rewardId,
@@ -3887,6 +4039,93 @@ public static class CommandsList {
         }
         
         bank.Options.RemoveReward(rewardId);
+
+        var str = _localization.GetStr(StrId.RewardRemoved);
+        await client.SendMessage(str, chatMessage.Id);
+    }
+    
+    private static async Task BankCreateBuyBackReward(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)Services.Get(ServiceId.Bank);
+        
+        var err = ParseLongArg(cmdArgs, out var quantity);
+        if (err != ErrorCode.None) {
+            await ErrorHandler.ReplyWithError(err, chatMessage, client);
+            return;
+        }
+
+        var pointsForReward = Math.Max(quantity / 10, 1);
+        
+        var rewardId = bank.Options.GetBuyBackReward();
+        if (!string.IsNullOrEmpty(rewardId)) {
+            await _bot.Api.DeleteChannelReward(
+                                               rewardId,
+                                               client.Credentials,
+                                               (_, message) => { ErrorHandler.LogMessage(LogLevel.Error, message); }
+                                              );
+        }
+
+        rewardId = await _bot.Api.CreateChannelReward(
+                                                      title: _localization.GetStr(StrId.BuyBackRewardTitle),
+                                                      cost: quantity,
+                                                      credentials: client.Credentials,
+                                                      prompt: _localization.GetStr(StrId.BuyBackRewardDescription, pointsForReward),
+                                                      isEnabled: true,
+                                                      userInputRequired: false,
+                                                      skipQueue: false,
+                                                      callback: (_, message) => {
+                                                                    ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                                }
+                                                     );
+        if (rewardId == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
+        
+        bank.Options.SetBuyBackReward(rewardId);
+        bank.Options.SetPointsForBuyBack(pointsForReward);
+
+        var str = _localization.GetStr(StrId.RewardCreated, rewardId);
+        await client.SendMessage(str, chatMessage.Id);
+    }
+    
+    private static async Task BankDeleteBuyBackReward(ChatCmdArgs cmdArgs) {
+        if (await ErrorIfNotFullyAuthorized()) {
+            return;
+        }
+        
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        var bank = (BankService)Services.Get(ServiceId.Bank);
+
+        var rewardId = bank.Options.GetBuyBackReward();
+        if (string.IsNullOrEmpty(rewardId)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NoRewardSet, chatMessage, client);
+            return;
+        }
+        
+        var result = await _bot.Api.DeleteChannelReward(
+                                                        rewardId,
+                                                        client.Credentials,
+                                                        (_, message) => { 
+                                                            ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                        }
+                                                      );
+        if (!result) {
+            await ErrorHandler.ReplyWithError(ErrorCode.RequestFailed, chatMessage, client);
+            return;
+        }
+        
+        bank.Options.SetBuyBackReward(string.Empty);
 
         var str = _localization.GetStr(StrId.RewardRemoved);
         await client.SendMessage(str, chatMessage.Id);

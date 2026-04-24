@@ -11,6 +11,7 @@ using ChatBot.cli.data.CliNodes;
 using ChatBot.cli.data.CliNodes.Directories;
 using ChatBot.cli.data.CliNodes.Directories.ChatAds;
 using ChatBot.cli.data.CliNodes.Directories.ChatCommands;
+using ChatBot.cli.data.CliNodes.Directories.GambleEmotes;
 using ChatBot.cli.data.CliNodes.Directories.MessageFilter;
 using ChatBot.cli.data.CliNodes.Directories.Moderation;
 using ChatBot.cli.data.CliNodes.Directories.Presets;
@@ -992,6 +993,44 @@ public class CliNodeSystem {
                                                                      CliNodePermission.Default,
                                                                      _state.Data.Casino.ServiceStateNext
                                                                     ),
+                                                     new CliNodeStaticDirectory(
+                                                                                "Default",
+                                                                                _state,
+                                                                                true,
+                                                                                [
+                                                                                    new CliNodeFloat(
+                                                                                         "Base Coefficient",
+                                                                                         _state.Data.Casino.Options.GetBaseCoefficient,
+                                                                                         CliNodePermission.Default,
+                                                                                         _state.Data.Casino.Options.SetBaseCoefficient
+                                                                                        ),
+                                                                                    new CliNodeFloat(
+                                                                                         "Additional Coefficient",
+                                                                                         _state.Data.Casino.Options.GetAdditionalCoefficient,
+                                                                                         CliNodePermission.Default,
+                                                                                         _state.Data.Casino.Options.SetAdditionalCoefficient
+                                                                                        ),
+                                                                                ]
+                                                                               ),
+                                                     new CliNodeStaticDirectory(
+                                                                                "Emote Slots",
+                                                                                _state,
+                                                                                true,
+                                                                                [
+                                                                                    new CliNodeInt(
+                                                                                         "Slots",
+                                                                                         _state.Data.Casino.Options.GetEmoteSlots,
+                                                                                         CliNodePermission.Default,
+                                                                                         _state.Data.Casino.Options.SetEmoteSlots
+                                                                                         ),
+                                                                                    new CliNodeGambleEmotesDynamicDirectory(
+                                                                                         "Emotes",
+                                                                                         "Add Emote",
+                                                                                         "Remove Emote",
+                                                                                         _state
+                                                                                        ),
+                                                                                ]
+                                                                                ),
                                                  ]
                                                 );
         

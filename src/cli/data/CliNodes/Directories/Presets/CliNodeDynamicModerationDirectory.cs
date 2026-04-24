@@ -13,7 +13,7 @@ public class CliNodeDynamicPresetsDirectory : CliNodeDirectory {
     private readonly CliNodeStaticDirectory _content;
     private readonly CliState _state;
 
-    protected override string Text { get; }
+    public override string Text { get; }
     
     public override List<CliNode> Nodes { get; }
     public override bool HasBackOption => true;

@@ -16,12 +16,31 @@ public class BankOptions : Options {
     private static string OptionsPath => Path.Combine(Directories.ServiceDirectory+Name, $"{Name}_opt.json");
 
     public override State ServiceState => _saveData!.ServiceState;
-    public double MoneySupply => _saveData!.MoneySupply;
-    
+    public double MoneySupply {
+        get {
+            if (double.IsPositiveInfinity(_saveData!.MoneySupply)) {
+                _saveData!.MoneySupply = double.MaxValue;
+                Save();
+            }
+            else if (double.IsNegativeInfinity(_saveData!.MoneySupply)) {
+                _saveData!.MoneySupply = double.MinValue;
+                Save();
+            }
+            else if (double.IsNaN(_saveData!.MoneySupply)) {
+                _saveData!.MoneySupply = 1;
+                Save();
+            }
+            
+            return _saveData!.MoneySupply;
+        }
+    }
+
     private Dictionary<string, Account> Accounts => _saveData!.Accounts; 
     private Dictionary<string, double> Rewards => _saveData!.Rewards;
+    private string BuyBackReward => _saveData!.BuyBackReward;
+    private double PointsForBuyBack => _saveData!.PointsForBuyBack;
 
-    private TwitchChatBot Bot => TwitchChatBot.Instance;
+    private static TwitchChatBot Bot => TwitchChatBot.Instance;
     
     
     public override void Load() {
@@ -51,7 +70,6 @@ public class BankOptions : Options {
             return false;
 
         if (!Accounts.TryGetValue(userId, out var account)) {
-            if (quantity < 0) return false;
             Accounts.Add(userId, new Account(userId, quantity));
         }
 
@@ -59,15 +77,10 @@ public class BankOptions : Options {
     }
     
     private bool BankAdd(Account? account, double quantity, bool gain) {
-        if (account != null) {
-            if (account.Money + quantity < 0) 
-                return false;
-            
-            account.AddMoney(quantity, gain);
-        }
-        
-        if (_saveData!.MoneySupply + quantity >= 0) 
-            _saveData!.MoneySupply += quantity;
+        account?.AddMoney(quantity, gain);
+
+        _saveData!.MoneySupply += quantity;
+        if (_saveData!.MoneySupply < 1) _saveData!.MoneySupply = 1;
         
         Save();
         return true;
@@ -135,6 +148,10 @@ public class BankOptions : Options {
     }
     
     public (string, double) GetReward(int index) {
+        if (index < 0 || index >= Rewards.Count) {
+            return (string.Empty, 0);
+        }
+        
         var reward = Rewards.ElementAtOrDefault(index);
         reward.Deconstruct(out var key, out var value);
         return (key, value);
@@ -149,6 +166,24 @@ public class BankOptions : Options {
             return;
 
         account.UpdateActivity();
+        Save();
+    }
+
+    public string GetBuyBackReward() {
+        return BuyBackReward;
+    }
+    
+    public void SetBuyBackReward(string value) {
+        _saveData!.BuyBackReward = value;
+        Save();
+    }
+    
+    public double GetPointsForBuyBack() {
+        return PointsForBuyBack;
+    }
+    
+    public void SetPointsForBuyBack(double value) {
+        _saveData!.PointsForBuyBack = value;
         Save();
     }
 }

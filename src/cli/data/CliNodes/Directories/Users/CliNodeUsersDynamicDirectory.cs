@@ -12,7 +12,7 @@ public class CliNodeUsersDynamicDirectory : CliNodeDirectory {
     private readonly AddUserHandler _addHandler;
     private readonly RemoveUserHandler _removeHandler;
 
-    protected override string Text { get; }
+    public override string Text { get; }
     
     public override List<CliNode> Nodes { get; }
     public override bool HasBackOption { get; }

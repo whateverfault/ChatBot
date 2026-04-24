@@ -10,7 +10,7 @@ public class CliNodeIndex : CliNode {
     private readonly IndexSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeIndex(string text, IndexGetter getter, CliNodePermission permission, IndexSetter? setter = null) {

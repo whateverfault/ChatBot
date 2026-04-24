@@ -7,7 +7,7 @@ public sealed class CliNodeStaticDirectory : CliNodeDirectory {
 
     private readonly string _text;
 
-    protected override string Text => 
+    public override string Text => 
         _dynamicName != null?
             _dynamicName.Invoke() :
             _text;

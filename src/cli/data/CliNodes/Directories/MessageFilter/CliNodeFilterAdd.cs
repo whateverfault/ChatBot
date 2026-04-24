@@ -8,7 +8,7 @@ public delegate void AddFilterHandler(Filter filter);
 public class CliNodeFilterAdd : CliNode {
     private readonly AddFilterHandler _addHandler;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
     
     public CliNodeFilterAdd(string text, AddFilterHandler addHandler) {

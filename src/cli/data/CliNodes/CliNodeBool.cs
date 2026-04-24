@@ -10,7 +10,7 @@ public class CliNodeBool : CliNode {
     private readonly BoolSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeBool(string text, BoolGetter getter, CliNodePermission permission, BoolSetter? setter = null) {

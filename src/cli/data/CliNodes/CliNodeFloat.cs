@@ -10,7 +10,7 @@ public class CliNodeFloat : CliNode {
     private readonly FloatSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeFloat(string text, FloatGetter getter, CliNodePermission permission, FloatSetter? setter = null) {

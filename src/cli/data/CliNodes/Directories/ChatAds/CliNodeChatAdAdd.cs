@@ -8,7 +8,7 @@ public delegate void AddChatAdHandler(ChatAd chatCmd);
 public class CliNodeChatAdAdd : CliNode {
     private readonly AddChatAdHandler _add;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeChatAdAdd(string text, AddChatAdHandler add) {

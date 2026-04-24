@@ -10,7 +10,7 @@ public class CliNodeString : CliNode {
     private readonly StringSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeString(string text, StringGetter getter, CliNodePermission permission, StringSetter? setter = null) {

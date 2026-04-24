@@ -9,7 +9,7 @@ public delegate void AddModActionHandler(ModAction action);
 public class CliNodeModActionAdd : CliNode {
     private readonly AddModActionHandler _add;
 
-    protected override string Text { get; }
+    public override string Text { get; }
     
 
     public CliNodeModActionAdd(string text, AddModActionHandler add) {

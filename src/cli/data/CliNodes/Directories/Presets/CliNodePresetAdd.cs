@@ -7,7 +7,7 @@ public delegate void AddPreset(string name);
 public class CliNodePresetAdd : CliNode {
     private readonly AddPreset _add;
 
-    protected override string Text { get; }
+    public override string Text { get; }
     
 
     public CliNodePresetAdd(string text, AddPreset add) {

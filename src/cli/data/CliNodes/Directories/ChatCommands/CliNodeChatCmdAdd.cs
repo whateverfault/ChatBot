@@ -10,7 +10,7 @@ public class CliNodeChatCmdAdd : CliNode {
 
     private int _id;
 
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeChatCmdAdd(string text, AddChatCmdHandler add) {

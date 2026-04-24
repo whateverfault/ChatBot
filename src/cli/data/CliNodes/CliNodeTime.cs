@@ -12,7 +12,7 @@ public class CliNodeTime : CliNode {
 
     private readonly bool _isUnixEpoch;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeTime(string text, TimeGetter getter, CliNodePermission permission, TimeSetter? setter = null, bool isUnixEpoch = false) {

@@ -5,9 +5,9 @@ namespace ChatBot.cli.data.CliNodes.Directories.Users;
 public delegate void AddUserHandler(string username);
 
 public class CliNodeUserAdd : CliNode {
-    private AddUserHandler _addHandler;
+    private readonly AddUserHandler _addHandler;
     
-    protected override string Text { get; }
+    public override string Text { get; }
     
     
     public CliNodeUserAdd(AddUserHandler addHandler) {

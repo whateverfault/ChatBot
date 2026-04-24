@@ -7,7 +7,7 @@ public delegate bool RemoveHandler(int index);
 public class CliNodeRemove : CliNode {
     private readonly RemoveHandler _remove;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeRemove(string text, RemoveHandler remove) {

@@ -11,7 +11,7 @@ public class CliNodeEnum : CliNode {
     private readonly EnumNext? _next;
     private readonly CliNodePermission _permission;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeEnum(string text, EnumGetter getter, Type enumType, CliNodePermission permission, EnumNext? next = null) {

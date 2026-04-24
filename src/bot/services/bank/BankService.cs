@@ -8,18 +8,21 @@ namespace ChatBot.bot.services.bank;
 
 public class BankService : Service {
     public override BankOptions Options { get; } = new BankOptions();
-
+    
     public double MoneySupply => Options.MoneySupply;
-
-
+    
+    
     public Result<bool, ErrorCode?> Give(string distUserId, string srcUserId, double quantity) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
+        if (!HasEnoughPoints(srcUserId, quantity)) {
+            return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
+        }
+        
         if (distUserId.Equals(srcUserId)
          || distUserId.Equals(client.Credentials.Broadcaster.UserId))
             return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
-
 
         var takeResult = TakeOut(srcUserId, quantity, gain: false);
         if (!takeResult.Ok) {
@@ -34,6 +37,10 @@ public class BankService : Service {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
+        if (!HasEnoughPoints(src, quantity)) {
+            return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
+        }
+        
         var takeResult = TakeOut(src, quantity, gain: false);
         if (!takeResult.Ok) {
             return new Result<bool, ErrorCode?>(false, takeResult.Error);
@@ -47,7 +54,9 @@ public class BankService : Service {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
-        if (userId.Equals(client.Credentials.Broadcaster.UserId)) return new Result<bool, ErrorCode?>(true, null);
+        if (userId.Equals(client.Credentials.Broadcaster.UserId)) {
+            return new Result<bool, ErrorCode?>(true, null);
+        }
 
         var result = Options.TakeOut(userId, quantity, gain);
         return result
@@ -68,12 +77,19 @@ public class BankService : Service {
     public Result<bool, ErrorCode?> Deposit(string userId, double quantity, bool gain = true) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
-
-        if (userId.Equals(client.Credentials.Broadcaster.UserId))
-            return new Result<bool, ErrorCode?>(false, ErrorCode.RequestFailed);
+        
         return new Result<bool, ErrorCode?>(Options.Deposit(userId, quantity, gain), null);
     }
 
+    public bool HasEnoughPoints(string userId, double quantity) {
+        Options.GetBalance(userId, out var balance);
+        return balance > 0.0 && balance >= quantity;
+    }
+    
+    public bool HasEnoughPoints(Account user, double quantity) {
+        return user.Money > 0.0 && user.Money >= quantity;
+    }
+    
     public bool GetBalance(string userId, out double balance) {
         balance = double.PositiveInfinity;
         return Options.GetBalance(userId, out balance);

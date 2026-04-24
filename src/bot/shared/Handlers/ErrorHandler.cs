@@ -166,8 +166,29 @@ public static class ErrorHandler {
     
     public static void PrintMessage(LogLevel logLevel, string message) {
         IoHandler.Clear();
+        PrintLogLevel(logLevel);
         IoHandler.WriteLine(message);
         IoHandler.ReadKey();
         IoHandler.Clear();
+    }
+
+    private static void PrintLogLevel(LogLevel logLevel) {
+        switch (logLevel) {
+            case LogLevel.Debug: {
+                IoHandler.Write("Debug: ");
+            } break;
+            
+            case LogLevel.Info: {
+                IoHandler.Write("Info: ");
+            } break;
+            
+            case LogLevel.Warning: {
+                IoHandler.Write("Warning: ");
+            } break;
+            
+            case LogLevel.Error: {
+                IoHandler.Write("Error: ");
+            } break;
+        }
     }
 }

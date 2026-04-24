@@ -2,25 +2,23 @@
 
 namespace ChatBot.cli.data.CliNodes;
 
-public delegate int IntGetter();
-public delegate void IntSetter(int value);
+public delegate double DoubleGetter();
+public delegate void DoubleSetter(double value);
 
-public class CliNodeInt : CliNode {
-    private readonly IntGetter _getter;
-    private readonly IntSetter _setter = null!;
+public class CliNodeDouble : CliNode {
+    private readonly DoubleGetter _getter;
+    private readonly DoubleSetter _setter = null!;
     private readonly CliNodePermission _permission;
     
     public override string Text { get; }
 
 
-    public CliNodeInt(string text, IntGetter getter, CliNodePermission permission, IntSetter? setter = null) {
+    public CliNodeDouble(string text, DoubleGetter getter, CliNodePermission permission, DoubleSetter? setter = null) {
         Text = text;
         _getter = getter;
         _permission = permission;
         
-        if (setter != null) {
-            _setter = setter;
-        }
+        if (setter != null) _setter = setter;
     }
 
     public override int PrintValue(int index, out string end, bool drawIndex = false) {
@@ -35,11 +33,9 @@ public class CliNodeInt : CliNode {
         IoHandler.WriteLine($"Value: {_getter.Invoke()}");
         
         var line = IoHandler.ReadLine("New Value: ");
-        if (string.IsNullOrEmpty(line)) {
-            return;
-        }
+        if (string.IsNullOrEmpty(line)) return;
 
-        if (!int.TryParse(line, out var value)) return;
+        if (!double.TryParse(line, out var value)) return;
         _setter.Invoke(value);
     }
 }

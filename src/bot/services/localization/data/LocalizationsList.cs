@@ -33,8 +33,10 @@ public enum StrId {
     TgNotificationsServiceStateChangedEveryone,
     EnabledPlural,
     DisabledPlural,
-    RewardRemoved,
     RewardCreated,
+    RewardRemoved,
+    BuyBackRewardTitle,
+    BuyBackRewardDescription,
     GameRequestsReset,
     GameRequestRemoved,
     GameRequestsRewardsReset,
@@ -380,6 +382,20 @@ public static class LocalizationsList {
                                                                                      new Localization(
                                                                                           "Создана новая награда ({})",
                                                                                           "New reward has been created ({})"
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.BuyBackRewardTitle,
+                                                                                     new Localization(
+                                                                                          "Buyback",
+                                                                                          "Buyback"
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.BuyBackRewardDescription,
+                                                                                     new Localization(
+                                                                                          "Приравнивает количество твоих фантиков к {} если оно отрицательное.",
+                                                                                          "Sets your points balance to {} if it is negative."
                                                                                          )
                                                                                  },
                                                                                  {

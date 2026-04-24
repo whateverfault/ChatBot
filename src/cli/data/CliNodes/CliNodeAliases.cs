@@ -11,7 +11,7 @@ public class CliNodeAliases : CliNode {
     private readonly AliasesSetter _setter = null!;
     private readonly CliNodePermission _permission;
 
-    protected override string Text { get; }
+    public override string Text { get; }
 
 
     public CliNodeAliases(string text, AliasesGetter getter, CliNodePermission permission, AliasesSetter? setter = null) {

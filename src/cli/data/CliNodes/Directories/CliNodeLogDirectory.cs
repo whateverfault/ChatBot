@@ -8,7 +8,7 @@ public class CliNodeLogDirectory : CliNodeDirectory {
     
     private readonly CliState _state;
     
-    protected override string Text { get; }
+    public override string Text { get; }
 
     public sealed override List<CliNode> Nodes { get; }
     public sealed override bool HasBackOption => true;
