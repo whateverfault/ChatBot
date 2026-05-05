@@ -17,7 +17,6 @@ public class CliNewRenderer : ICliRenderer {
         var nodes = state.Cli.NodeSystem.Current.Nodes;
 
         switch (keyInfo.Key) {
-
             case ConsoleKey.W:
             case ConsoleKey.UpArrow: {
                 PointerUp(state);
@@ -42,6 +41,7 @@ public class CliNewRenderer : ICliRenderer {
             case ConsoleKey.E:
             case ConsoleKey.F:
             case ConsoleKey.D:
+            case ConsoleKey.LeftArrow:
             case ConsoleKey.Spacebar:
             case ConsoleKey.Enter: {
                 state.Cli.ActivateNode(_pointer);

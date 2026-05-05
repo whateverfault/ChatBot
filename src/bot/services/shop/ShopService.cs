@@ -34,7 +34,7 @@ public class ShopService : Service {
             return new Result<ShopLot?, ErrorCode?>(lot, ErrorCode.ServiceDisabled);
         }
         
-        var result = _bank.TakeOut(userId, lot.Cost * amount, gain: false);
+        var result = _bank.Pay(userId, lot.Cost * amount);
         if (!result.Ok) {
             return new Result<ShopLot?, ErrorCode?>(lot, result.Error);
         }

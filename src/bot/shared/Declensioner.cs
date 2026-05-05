@@ -86,7 +86,7 @@ public static class Declensioner {
 
         return _localization.Language switch {
             Lang.Ru => lastDigit switch {
-                1 when lastTwoDigits != 11                                     => "минуту",
+                1 when lastTwoDigits != 11                                     => "минута",
                 > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "минуты",
                 _                                                              => "минут",
             },
@@ -104,7 +104,7 @@ public static class Declensioner {
 
         return _localization.Language switch {
             Lang.Ru => lastDigit switch {
-                1 when lastTwoDigits != 11                                     => "секунду",
+                1 when lastTwoDigits != 11                                     => "секунда",
                 > 1 and < 5 when lastTwoDigits is not 12 and not 13 and not 14 => "секунды",
                 _                                                              => "секунд",
             },

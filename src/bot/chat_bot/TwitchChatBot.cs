@@ -71,7 +71,7 @@ public sealed class TwitchChatBot : Bot {
     public override async Task Start() {
         lock (_sync) {
             if (Online) 
-                ErrorHandler.PrintMessage(LogLevel.Error, "Stop the bot before initializing.");
+                ErrorHandler.LogError(ErrorCode.StopBotBeforeInitializing);
             
             if (_starting) 
                 return;
@@ -87,7 +87,11 @@ public sealed class TwitchChatBot : Bot {
 
             Services.Init();
 
-            await InitConnectionAsync();
+            if (!await InitConnectionAsync()) {
+                lock (_sync) {
+                    _starting = false;
+                }
+            }
         }
         finally {
             lock (_sync) {
@@ -139,26 +143,27 @@ public sealed class TwitchChatBot : Bot {
         ErrorHandler.LogMessage(LogLevel.Info, "Disconnected.");
     }
 
-    private async Task InitConnectionAsync() {
+    private async Task<bool> InitConnectionAsync() {
         if (!ValidateSave()) {
             ErrorHandler.LogErrorAndPrint(ErrorCode.CorruptedCredentials);
-            return;
+            return false;
         }
         
         SubscribeToEvents();
 
         if (Options.Client == null) {
-            return;
+            return false;
         }
         
         await Options.Client.Initialize(Options.Credentials);
 
         if (Options.Client.Credentials == null) {
-            ErrorHandler.LogErrorAndPrint(ErrorCode.ConnectionFailed);
-            return;
+            ErrorHandler.PrintError(ErrorCode.StartFailed);
+            return false;
         }
 
         _initialized = true;
+        return true;
     }
 
     private void SubscribeToEvents() {

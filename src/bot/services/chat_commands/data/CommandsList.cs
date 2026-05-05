@@ -1640,13 +1640,13 @@ public static class CommandsList {
             months += 12;
         }
         
-        var yearsStr = years == 0 
+        var yearsStr = years <= 0 
                            ? string.Empty 
                            : $"{years} {Declensioner.Years(years)}";
-        var monthsStr = months == 0 
+        var monthsStr = months <= 0 
                             ? string.Empty 
                             : $"{months} {Declensioner.Months(months)}";
-        var daysStr = days == 0 
+        var daysStr = days <= 0 
                           ? string.Empty 
                           : $"{days} {Declensioner.Days(days)}";
     
@@ -3346,6 +3346,11 @@ public static class CommandsList {
             return;
         }
 
+        if (quantity < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+        
         if (!bank.GetFormatedBalance(chatMessage.UserId, out var balance)) {
             await ErrorHandler.ReplyWithError(ErrorCode.AccountNotFound, chatMessage, client);
             return;

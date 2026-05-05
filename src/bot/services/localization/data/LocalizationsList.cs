@@ -6,6 +6,7 @@ namespace ChatBot.bot.services.localization.data;
 
 public enum StrId {
     InvalidStrId,
+    Cooldown,
     GiveawayResult,
     GiveResult,
     LotUsed,
@@ -179,6 +180,13 @@ public static class LocalizationsList {
                                                                                      new Localization(
                                                                                           string.Empty,
                                                                                           string.Empty
+                                                                                         )
+                                                                                 },
+                                                                                 {
+                                                                                     StrId.Cooldown,
+                                                                                     new Localization(
+                                                                                          "Перезарядка: {}{}{}",
+                                                                                          "Cooldown: {}{}{}"
                                                                                          )
                                                                                  },
                                                                                  {

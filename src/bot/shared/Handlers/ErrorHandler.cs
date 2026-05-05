@@ -21,7 +21,7 @@ public enum ErrorCode {
     ClipCreationFailed,
     RequestFailed,
     TranslationFailed,
-    ConnectionFailed,
+    StartFailed,
     NoRewardSet,
     UserNotFound,
     TooFewPoints,
@@ -33,6 +33,7 @@ public enum ErrorCode {
     PermissionDenied,
     AntiMute,
     NotFullyAuthorized,
+    StopBotBeforeInitializing,
     None,
 }
 
@@ -56,7 +57,7 @@ public static class ErrorHandler {
                                                              "Failed to create a clip",
                                                              "Request Failed.",
                                                              "Translation failed.",
-                                                             "Connection failed.",
+                                                             "Connection failed, check logs: Services -> Debug -> Logger -> Logs",
                                                              "Reward isn't properly set.",
                                                              "User not found.",
                                                              "Too few points.",
@@ -68,6 +69,7 @@ public static class ErrorHandler {
                                                              "Permission denied.",
                                                              "AntiMute Activated.",
                                                              "This Function Requires Full Authorization.",
+                                                             "Stop the bot before initializing.",
                                                          ];
 
 
@@ -85,7 +87,7 @@ public static class ErrorHandler {
                                                             "Не удалось создать клип.",
                                                             "Запрос не удался.",
                                                             "Не удалось перевести.",
-                                                            "Не удалось подключиться к сети.",
+                                                            "Не удалось запустить бота, проверьте логи: Services -> Debug -> Logger -> Logs",
                                                             "Награда не установлена.",
                                                             "Пользователь не найден.",
                                                             "Недостаточно фантиков.",
@@ -97,6 +99,7 @@ public static class ErrorHandler {
                                                             "Недостаточно прав.",
                                                             "Сработала защита от мута.",
                                                             "Эта функция требует полной авторизации.",
+                                                            "Остановите бота перед повторным подключением.",
                                                         ];
 
 
@@ -131,7 +134,7 @@ public static class ErrorHandler {
     }
 
     public static void LogMessage(LogLevel logLevel, string message) {
-        _logger.Log(logLevel, message);
+        _logger.Log(logLevel, message.Trim());
     }
 
     public static bool LogError(ErrorCode error) {
@@ -155,13 +158,20 @@ public static class ErrorHandler {
         IoHandler.Clear();
     }
 
-    public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
-        LogError(error);
-
+    public static void PrintError(ErrorCode error) {
+        if (error == ErrorCode.None) {
+            return;
+        }
+        
         IoHandler.Clear();
-        IoHandler.WriteLine(message);
+        IoHandler.WriteLine(GetErrorString(error));
         IoHandler.ReadKey();
         IoHandler.Clear();
+    }
+    
+    public static void LogErrorMessageAndPrint(ErrorCode error, string message) {
+        LogError(error);
+        PrintError(error);
     }
     
     public static void PrintMessage(LogLevel logLevel, string message) {

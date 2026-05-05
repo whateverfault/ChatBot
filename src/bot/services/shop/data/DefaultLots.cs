@@ -32,9 +32,9 @@ public static class DefaultLots {
         var result = _shop.Use(userId, lot.Name);
         if (result.Ok) return await _ai.GetResponse(prompt, id);
 
-        var takeOutResult = _bank.TakeOut(userId, lot.Cost, gain: false);
+        var takeOutResult = _bank.Pay(userId, lot.Cost);
         if (!takeOutResult.Ok) {
-            return new Result<string?, ErrorCode?>(null, ErrorCode.TooFewPoints);
+            return new Result<string?, ErrorCode?>(null, takeOutResult.Error);
         }
 
         return await _ai.GetResponse(prompt, id);
@@ -56,9 +56,9 @@ public static class DefaultLots {
         var boughtNow = false;
         var result = _shop.Use(subjectId, muteLot.Name);
         if (!result.Ok) {
-            var takeOutResult = _bank.TakeOut(subjectId, muteLot.Cost, gain: false);
+            var takeOutResult = _bank.Pay(subjectId, muteLot.Cost);
             if (!takeOutResult.Ok) {
-                return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
+                return new Result<bool, ErrorCode?>(false, takeOutResult.Error);
             }
             boughtNow = true;
         }

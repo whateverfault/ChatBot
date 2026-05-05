@@ -5,6 +5,7 @@ using ChatBot.bot.services.interfaces;
 using ChatBot.bot.services.localization;
 using ChatBot.bot.services.localization.data;
 using ChatBot.bot.services.Static;
+using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
 using TwitchAPI.client;
 using TwitchAPI.client.commands.data;
@@ -180,19 +181,43 @@ public class ChatCommandsService : Service {
         
         if (elapsed >= cooldown) return;
         
-        await Client.SendMessage($"{cooldown - elapsed}...", replyId);
+        var startDate = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(cooldown - elapsed));
+        var endDate = DateTime.UtcNow;
+    
+        var hours = endDate.Hour - startDate.Hour;
+        var minutes = endDate.Minute - startDate.Minute;
+        var seconds = endDate.Second - startDate.Second;
+        
+        if (seconds < 0) {
+            minutes--;
+            seconds += 60;
+        }
+    
+        if (minutes < 0) {
+            hours--;
+            minutes += 60;
+        }
+        
+        var hoursStr = hours <= 0 
+                           ? string.Empty 
+                           : $"{hours} {Declensioner.Hours(hours)} ";
+        var minsStr = minutes <= 0 
+                            ? string.Empty 
+                            : $"{minutes} {Declensioner.Mins(minutes)} ";
+        var secsStr = seconds <= 0 
+                          ? string.Empty 
+                          : $"{seconds} {Declensioner.Secs(seconds)}";
+
+        var localized = _localization.GetStr(StrId.Cooldown, hoursStr, minsStr, secsStr);
+        await Client.SendMessage(localized, replyId);
     }
 
     private async Task<bool> OnCooldown(ChatCommand cmd, ChatMessage chatMessage) {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         
         var lastUsed = cmd.CooldownPerUser ? -1 : cmd.LastUsed;
-        if (cmd.CooldownPerUser) {
-            if (cmd.CooldownUsers.TryGetValue(chatMessage.UserId, out var user)) {
-                lastUsed = user.UsedAt;
-                
-                cmd.CooldownUsers.Remove(chatMessage.UserId);
-            }
+        if (cmd.CooldownPerUser && cmd.CooldownUsers.TryGetValue(chatMessage.UserId, out var user)) {
+            lastUsed = user.UsedAt;
         }
         
         if (now - lastUsed < cmd.Cooldown) {

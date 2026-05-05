@@ -15,16 +15,12 @@ public class BankService : Service {
     public Result<bool, ErrorCode?> Give(string distUserId, string srcUserId, double quantity) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
-
-        if (!HasEnoughPoints(srcUserId, quantity)) {
-            return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
-        }
         
         if (distUserId.Equals(srcUserId)
          || distUserId.Equals(client.Credentials.Broadcaster.UserId))
             return new Result<bool, ErrorCode?>(false, ErrorCode.UserNotFound);
 
-        var takeResult = TakeOut(srcUserId, quantity, gain: false);
+        var takeResult = Pay(srcUserId, quantity);
         if (!takeResult.Ok) {
             return new Result<bool, ErrorCode?>(false, takeResult.Error);
         }
@@ -63,12 +59,27 @@ public class BankService : Service {
                    ? new Result<bool, ErrorCode?>(true, null)
                    : new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
     }
-
+    
     public Result<bool, ErrorCode?> TakeOut(Account? account, double quantity, bool gain = true) {
         var client = TwitchChatBot.Instance.GetClient();
         if (client?.Credentials == null) return new Result<bool, ErrorCode?>(false, ErrorCode.NotInitialized);
 
         var result = Options.TakeOut(account, quantity, gain);
+        return result
+                   ? new Result<bool, ErrorCode?>(true, null)
+                   : new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
+    }
+    
+    public Result<bool, ErrorCode?> Pay(string userId, double quantity) {
+        if (!Options.GetBalance(userId, out _)) {
+            return new Result<bool, ErrorCode?>(false, ErrorCode.AccountNotFound);
+        }
+        
+        if (!HasEnoughPoints(userId, quantity)) {
+            return new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
+        }
+        
+        var result = Options.TakeOut(userId, quantity, false);
         return result
                    ? new Result<bool, ErrorCode?>(true, null)
                    : new Result<bool, ErrorCode?>(false, ErrorCode.TooFewPoints);
@@ -82,7 +93,9 @@ public class BankService : Service {
     }
 
     public bool HasEnoughPoints(string userId, double quantity) {
-        Options.GetBalance(userId, out var balance);
+        if (!Options.GetBalance(userId, out var balance)) {
+            return false;
+        }
         return balance > 0.0 && balance >= quantity;
     }
     

@@ -151,10 +151,10 @@ public class CasinoService : Service {
         var riskFactor = Math.Clamp(betAmount / (userBalance * 0.5f), 0.1f, 2f);
         var multiplier = Options.BaseCoefficient + Options.RandomValue * Options.AdditionalCoefficient * riskFactor;
         var chance = 1f / (multiplier*1.35f);
-        var wealthPenalty = 1f - Math.Min(0.3f, (userBalance / moneySupply) / 2);
+        var wealthPenalty = 1f - Math.Min(0.1f, (userBalance / moneySupply) / 2);
         
         chance *= wealthPenalty;
-        chance = Math.Max(chance, 0.1f);
+        chance = Math.Max(chance * 1.1f, 0.1f);
     
         return (chance, multiplier);
     }

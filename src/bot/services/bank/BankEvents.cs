@@ -59,7 +59,7 @@ public class BankEvents : ServiceEvents {
                 return;
             }
         
-            await client.SendMessage($"+{quantity} | {_bank.FormatMoney(oldBalance)} -> {_bank.FormatMoney(oldBalance+quantity)} @{redemption.UserName} ");
+            await client.SendMessage($"+{_bank.FormatMoney(quantity)} | {_bank.FormatMoney(oldBalance)} -> {_bank.FormatMoney(oldBalance+quantity)} @{redemption.UserName} ");
         }
         catch (Exception e) {
             ErrorHandler.LogMessage(LogLevel.Error, e.Message);
