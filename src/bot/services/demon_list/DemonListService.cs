@@ -1,5 +1,8 @@
-﻿using ChatBot.api.aredl;
-using ChatBot.api.aredl.data;
+﻿using ChatBot.api.demon_list;
+using ChatBot.api.demon_list.aredl;
+using ChatBot.api.demon_list.aredl.data;
+using ChatBot.api.demon_list.data;
+using ChatBot.api.demon_list.glist;
 using ChatBot.bot.services.interfaces;
 using ChatBot.bot.shared;
 using ChatBot.bot.shared.handlers;
@@ -8,66 +11,53 @@ using Range = ChatBot.api.basic.Range;
 
 namespace ChatBot.bot.services.demon_list;
 
+public enum DemonListProvider {
+    Aredl,
+    GlobalList,
+}
+
 public class DemonListService : Service {
     private readonly AredlClient _aredlClient = new AredlClient(true, Network.HttpClient);
+    private readonly GListClient _glistClient = new GListClient(true, Network.HttpClient);
     
     public override DemonListOptions Options { get; } = new DemonListOptions();
     
     
     public void ResetCache() {
         _aredlClient.ResetCache();
+        _glistClient.ResetCache();
     }
 
-    public async Task<List<LevelInfo>> ListLevels(EventHandler<string>? errorCallback = null) {
-        return await _aredlClient.ListLevels(errorCallback) ?? [];
+    public async Task<List<LevelInfo>> ListLevels(DemonListProvider provider = DemonListProvider.Aredl, EventHandler<string>? errorCallback = null) {
+        IDemonList client = provider == DemonListProvider.Aredl
+                                ? _aredlClient
+                                : _glistClient;
+        return await client.ListLevels(errorCallback) ?? [];
     }
     
     public async Task<List<LevelInfo>> ListPlatformerLevels(EventHandler<string>? errorCallback = null) {
         return await _aredlClient.ListPlatformerLevels(errorCallback) ?? [];
     }
     
-    public async Task<LevelInfo?> GetLevelByPlacement(int placement) {
+    public async Task<UserProfile?> GetProfile(string name, DemonListProvider provider = DemonListProvider.Aredl) {
         try {
-            var level =
-                await _aredlClient.GetLevelByPlacement(placement,
-                                                       (_, message) => {
-                                                           ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                       });
-            return level;
+            IDemonList client = provider == DemonListProvider.Aredl
+                                    ? _aredlClient
+                                    : _glistClient;
+            
+            var profile =
+                await client.GetProfile(name,
+                                        (_, message) => {
+                                            ErrorHandler.LogMessage(LogLevel.Error, message);
+                                        });
+            return profile;
         }
         catch (Exception) {
             return null;
         }
     }
-
-    public async Task<List<LevelInfo>?> GetLevelsInfoByName(string levelName) {
-        try {
-            var level =
-                await _aredlClient.GetLevelsByName(levelName,
-                                                   (_, message) => {
-                                                       ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                   });
-            return level;
-        }
-        catch (Exception) {
-            return null;
-        }
-    }
-
-    public async Task<LevelInfo?> GetLevelInfoByName(string levelName, string? creator = null) {
-        try {
-            var level = await _aredlClient.GetLevelByName(levelName, creator,
-                                                          (_, message) => {
-                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
-                                                          });
-            return level;
-        }
-        catch (Exception) {
-            return null;
-        }
-    }
-
-    public async Task<UserProfile?> GetProfile(string username) {
+    
+    public async Task<AredlUserProfile?> GetAredlProfile(string username) {
         try {
             var profile =
                 await _aredlClient.ListProfiles(username, (_, message) => {
@@ -80,6 +70,59 @@ public class DemonListService : Service {
             }
             
             return profile.Data[0];
+        }
+        catch (Exception) {
+            return null;
+        }
+    }
+    
+    public async Task<LevelInfo?> GetLevelByPlacement(int placement, DemonListProvider provider = DemonListProvider.Aredl) {
+        try {
+            IDemonList client = provider == DemonListProvider.Aredl
+                                    ? _aredlClient
+                                    : _glistClient;
+            
+            var level =
+                await client.GetLevelByPlacement(placement,
+                                                 (_, message) => {
+                                                     ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                 });
+            return level;
+        }
+        catch (Exception) {
+            return null;
+        }
+    }
+
+    public async Task<List<LevelInfo>?> GetLevelsInfoByName(string levelName, DemonListProvider provider = DemonListProvider.Aredl) {
+        try {
+            IDemonList client = provider == DemonListProvider.Aredl
+                                    ? _aredlClient
+                                    : _glistClient;
+            
+            var level =
+                await client.GetLevelsByName(levelName,
+                                                   (_, message) => {
+                                                       ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                   });
+            return level;
+        }
+        catch (Exception) {
+            return null;
+        }
+    }
+
+    public async Task<LevelInfo?> GetLevelInfoByName(string levelName, string? creator = null, DemonListProvider provider = DemonListProvider.Aredl) {
+        try {
+            IDemonList client = provider == DemonListProvider.Aredl
+                                    ? _aredlClient
+                                    : _glistClient;
+            
+            var level = await client.GetLevelByName(levelName, creator,
+                                                          (_, message) => {
+                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
+                                                          });
+            return level;
         }
         catch (Exception) {
             return null;
@@ -134,7 +177,7 @@ public class DemonListService : Service {
         return GetEasiests(records, new Range(0, 1))[0];
     }
     
-    public async Task<List<RecordInfo>?> GetHardests(UserProfile profile, Range top) {
+    public async Task<List<RecordInfo>?> GetHardests(AredlUserProfile profile, Range top) {
         try {
             var response = await _aredlClient.ListUserRecords(profile.User.Id, (_, message) => {
                                                                                    ErrorHandler.LogMessage(LogLevel.Error, message);
@@ -149,7 +192,7 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<List<RecordInfo>?> GetEasiests(UserProfile profile, Range top) {
+    public async Task<List<RecordInfo>?> GetEasiests(AredlUserProfile profile, Range top) {
         try {
             var response =
                 await _aredlClient.ListUserRecords(profile.User.Id,
@@ -197,11 +240,11 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<LevelInfo?> GetRandomLevel(int from = -1, int to = -1) {
+    public async Task<LevelInfo?> GetRandomLevel(int from = -1, int to = -1, DemonListProvider provider = DemonListProvider.Aredl) {
         try {
             if (from < 1) from = 1;
             
-            var levelList = await ListLevels((_, message) => {
+            var levelList = await ListLevels(provider, (_, message) => {
                                                  ErrorHandler.LogMessage(LogLevel.Error, message);
                                              });
             
@@ -261,7 +304,7 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<UserProfile?> GetPlatformerProfile(string username) {
+    public async Task<AredlUserProfile?> GetPlatformerProfile(string username) {
         try {
             var profile =
                 await _aredlClient.ListPlatformerProfiles(username, (_, message) => { ErrorHandler.LogMessage(LogLevel.Error, message); });
@@ -345,7 +388,7 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<List<RecordInfo>?> GetPlatformerHardests(UserProfile profile, Range top) {
+    public async Task<List<RecordInfo>?> GetPlatformerHardests(AredlUserProfile profile, Range top) {
         try {
             var response = await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
                                                                                              ErrorHandler.LogMessage(LogLevel.Error, message);
@@ -360,7 +403,7 @@ public class DemonListService : Service {
         }
     }
     
-    public async Task<List<RecordInfo>?> GetPlatformerEasiests(UserProfile profile, Range top) {
+    public async Task<List<RecordInfo>?> GetPlatformerEasiests(AredlUserProfile profile, Range top) {
         try {
             var response =
                 await _aredlClient.ListUserPlatformerRecords(profile.User.Id, (_, message) => {
@@ -387,7 +430,7 @@ public class DemonListService : Service {
         }
 
         levelsInfo = levelsInfo
-                    .Where(x => x.Id
+                    .Where(x => x.LevelId
                                  .Equals(clanSubmissionInfo.Level.Id))
                     .ToList();
 
@@ -400,12 +443,17 @@ public class DemonListService : Service {
     }
     
     public async Task<string> FormatLevelInfo(LevelInfo levelInfo, bool withLink = true) {
-        var verificationLink = string.Empty;
+        if (levelInfo.LevelId.GetHashCode() == -857063481) {
+            levelInfo.EdelEnjoyment = 100;
+            levelInfo.NlwTier = "Kakoyta";
+        }
+        
+        var verificationLink = levelInfo.VerificationLink;
 
-        if (withLink) {
+        if (withLink && string.IsNullOrEmpty(verificationLink)) {
             verificationLink = levelInfo.Platformer switch {
-                true  => await GetPlatformerLevelVerificationLink(levelInfo.Id),
-                false => await GetLevelVerificationLink(levelInfo.Id),
+                true  => await GetPlatformerLevelVerificationLink(levelInfo.LevelId),
+                false => await GetLevelVerificationLink(levelInfo.LevelId),
             };
         }
 
@@ -430,12 +478,17 @@ public class DemonListService : Service {
     }
     
     public string FormatClanDetails(ClanDetails clan) {
-        var formated = $"#{clan.Rank?.Rank} [{clan.Clan.Tag}] {clan.Clan.GlobalName} | aredl.net/profile/clan/{clan.Clan.Id}";
+        var formated = $"#{clan.Rank?.Rank ?? '?'} [{clan.Clan.Tag}] {clan.Clan.GlobalName} | aredl.net/profile/clan/{clan.Clan.Id}";
         return formated;
     }
 
-    public string FormatUserProfileInfo(UserProfile profile) {
-        var formated = $"#{profile.Rank} {profile.User.GlobalName} | aredl.net/profile/user/{profile.User.UserName}";
+    public string FormatAredlUserProfileInfo(UserProfile profile) {
+        var formated = $"#{profile.Rank} {profile.DisplayName} | aredl.net/profile/user/{profile.Username}";
+        return formated;
+    }
+    
+    public string FormatGListUserProfileInfo(UserProfile profile) {
+        var formated = $"#{profile.Rank} {profile.DisplayName} | demonlist.org/profile/{profile.Id}";
         return formated;
     }
     

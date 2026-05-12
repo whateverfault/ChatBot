@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.aredl.data;
+namespace ChatBot.api.demon_list.aredl.data;
 
-public class UserProfile {
+public class AredlUserProfile {
     public readonly int Rank;
     public readonly int ExtremesRank;
     public readonly int RawRank;
@@ -18,7 +18,7 @@ public class UserProfile {
 
     
     [JsonConstructor]
-    public UserProfile(
+    public AredlUserProfile(
         [JsonProperty("extremes")] int extremes,
         [JsonProperty("hardest")] HardestInfo? hardest,
         [JsonProperty("pack_points")] int packPoints,

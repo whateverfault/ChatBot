@@ -1,12 +1,13 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
-using ChatBot.api.aredl.data;
-using ChatBot.api.aredl.responses;
+using ChatBot.api.demon_list.aredl.data;
+using ChatBot.api.demon_list.aredl.responses;
+using ChatBot.api.demon_list.data;
 using Newtonsoft.Json;
 
-namespace ChatBot.api.aredl;
+namespace ChatBot.api.demon_list.aredl;
 
-public class AredlClient {
+public class AredlClient : IDemonList {
     private static readonly SocketsHttpHandler _httpHandler = new SocketsHttpHandler
                                                               {
                                                                   PooledConnectionLifetime = TimeSpan.FromMinutes(10),
@@ -61,6 +62,32 @@ public class AredlClient {
         }
     }
     
+    public async Task<UserProfile?> GetProfile(string username, EventHandler<string>? errorCallback = null) {
+        try {
+            var profiles = await ListProfiles(username, errorCallback);
+
+            if (profiles == null
+             || profiles.Data.Count <= 0) {
+                return null;
+            }
+
+            var profile = profiles.Data[0];
+            
+            return new UserProfile(
+                                   profile.User.Id,
+                                   profile.Rank,
+                                   profile.TotalPoints.ToString(),
+                                   profile.User.GlobalName,
+                                   profile.User.UserName,
+                                   profile.Hardest == null
+                                       ? null
+                                       : await GetLevelByName(profile.Hardest.Name, null, errorCallback));
+        }
+        catch (Exception) {
+            return null;
+        }
+    }
+    
     public async Task<List<LevelInfo>?> ListLevels(EventHandler<string>? errorCallback = null) {
         try {
             if (_cache is { Levels: not null, }) {
@@ -79,10 +106,11 @@ public class AredlClient {
                 return null;
             }
 
-            var deserialized = JsonConvert.DeserializeObject<List<LevelInfo>>(content);
+            var deserialized = JsonConvert.DeserializeObject<List<AredlLevelInfo>>(content);
             if (deserialized == null) return null;
-                
-            var result = new ListLevelsResponse(deserialized).Data;
+            
+            var result = deserialized.Select(x => new LevelInfo(x)).ToList();
+            
             _cache?.CacheLevelsList(result); 
             return result;
         }
@@ -196,14 +224,15 @@ public class AredlClient {
                 return null;
             }
 
-            var deserialized = JsonConvert.DeserializeObject<List<LevelInfo>>(content);
+            var deserialized = JsonConvert.DeserializeObject<List<AredlLevelInfo>>(content);
             if (deserialized == null) return null;
 
             Parallel.ForEach(deserialized, x => {
                                                x.Platformer = true;
                                            });
             
-            var result = new ListLevelsResponse(deserialized).Data;
+            var result = deserialized.Select(x => new LevelInfo(x)).ToList();
+            
             _cache?.CachePlatformerLevelsList(result);
             return result;
         }

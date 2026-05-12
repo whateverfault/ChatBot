@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.aredl.data;
+namespace ChatBot.api.demon_list.aredl.data;
 
-public class LevelInfo {
+public class AredlLevelInfo {
     [JsonProperty("id")]
     public string Id { get; private set; }
     
@@ -49,7 +49,7 @@ public class LevelInfo {
     
     
     [JsonConstructor]
-    public LevelInfo(
+    public AredlLevelInfo(
         [JsonProperty("id")] string id,
         [JsonProperty("name")] string name,
         [JsonProperty("position")] int position,

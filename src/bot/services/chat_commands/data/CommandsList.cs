@@ -47,14 +47,6 @@ public static class CommandsList {
     static CommandsList() {
         DefaultsCommands = [
                                new DefaultChatCommand(
-                                                      9,
-                                                      "ping",
-                                                      string.Empty,
-                                                      string.Empty,
-                                                      Ping,
-                                                      Restriction.DevBroad
-                                                     ),
-                               new DefaultChatCommand(
                                                    1,
                                                    "help",
                                                    "[cmd_name]",
@@ -93,6 +85,14 @@ public static class CommandsList {
                                                       string.Empty, 
                                                       string.Empty,
                                                       ReqEveryone,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      9,
+                                                      "ping",
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      Ping,
                                                       Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
@@ -428,6 +428,64 @@ public static class CommandsList {
                                                       ClanRoulette,
                                                       Restriction.Everyone,
                                                       aliases: ["clan-rulet",]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      PAGE_TERMINATOR_CMD_ID,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      string.Empty,
+                                                      PageTerminator,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      89,
+                                                      "ghardest",
+                                                      "[username] [--top <range>]",
+                                                      string.Empty,
+                                                      GHardest,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      90,
+                                                      "geasiest",
+                                                      "[username] [--top <range>]",
+                                                      string.Empty,
+                                                      GEasiest,
+                                                      Restriction.Everyone,
+                                                      aliases: ["glowest",]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      91,
+                                                      "groulette",
+                                                      "[range]",
+                                                      string.Empty,
+                                                      GRoulette,
+                                                      Restriction.Everyone,
+                                                      aliases: ["grulet",]
+                                                     ),
+                               new DefaultChatCommand(
+                                                      87,
+                                                      "gtop",
+                                                      "<position>",
+                                                      string.Empty,
+                                                      GTop,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      88,
+                                                      "gplace",
+                                                      "<level_name> [--page number]",
+                                                      string.Empty,
+                                                      GPlace,
+                                                      Restriction.Everyone
+                                                     ),
+                               new DefaultChatCommand(
+                                                      92,
+                                                      "gprofile",
+                                                      "<username>",
+                                                      string.Empty,
+                                                      GProfile,
+                                                      Restriction.Everyone
                                                      ),
                                new DefaultChatCommand(
                                                       PAGE_TERMINATOR_CMD_ID,
@@ -2079,6 +2137,83 @@ public static class CommandsList {
         var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
         await client.SendMessage($"{pages} {formatedOutput}", chatMessage.Id);
     }
+    
+    private static async Task GTop(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+
+        if (args.Count < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+        
+        var indexStr = args[0];
+        if (string.IsNullOrEmpty(indexStr)
+         || !int.TryParse(indexStr, out var index)) {
+            await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+            return;
+        }
+        
+        var levelInfo = await demonList.GetLevelByPlacement(index, DemonListProvider.GlobalList);
+        if (levelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+
+        var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
+        await client.SendMessage(formatedOutput, chatMessage.Id);
+    }
+
+    private static async Task GPlace(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+
+        if (args.Count < 1) {
+            await ErrorHandler.ReplyWithError(ErrorCode.TooFewArgs, chatMessage, client);
+            return;
+        }
+
+        var levelName = new StringBuilder();
+        foreach (var arg in args) {
+            if (arg is "--page") break;
+            levelName.Append($"{arg} ");
+        }
+
+        var levelsInfo =  await demonList.GetLevelsInfoByName(levelName.ToString().Trim(), DemonListProvider.GlobalList);
+        if (levelsInfo == null || levelsInfo.Count == 0) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+        
+        var page = ParsePage(levelsInfo.Count, cmdArgs, true);
+        var levelInfo = levelsInfo[page];
+        
+        var pages = 
+            levelsInfo.Count <= 1 ? 
+                string.Empty : 
+                $"{_localization.GetStr(StrId.PageOutOf, page + 1, levelsInfo.Count)} |";
+        
+        var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
+        await client.SendMessage($"{pages} {formatedOutput}", chatMessage.Id);
+    }
 
     private static async Task Hardest(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
@@ -2148,7 +2283,7 @@ public static class CommandsList {
             return;
         }
         
-        var profile = await demonList.GetProfile(username);
+        var profile = await demonList.GetAredlProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -2171,6 +2306,92 @@ public static class CommandsList {
         }
         
         await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+    }
+    
+        private static async Task GHardest(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
+        }
+        else {
+            top = new Range(0, 1);
+        }
+        
+        var usernameSb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            usernameSb.Append($"{arg}");
+            if (i < args.Count - 1) {
+                usernameSb.Append(' ');
+            }
+        }
+
+        var formatedOutput = new StringBuilder();
+        
+        var username = usernameSb.ToString();
+        
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        var profile = await demonList.GetProfile(username, DemonListProvider.GlobalList);
+        var profileExists = profile != null;
+        
+        if (string.IsNullOrEmpty(username) || !profileExists) {
+            var levels = await demonList.ListLevels(DemonListProvider.GlobalList);
+            var listHardests = demonList.GetHardests(levels, top);
+            
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listHardests[i], top.Length <= 1)}");
+
+                if (i < top.Length - 1) {
+                    formatedOutput.Append(" / ");
+                }
+            }
+            
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+            return;
+        }
+        
+        if (profile == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
+            return;
+        }
+
+        if (profile.Hardest == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.NotFound, chatMessage, client);
+            return;
+        }
+        
+        var formated = await demonList.FormatLevelInfo(profile.Hardest);
+        
+        await client.SendMessage(formated, chatMessage.Id);
     }
 
     private static async Task PHardest(ChatCmdArgs cmdArgs) {
@@ -2334,7 +2555,7 @@ public static class CommandsList {
             return;
         }
 
-        var profile = await demonList.GetProfile(username);
+        var profile = await demonList.GetAredlProfile(username);
         if (profile == null) {
             await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
             return;
@@ -2358,7 +2579,81 @@ public static class CommandsList {
         
         await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
     }
+    
+    private static async Task GEasiest(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client); 
+            return;
+        }
 
+        if (GetRangeArg(cmdArgs, "--top", out var top)) {
+            top.Order();
+            top.Start -= 1;
+            
+            top.MoveStartIfLess(0);
+            top.MoveEndIfGreater(top.Start + 15);
+            
+            if (top.Start < 0 || top.End < 0) {
+                await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+                return;
+            }
+        }
+        else {
+            top = new Range(0, 1);
+        }
+        
+        var usernameSb = new StringBuilder();
+        for (var i = 0; i < args.Count; i++) {
+            var arg = args[i];
+            if (arg.Length > 1 && arg[0..2] is "--") {
+                break;
+            }
+
+            usernameSb.Append($"{arg}");
+            if (i < args.Count - 1) {
+                usernameSb.Append(' ');
+            }
+        }
+        
+        var formatedOutput = new StringBuilder();
+        
+        var username = usernameSb.ToString();
+        
+        if (string.IsNullOrEmpty(username)) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        var profile = await demonList.GetProfile(username, DemonListProvider.GlobalList);
+        var profileExists = profile != null;
+        
+        if (string.IsNullOrEmpty(username) || !profileExists) {
+            var levels = await demonList.ListLevels(DemonListProvider.GlobalList);
+            var listEasiests = demonList.GetEasiests(levels, top);
+            
+            for (var i = top.Start; i < top.End; ++i) {
+                formatedOutput.Append($"{(top.Length > 1 ? $"{i + top.Start + 1}." : string.Empty)} {await demonList.FormatLevelInfo(listEasiests[i], top.Length <= 1)}");
+
+                if (i < top.Length - 1) {
+                    formatedOutput.Append(" / ");
+                }
+            }
+            
+            await client.SendMessage(formatedOutput.ToString(), chatMessage.Id);
+            return;
+        }
+        
+        await ErrorHandler.ReplyWithError(ErrorCode.InvalidInput, chatMessage, client);
+    }
+    
     private static async Task PEasiest(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;
@@ -2473,7 +2768,33 @@ public static class CommandsList {
             return;
         }
 
-        var formatedOutput = demonList.FormatUserProfileInfo(profile);
+        var formatedOutput = demonList.FormatAredlUserProfileInfo(profile);
+        await client.SendMessage(formatedOutput, chatMessage.Id);
+    }
+    
+    private static async Task GProfile(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+
+        var username = cmdArgs.Parsed.CommandMessage;
+        
+        if (string.IsNullOrEmpty(username) || args.Count <= 0) {
+            if (demonList.GetDefaultUserName(out var t)) {
+                username = t;
+            }
+        }
+        
+        var profile = await demonList.GetProfile(username, DemonListProvider.GlobalList);
+        if (profile == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.UserNotFound, chatMessage, client);
+            return;
+        }
+
+        var formatedOutput = demonList.FormatGListUserProfileInfo(profile);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
     
@@ -2520,7 +2841,51 @@ public static class CommandsList {
         var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
         await client.SendMessage(formatedOutput, chatMessage.Id);
     }
+    
+    private static async Task GRoulette(ChatCmdArgs cmdArgs) {
+        var client = _bot.GetClient();
+        if (client?.Credentials == null) return;
+        
+        var demonList = (DemonListService)Services.Get(ServiceId.DemonList);
+        var args = cmdArgs.Parsed.ArgumentsAsList;
+        var chatMessage = cmdArgs.Parsed.ChatMessage;
+        
+        var from = -1;
+        var to = -1;
 
+        if (demonList.GetServiceState() == State.Disabled) {
+            await ErrorHandler.ReplyWithError(ErrorCode.ServiceDisabled, chatMessage, client);
+            return;
+        }
+
+        switch (args.Count) {
+            case 1
+                when ParseRange(args[0], out var range):
+                from = range.HasStart 
+                           ? range.Start
+                           : -1;
+                to = range.HasEnd
+                         ? range.End
+                         : -1;
+                break;
+            case > 1
+                when int.TryParse(args[0], out var fromValue)
+                  && int.TryParse(args[1], out var toValue):
+                from = fromValue;
+                to = toValue;
+                break;
+        }
+
+        var levelInfo = await demonList.GetRandomLevel(from, to, DemonListProvider.GlobalList);
+        if (levelInfo == null) {
+            await ErrorHandler.ReplyWithError(ErrorCode.SmthWentWrong, chatMessage, client);
+            return;
+        }
+
+        var formatedOutput = await demonList.FormatLevelInfo(levelInfo);
+        await client.SendMessage(formatedOutput, chatMessage.Id);
+    }
+    
     private static async Task PRoulette(ChatCmdArgs cmdArgs) {
         var client = _bot.GetClient();
         if (client?.Credentials == null) return;

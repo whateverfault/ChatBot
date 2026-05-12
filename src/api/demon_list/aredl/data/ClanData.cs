@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChatBot.api.aredl.data;
+namespace ChatBot.api.demon_list.aredl.data;
 
 public class ClanData {
     public readonly string Id;

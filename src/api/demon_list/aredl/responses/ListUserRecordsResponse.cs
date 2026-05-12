@@ -1,7 +1,7 @@
-﻿using ChatBot.api.aredl.data;
+﻿using ChatBot.api.demon_list.aredl.data;
 using Newtonsoft.Json;
 
-namespace ChatBot.api.aredl.responses;
+namespace ChatBot.api.demon_list.aredl.responses;
 
 public class ListUserRecordsResponse {
     public readonly List<RecordInfo> Records;
